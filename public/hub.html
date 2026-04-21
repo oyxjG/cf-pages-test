@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个人聚合面板</title>
+  <style>
+    :root {
+      --bg: #f3ede4;
+      --bg-deep: #d7c7b6;
+      --paper: rgba(255, 251, 246, 0.82);
+      --paper-strong: rgba(255, 253, 250, 0.96);
+      --line: rgba(84, 66, 49, 0.12);
+      --text: #251c15;
+      --muted: #6f6256;
+      --accent: #bf5b32;
+      --accent-soft: #e9c7ae;
+      --teal: #2d786c;
+      --mustard: #ca9d3a;
+      --berry: #8c4964;
+      --shadow: 0 28px 80px rgba(67, 43, 25, 0.14);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(191, 91, 50, 0.18), transparent 26%),
+        radial-gradient(circle at 88% 12%, rgba(45, 120, 108, 0.16), transparent 22%),
+        linear-gradient(135deg, #f6f0e8 0%, var(--bg) 45%, #e6dbce 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(8px);
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      top: -100px;
+      right: -90px;
+      background: radial-gradient(circle, rgba(202, 157, 58, 0.18), transparent 68%);
+    }
+
+    body::after {
+      width: 340px;
+      height: 340px;
+      bottom: -120px;
+      left: -120px;
+      background: radial-gradient(circle, rgba(140, 73, 100, 0.12), transparent 70%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel,
+    .card,
+    .mini-card,
+    .feature {
+      background: var(--paper);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      padding: 22px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(191, 91, 50, 0.12);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .profile h1 {
+      margin: 18px 0 8px;
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+
+    .profile p,
+    .muted {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .avatar-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: #fffdf7;
+      font-weight: 900;
+      font-size: 21px;
+      background: linear-gradient(135deg, var(--accent), #d38d48);
+      box-shadow: 0 16px 28px rgba(191, 91, 50, 0.24);
+    }
+
+    .identity strong,
+    .stat strong,
+    .feature strong,
+    .link-card strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .identity span,
+    .stat span,
+    .feature span,
+    .link-card span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .mini-card {
+      border-radius: 18px;
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-card strong {
+      font-size: 14px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .list a,
+    .link-card,
+    .toolbar a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .nav-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.54);
+      border: 1px solid var(--line);
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .nav-link:hover,
+    .link-card:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .main {
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      padding: 28px;
+      background:
+        linear-gradient(150deg, rgba(37, 28, 21, 0.95), rgba(77, 54, 39, 0.9)),
+        linear-gradient(135deg, rgba(45, 120, 108, 0.5), rgba(191, 91, 50, 0.5));
+      color: #f9f2ea;
+      box-shadow: 0 32px 82px rgba(47, 30, 19, 0.22);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -80px auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 65%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .hero h2 {
+      margin: 16px 0 12px;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+
+    .hero p,
+    .hero .toolbar a,
+    .hero .stats-row span {
+      color: rgba(249, 242, 234, 0.8);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      background: linear-gradient(135deg, #ef8b57, #d7aa52);
+      color: #2d190d;
+    }
+
+    .button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fdf7f1;
+    }
+
+    .stats-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stat {
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat strong {
+      font-size: 26px;
+      color: #fff5ea;
+      margin-bottom: 6px;
+    }
+
+    .section {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card,
+    .feature {
+      border-radius: var(--radius-xl);
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card.tall {
+      min-height: 260px;
+    }
+
+    .feature {
+      background: linear-gradient(180deg, rgba(255, 251, 246, 0.96), rgba(250, 246, 240, 0.86));
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card h4,
+    .feature h4 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(45, 120, 108, 0.1);
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chip.warm {
+      background: rgba(191, 91, 50, 0.1);
+      color: var(--accent);
+    }
+
+    .chip.gold {
+      background: rgba(202, 157, 58, 0.14);
+      color: #8a6813;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(84, 66, 49, 0.09);
+    }
+
+    .timeline-item:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .timeline-time {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .link-card {
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.62);
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .accent-strip {
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--mustard) 46%, var(--teal) 100%);
+      opacity: 0.92;
+    }
+
+    .footer-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1080px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .card-grid,
+      .split,
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 16px 12px 40px;
+      }
+
+      .panel,
+      .card,
+      .feature,
+      .hero {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .card-grid,
+      .link-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar,
+      .section-head,
+      .history-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="shell">
+      <aside class="sidebar">
+        <section class="panel profile">
+          <div class="badge">Life Index</div>
+          <h1>我的日常总控台</h1>
+          <p>这不是单独的工具箱，而是把生活、工作、灵感、收藏和高频入口放在同一个页面里的聚合模板。</p>
+
+          <div class="avatar-row">
+            <div class="avatar">HH</div>
+            <div class="identity">
+              <strong>Hair Studio</strong>
+              <span>个人站首页 / 导航页 / 生活面板</span>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="mini-card">
+              <strong>今日重点</strong>
+              <span>整理工作流、处理账单、补 1 篇博客草稿、给自己留一点发散空间。</span>
+            </div>
+            <div class="mini-card">
+              <strong>模板用途</strong>
+              <span>你可以把这里改成个人主页、生活看板、工具导航页，或者博客与项目的聚合首页。</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="badge">Quick Jump</div>
+          <div class="stack list">
+            <a class="nav-link" href="#life">生活面板 <span>01</span></a>
+            <a class="nav-link" href="#tools">工具集合 <span>02</span></a>
+            <a class="nav-link" href="#projects">项目与博客 <span>03</span></a>
+            <a class="nav-link" href="#rhythm">本周节奏 <span>04</span></a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="badge">Small Notes</div>
+          <div class="stack">
+            <div class="mini-card">
+              <strong>改法建议</strong>
+              <span>只要替换文案、链接、分类标题和卡片数量，就能快速变成你自己的聚合面板。</span>
+            </div>
+            <div class="mini-card">
+              <strong>视觉方向</strong>
+              <span>我用了偏生活感的暖色纸感风格，让它看起来不像单纯的后台，而更像个人空间。</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <div class="main">
+        <section class="hero">
+          <div class="hero-grid">
+            <div>
+              <div class="badge">Personal Dashboard</div>
+              <h2>把工具、生活和内容放进一个统一入口。</h2>
+              <p>这个模板适合做个人聚合首页：左边是身份与说明，右边是节奏和状态；下面再按模块拆成生活、工具、项目、博客、收藏与灵感。</p>
+
+              <div class="toolbar">
+                <a class="button primary" href="#tools">查看常用工具</a>
+                <a class="button secondary" href="#projects">进入内容区</a>
+              </div>
+            </div>
+
+            <div class="stats-row">
+              <div class="stat">
+                <strong>12</strong>
+                <span>高频入口，可以放常用网站、工作台、支付、订阅、邮箱等</span>
+              </div>
+              <div class="stat">
+                <strong>3</strong>
+                <span>核心分类：生活、工具、内容；其他模块按你自己的节奏裁剪</span>
+              </div>
+              <div class="stat">
+                <strong>1 页</strong>
+                <span>只保留一个模板页面，不依赖后端，也能先搭出完整的聚合面貌</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="life">
+          <div class="section-head">
+            <div>
+              <div class="badge">Living</div>
+              <h3>生活面板</h3>
+            </div>
+            <p class="muted">把你经常看的信息浓缩成几张卡片：日程、支出、购物、想去的地方、健康和提醒。</p>
+          </div>
+
+          <div class="card-grid">
+            <article class="card tall">
+              <div class="accent-strip"></div>
+              <div class="eyebrow">Daily Mode</div>
+              <h4>今日安排</h4>
+              <p class="muted">早上整理事项，下午推进主项目，晚上写博客或阅读。你可以把这里换成待办、番茄钟、家庭提醒或天气摘要。</p>
+              <div class="chips">
+                <span class="chip warm">待办清单</span>
+                <span class="chip">日历入口</span>
+                <span class="chip gold">提醒事项</span>
+              </div>
+            </article>
+
+            <article class="card tall">
+              <div class="accent-strip"></div>
+              <div class="eyebrow">Finance</div>
+              <h4>生活账本</h4>
+              <p class="muted">这个区域适合放每月预算、订阅费用、工资到账日、账单提醒，或者直接挂你的记账工具与支付入口。</p>
+              <div class="chips">
+                <span class="chip gold">账单</span>
+                <span class="chip warm">预算</span>
+                <span class="chip">订阅管理</span>
+              </div>
+            </article>
+
+            <article class="card tall">
+              <div class="accent-strip"></div>
+              <div class="eyebrow">Wish List</div>
+              <h4>想买与想去</h4>
+              <p class="muted">把购物愿望单、旅行计划、餐厅收藏、电影清单放一起，让面板更有“生活聚合”味道，而不是纯工作台。</p>
+              <div class="chips">
+                <span class="chip">旅行</span>
+                <span class="chip warm">餐厅</span>
+                <span class="chip gold">清单</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="tools">
+          <div class="section-head">
+            <div>
+              <div class="badge">Workbench</div>
+              <h3>工具集合</h3>
+            </div>
+            <p class="muted">工具只是其中一类，不再喧宾夺主。把真正常用的几个入口留下来就够了。</p>
+          </div>
+
+          <div class="split">
+            <article class="feature">
+              <div class="eyebrow">Pinned Tools</div>
+              <h4>高频入口区</h4>
+              <p class="muted">可以挂二维码工具、文件转换、便签、服务器面板、邮箱、AI 助手、代码仓库、图床等快捷入口。</p>
+
+              <div class="link-grid">
+                <a class="link-card" href="/qrcode_tool.html">
+                  <strong>二维码工具</strong>
+                  <span>生成与解析二维码，适合放进个人常用工具区。</span>
+                </a>
+                <a class="link-card" href="/minesweeper.html">
+                  <strong>扫雷</strong>
+                  <span>工作间隙的小娱乐入口，也能作为你的 lab 区示例。</span>
+                </a>
+                <a class="link-card" href="#">
+                  <strong>文件临时箱</strong>
+                  <span>占位卡片，可换成上传、转换、图床、剪贴板工具。</span>
+                </a>
+                <a class="link-card" href="#">
+                  <strong>AI 工作台</strong>
+                  <span>占位卡片，可换成你常用的模型入口或 prompt 面板。</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="eyebrow">Workflow</div>
+              <h4>顺手就能改的结构</h4>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-time">01</div>
+                  <div>
+                    <strong>替换标题</strong>
+                    <span>把“工具集合”换成“工作台”或“常用入口”。</span>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-time">02</div>
+                  <div>
+                    <strong>替换链接</strong>
+                    <span>把示例卡片改成你自己的页面、外链或应用地址。</span>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-time">03</div>
+                  <div>
+                    <strong>裁掉不用模块</strong>
+                    <span>如果你更偏博客或生活页，直接删掉工具区的卡片即可。</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="projects">
+          <div class="section-head">
+            <div>
+              <div class="badge">Content & Lab</div>
+              <h3>项目、博客与灵感</h3>
+            </div>
+            <p class="muted">这一块让面板从“导航页”变成真正的个人空间：内容表达和实验作品一起出现。</p>
+          </div>
+
+          <div class="card-grid">
+            <article class="card">
+              <div class="eyebrow">Blog</div>
+              <h4>博客专栏</h4>
+              <p class="muted">可以挂最近文章、技术笔记、生活随记、项目复盘，或者作为文章分类页的入口。</p>
+              <div class="chips">
+                <span class="chip">技术</span>
+                <span class="chip warm">生活</span>
+                <span class="chip gold">复盘</span>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="eyebrow">Lab</div>
+              <h4>实验室</h4>
+              <p class="muted">放一些小页面、创意原型、小游戏、脚本 demo，让访问者知道你在持续折腾东西。</p>
+              <div class="chips">
+                <span class="chip">demo</span>
+                <span class="chip warm">小游戏</span>
+                <span class="chip gold">实验</span>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="eyebrow">Capture</div>
+              <h4>灵感摘录</h4>
+              <p class="muted">收纳一闪而过的想法、关键词、未完成方向。哪怕只是几条短句，也会让页面有个人味道。</p>
+              <div class="chips">
+                <span class="chip">notes</span>
+                <span class="chip warm">ideas</span>
+                <span class="chip gold">drafts</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="rhythm">
+          <div class="section-head">
+            <div>
+              <div class="badge">Weekly Rhythm</div>
+              <h3>本周节奏</h3>
+            </div>
+            <p class="muted">最后留一块节奏区域，放你最近最想完成的几件事，比单纯的链接罗列更有生命感。</p>
+          </div>
+
+          <div class="split">
+            <article class="feature">
+              <div class="eyebrow">Focus</div>
+              <h4>本周想完成的三件事</h4>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-time">A</div>
+                  <div>
+                    <strong>完善个人站主页</strong>
+                    <span>把工具、博客、实验室和个人信息串成一条清晰路线。</span>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-time">B</div>
+                  <div>
+                    <strong>发布一篇新文章</strong>
+                    <span>写最近做小工具的过程与心得，给页面带来内容入口。</span>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-time">C</div>
+                  <div>
+                    <strong>整理生活面板</strong>
+                    <span>补上账单、收藏和想做事项，让页面真的参与日常使用。</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="eyebrow">Template Notes</div>
+              <h4>你可以这样继续扩展</h4>
+              <p class="muted">如果后面要做成完整个人站，可以继续往这个模板挂更多模块：头像区、订阅区、最新评论、项目进度、阅读清单、友情链接、摄影相册。</p>
+              <p class="footer-note">当前页面是纯静态模板，先把信息架构和视觉基调搭出来，后面再逐步接真实数据。</p>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
