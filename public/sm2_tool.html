@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SM2 国密解密工具</title>
+  <script src="sm2_lib.js"></script>
+  <style>
+    :root {
+      --bg: #f3ede4;
+      --paper: rgba(255, 251, 246, 0.85);
+      --text: #251c15;
+      --muted: #6f6256;
+      --accent: #bf5b32;
+      --accent-hover: #a34a26;
+      --shadow: 0 28px 80px rgba(67, 43, 25, 0.14);
+      --radius: 24px;
+      --border: rgba(84, 66, 49, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", system-ui, sans-serif;
+      background: 
+        radial-gradient(circle at top left, rgba(191, 91, 50, 0.1), transparent 30%),
+        linear-gradient(135deg, #f6f0e8 0%, var(--bg) 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--paper);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 36px;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--accent), #d38d48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .desc {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.5);
+      font-family: "Fira Code", monospace;
+      font-size: 14px;
+      color: var(--text);
+      resize: vertical;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(191, 91, 50, 0.1);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    button {
+      padding: 14px 32px;
+      border-radius: 99px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(191, 91, 50, 0.2);
+    }
+
+    button:active { transform: translateY(0); }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    #resultArea {
+      margin-top: 10px;
+      padding: 24px;
+      background: rgba(84, 66, 49, 0.04);
+      border-radius: 18px;
+      border: 1px dashed var(--border);
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .time-stats {
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.6);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    #outputPre {
+      margin: 0;
+      font-family: inherit;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .json-key { color: #8c4964; font-weight: 700; }
+    .json-string { color: #2d786c; }
+    .json-number { color: #ca9d3a; }
+
+    #errorArea {
+      background: rgba(220, 38, 38, 0.05);
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      color: #b91c1c;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .back-link {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-link">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    返回首页
+  </a>
+
+  <div class="container">
+    <header>
+      <h1>SM2 国密解密工具</h1>
+      <p class="desc">专为国密标准设计，支持高性能异步解密与结果可视化</p>
+    </header>
+
+    <div class="field">
+      <label>待解密密文 (Hex 格式)</label>
+      <textarea id="cipherInput" placeholder="请输入 04 开头的十六进制密文..."></textarea>
+    </div>
+
+    <div class="actions">
+      <button id="runBtn" onclick="handleDecrypt()">
+        <div id="loader" class="spinner"></div>
+        <span>执行解密</span>
+      </button>
+      <div id="statusText" style="color: var(--muted); font-size: 13px;"></div>
+    </div>
+
+    <div id="errorArea"></div>
+
+    <div id="resultArea">
+      <div class="result-header">
+        <label>解密明文结果</label>
+        <span id="timeStats" class="time-stats"></span>
+      </div>
+      <div id="outputContainer" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+        <pre id="outputPre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script id="worker-code" type="javascript/worker">
+    self.onmessage = function(e) {
+      const { cipher, privKey, libCode } = e.data;
+      try {
+        const module = { exports: {} };
+        const exports = module.exports;
+        (new Function('module', 'exports', libCode))(module, exports);
+        const sm2 = module.exports || self.sm2;
+
+        if (!sm2 || typeof sm2.doDecrypt !== 'function') {
+          throw new Error("解密引擎加载失败");
+        }
+
+        const start = performance.now();
+        const plain = sm2.doDecrypt(cipher, privKey);
+        const end = performance.now();
+
+        self.postMessage({ success: true, data: plain, time: (end - start).toFixed(2) });
+      } catch (err) {
+        self.postMessage({ success: false, error: err.message });
+      }
+    };
+  </script>
+
+  <script>
+    const DEFAULT_PRIV_KEY = "4e8e840cf91fbd024c6c47cecd86bcd1e13b27f6eeeba833e65a3929ba883e6a";
+
+    async function handleDecrypt() {
+      const input = document.getElementById('cipherInput').value.trim();
+      const btn = document.getElementById('runBtn');
+      const loader = document.getElementById('loader');
+      const resArea = document.getElementById('resultArea');
+      const errArea = document.getElementById('errorArea');
+      const output = document.getElementById('outputPre');
+      const stats = document.getElementById('timeStats');
+
+      if (!input) return;
+
+      // Reset UI
+      errArea.style.display = 'none';
+      resArea.style.display = 'none';
+      btn.disabled = true;
+      loader.style.display = 'block';
+
+      try {
+          // 处理 04 前缀
+          const cipher = input.startsWith('04') ? input.slice(2) : input;
+
+          // 从本地引入库源码
+          const libCode = SM2_WORKER_CODE;
+          
+          // 启动 Worker
+          const workerCode = document.getElementById('worker-code').textContent;
+          const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+          const worker = new Worker(URL.createObjectURL(workerBlob));
+
+          worker.onmessage = (e) => {
+            const res = e.data;
+            btn.disabled = false;
+            loader.style.display = 'none';
+
+            if (res.success) {
+              resArea.style.display = 'block';
+              stats.innerText = `耗时: ${res.time}ms`;
+              
+              try {
+                const json = JSON.parse(res.data);
+                output.innerHTML = formatJSON(json);
+              } catch (e) {
+                output.textContent = res.data;
+              }
+            } else {
+              showError("解密失败: " + res.error);
+            }
+            worker.terminate();
+          };
+
+          worker.onerror = (e) => {
+            btn.disabled = false;
+            loader.style.display = 'none';
+            showError("Worker 线程异常，请检查密文格式。");
+            worker.terminate();
+          };
+
+          worker.postMessage({ cipher, privKey: DEFAULT_PRIV_KEY, libCode });
+
+      } catch (err) {
+        btn.disabled = false;
+        loader.style.display = 'none';
+        showError(err.message);
+      }
+    }
+
+    function showError(msg) {
+      const area = document.getElementById('errorArea');
+      area.innerText = msg;
+      area.style.display = 'block';
+    }
+
+    function formatJSON(obj) {
+      let json = JSON.stringify(obj, null, 4);
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+          } else {
+            cls = 'json-string';
+          }
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+  </script>
+</body>
+</html>
