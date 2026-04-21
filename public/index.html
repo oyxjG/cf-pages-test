@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>用户管理</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fb; color: #333; }
+    .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+    .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
+    h1, h2, h3 { margin-top: 0; }
+    .row { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-size: 14px; color: #555; }
+    input { width: 100%; padding: 10px 12px; border: 1px solid #d0d7de; border-radius: 8px; font-size: 14px; }
+    button { padding: 10px 16px; border: none; border-radius: 8px; background: #1677ff; color: white; font-size: 14px; cursor: pointer; margin-right: 10px; }
+    button.secondary { background: #666; }
+    button:hover { opacity: 0.92; }
+    .msg { margin-top: 14px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
+    .msg.success { display: block; background: #edf9ed; color: #1f7a1f; border: 1px solid #b7e1b7; }
+    .msg.error { display: block; background: #fff1f0; color: #cf1322; border: 1px solid #ffccc7; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+    .hidden { display: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: white; }
+    th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; font-size: 14px; }
+    th { background: #f8fafc; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; margin-top: 18px; }
+    .muted { color: #666; font-size: 14px; }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      button { width: 100%; margin-right: 0; margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loginView" class="card">
+      <h2>登录</h2>
+      <div class="row">
+        <label for="username">用户名</label>
+        <input id="username" placeholder="请输入用户名" />
+      </div>
+      <div class="row">
+        <label for="password">密码</label>
+        <input id="password" type="password" placeholder="请输入密码" />
+      </div>
+      <button id="loginBtn">登录</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+
+    <div id="adminView" class="card hidden">
+      <div class="topbar">
+        <div>
+          <h2 style="margin-bottom: 6px;">用户管理</h2>
+          <div class="muted" id="welcomeText"></div>
+        </div>
+        <div>
+          <button class="secondary" id="logoutBtn">退出</button>
+        </div>
+      </div>
+
+      <div>
+        <button id="refreshBtn">刷新用户列表</button>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label for="newUsername">新用户名</label>
+          <input id="newUsername" placeholder="例如：alice" />
+        </div>
+        <div>
+          <label for="newPassword">新密码</label>
+          <input id="newPassword" type="password" placeholder="例如：123456" />
+        </div>
+        <div>
+          <button id="addUserBtn">新增用户</button>
+        </div>
+      </div>
+
+      <div id="adminMsg" class="msg"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>用户名</th>
+            <th>创建时间</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody">
+          <tr><td colspan="3">暂无数据</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

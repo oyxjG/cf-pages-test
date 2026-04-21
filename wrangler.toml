@@ -1,0 +1,12 @@
+name = "cf-pages-test"
+main = "src/worker.js"
+compatibility_date = "2026-04-21"
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "apitest_bind"
+database_name = "apitest_bind"
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
