@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
+    <title>二维码工具</title>
+    <!-- 本地托管二维码生成与解析库，避免第三方脚本直接运行在当前源下 -->
+    <script src="/vendor/qrcode.min.js"></script>
+    <script src="/vendor/jsQR.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #10b981;
+            --bg: #f3f4f6;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            max-width: none;
+            background: var(--card-bg);
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 320px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                border-radius: 16px;
+            }
+        }
+
+        .main-panel {
+            padding: 35px;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-panel {
+            background: rgba(249, 250, 251, 0.9);
+            padding: 35px 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 800;
+            color: #111827;
+            text-align: center;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-section {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .tool-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #374151;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+            background: #fdfdfd;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        button.action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        button.action-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+            padding: 20px;
+            position: relative;
+        }
+
+        #qrCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* file upload style */
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .upload-btn {
+            background: #f3f4f6;
+            color: var(--text-main);
+            border: 2px solid #e5e7eb;
+        }
+        .upload-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* History items */
+        .history-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .history-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .storage-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .storage-toggle input {
+            accent-color: var(--primary);
+        }
+
+        .history-note {
+            font-size: 12px;
+            color: #9ca3af;
+            line-height: 1.6;
+            margin: 10px 0 0;
+        }
+
+        .clear-btn {
+            background: none;
+            color: #ef4444;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .clear-btn:hover {
+            background: #fee2e2;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* custom scrollbar */
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .history-list::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .history-item {
+            background: white;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid var(--primary);
+            word-break: break-all;
+            border: 1px solid #f3f4f6;
+            border-left: 4px solid var(--primary);
+        }
+
+        .history-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border-color: #e5e7eb;
+        }
+
+        .history-item.type-parse {
+            border-left-color: var(--secondary);
+        }
+
+        .history-meta {
+            font-size: 12px;
+            color: #9ca3af;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .badge {
+            font-weight: 700;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .badge-gen { background: #e0e7ff; color: var(--primary); }
+        .badge-parse { background: #d1fae5; color: var(--secondary); }
+
+        .copy-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111827;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast-show {
+            opacity: 1;
+            transform: translate(-50%, 10px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main-panel">
+        <h1>二维码 极客工具</h1>
+        
+        <div class="tools-grid">
+            <!-- 生成页面 -->
+            <div class="tool-section" id="gen-tab">
+                <h2 class="tool-title">✨ 生成二维码</h2>
+                <textarea id="gen-text" placeholder="📝 输入你想生成二维码的文本或网址..."></textarea>
+                <button class="action-btn" onclick="generateQR()">立刻生成</button>
+                <div class="result-box" id="gen-result">
+                    <p style="color: #9ca3af; margin:0;" id="gen-placeholder">👉 生成的二维码将展示在此处</p>
+                    <canvas id="qrCanvas" style="display:none;"></canvas>
+                </div>
+            </div>
+
+            <!-- 解析页面 -->
+            <div class="tool-section" id="parse-tab">
+                <h2 class="tool-title">🔍 解析二维码</h2>
+                <div class="file-upload">
+                    <button class="action-btn upload-btn">📁 选择二维码图片（支持 Ctrl+V 粘贴）</button>
+                    <input type="file" id="upload-img" accept="image/*" onchange="parseImage(event)">
+                </div>
+                <div class="result-box" id="parse-result">
+                    <p style="color: #9ca3af; margin:0;" id="parse-placeholder">🔍 选择图片或直接 <b>Ctrl+V</b> 粘贴，解析结果将展示在此处</p>
+                    <div id="parse-text-result" style="display:none; width:100%; text-align:left; height: 100%; display: flex; flex-direction: column;">
+                        <p style="font-weight:600; margin:0 0 10px 0; color:#4b5563;">解析内容：</p>
+                        <textarea id="parsed-content" readonly style="flex:1; background:#f9fafb; cursor:text; margin-bottom:15px; border-color:#d1d5db;"></textarea>
+                        <button class="action-btn" onclick="copyParsed()" style="background:var(--secondary);">复制结果</button>
+                    </div>
+                </div>
+                <!-- Canvas is used off-screen for parsing -->
+                <canvas id="processCanvas" style="display:none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史记录面板 -->
+    <div class="history-panel">
+        <div class="history-title">
+            历史记录
+            <div class="history-actions">
+                <label class="storage-toggle">
+                    <input type="checkbox" id="history-opt-in">
+                    允许本地保存记录
+                </label>
+                <button class="clear-btn" onclick="clearHistory()">清空记录</button>
+            </div>
+        </div>
+        <p class="history-note">默认不落盘，启用后才会把内容保存在当前浏览器中。</p>
+        <ul class="history-list" id="history-list">
+            <!-- Items injected by JS -->
+        </ul>
+    </div>
+</div>
+
+<div class="copy-toast" id="toast">✅ 复制成功</div>
+
+<script>
+    // 强制先隐藏 display:flex 造成的冲突
+    document.getElementById('parse-text-result').style.display = 'none';
+
+    const HISTORY_STORAGE_KEY = 'qr-history';
+    const HISTORY_OPT_IN_KEY = 'qr-history-opt-in';
+    const MAX_HISTORY = 30;
+    const MAX_FILE_SIZE = 8 * 1024 * 1024;
+    const historyOptInEl = document.getElementById('history-opt-in');
+
+    // 状态与数据记录
+    const isHistoryEnabled = () => localStorage.getItem(HISTORY_OPT_IN_KEY) === '1';
+    let historyData = isHistoryEnabled() ? readStoredHistory() : [];
+
+    historyOptInEl.checked = isHistoryEnabled();
+    if (!historyOptInEl.checked) {
+        localStorage.removeItem(HISTORY_STORAGE_KEY);
+    }
+
+    function readStoredHistory() {
+        try {
+            const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.warn('history parse failed', error);
+            return [];
+        }
+    }
+
+    function persistHistory() {
+        if (!isHistoryEnabled()) return;
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(historyData));
+    }
+
+    historyOptInEl.addEventListener('change', function() {
+        if (historyOptInEl.checked) {
+            localStorage.setItem(HISTORY_OPT_IN_KEY, '1');
+            persistHistory();
+            showToast('✅ 已启用本地历史记录');
+        } else {
+            localStorage.removeItem(HISTORY_OPT_IN_KEY);
+            localStorage.removeItem(HISTORY_STORAGE_KEY);
+            historyData = [];
+            renderHistory();
+            showToast('🧹 已关闭并清除本地历史记录');
+        }
+    });
+
+    function smoothScrollTo(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // --- 生成逻辑 ---
+    function generateQR() {
+        const text = document.getElementById('gen-text').value.trim();
+        if (!text) {
+            showToast('⚠️ 请先输入内容');
+            return;
+        }
+
+        const canvas = document.getElementById('qrCanvas');
+        // 调用 qrcode 库生成，宽度设定适中
+        QRCode.toCanvas(canvas, text, { width: 220, margin: 2, color: { dark: '#111827', light: '#ffffff' } }, function (error) {
+            if (error) {
+                console.error(error);
+                showToast('❌ 生成失败');
+            } else {
+                canvas.style.display = 'inline-block';
+                document.getElementById('gen-placeholder').style.display = 'none';
+                saveHistory('gen', text);
+            }
+        });
+    }
+
+    // --- 解析逻辑 ---
+    // 监听全局粘贴事件
+    document.addEventListener('paste', function(e) {
+        // 解析平显中
+        
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                processImageFile(file);
+                return;
+            }
+        }
+    });
+
+    function parseImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        processImageFile(file);
+        // 清空 input 允许重复选择同一图片
+        event.target.value = '';
+    }
+
+    function processImageFile(file) {
+        if (!file.type.startsWith('image/')) {
+            showToast('⚠️ 请选择图片文件');
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            showToast('⚠️ 图片过大，请选择 8MB 以内的图片');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('processCanvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                
+                // 限制最大图片解析尺寸避免卡顿
+                const MAX_SIZE = 1200;
+                let scale = 1;
+                if(img.width > MAX_SIZE || img.height > MAX_SIZE) {
+                    scale = Math.min(MAX_SIZE/img.width, MAX_SIZE/img.height);
+                }
+                
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                // 调用 jsQR 解析
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (code && code.data) {
+                    showParsedResult(code.data);
+                    saveHistory('parse', code.data);
+                    showToast('✅ 解析成功');
+                } else {
+                    showToast('⚠️ 未发现清晰的二维码');
+                }
+            };
+            img.onerror = function() {
+                showToast('❌ 图片加载失败，请换一张试试');
+            };
+            img.src = e.target.result;
+        };
+        reader.onerror = function() {
+            showToast('❌ 读取图片失败');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function showParsedResult(text) {
+        document.getElementById('parse-placeholder').style.display = 'none';
+        document.getElementById('parse-text-result').style.display = 'flex';
+        document.getElementById('parsed-content').value = text;
+    }
+
+    function copyParsed() {
+        const text = document.getElementById('parsed-content').value;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ 复制成功');
+        });
+    }
+
+    // --- 历史记录保护与更新 ---
+    function saveHistory(type, content) {
+        if (!isHistoryEnabled()) return;
+
+        // 去重并在顶部插入
+        historyData = historyData.filter(item => item.content !== content);
+        historyData.unshift({
+            type, // 'gen' | 'parse'
+            content,
+            time: new Date().toLocaleString('zh-CN', { hour12: false })
+        });
+        
+        if (historyData.length > MAX_HISTORY) historyData = historyData.slice(0, MAX_HISTORY);
+        
+        persistHistory();
+        renderHistory();
+    }
+
+    function clearHistory() {
+        if(confirm('确定要清空所有历史记录吗？')) {
+            historyData = [];
+            localStorage.removeItem(HISTORY_STORAGE_KEY);
+            renderHistory();
+        }
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+        
+        if(historyData.length === 0) {
+            const empty = document.createElement('li');
+            empty.style.color = '#9ca3af';
+            empty.style.textAlign = 'center';
+            empty.style.marginTop = '30px';
+            empty.textContent = historyOptInEl.checked ? '暂无任何使用记录' : '本地历史记录默认关闭';
+            list.appendChild(empty);
+            return;
+        }
+
+        historyData.forEach(item => {
+            const li = document.createElement('li');
+            li.className = `history-item type-${item.type}`;
+            li.onclick = () => restoreFromHistory(item);
+            
+            const isGen = item.type === 'gen';
+            const badgeClass = isGen ? 'badge-gen' : 'badge-parse';
+            const typeText = isGen ? '生成' : '解析';
+            
+            // 文本截断
+            const shortContent = item.content.length > 50 ? item.content.substring(0, 50) + '...' : item.content;
+
+            const meta = document.createElement('div');
+            meta.className = 'history-meta';
+
+            const badge = document.createElement('span');
+            badge.className = `badge ${badgeClass}`;
+            badge.textContent = typeText;
+
+            const time = document.createElement('span');
+            time.textContent = item.time;
+
+            meta.appendChild(badge);
+            meta.appendChild(time);
+
+            const content = document.createElement('div');
+            content.style.color = '#374151';
+            content.style.lineHeight = '1.4';
+            content.textContent = shortContent;
+
+            li.appendChild(meta);
+            li.appendChild(content);
+            list.appendChild(li);
+        });
+    }
+
+    // 点击历史记录进行回显复用
+    function restoreFromHistory(item) {
+        if (item.type === 'gen') {
+            smoothScrollTo('gen-tab');
+            document.getElementById('gen-text').value = item.content;
+            generateQR();
+        } else {
+            smoothScrollTo('parse-tab');
+            showParsedResult(item.content);
+        }
+    }
+
+    // --- 提示框交互 ---
+    let toastTimeout;
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.classList.add('toast-show');
+        
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('toast-show');
+        }, 2000);
+    }
+
+    // 初始化运行
+    renderHistory();
+</script>
+
+</body>
+</html>
