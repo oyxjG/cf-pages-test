@@ -1,5 +1,5 @@
 # wrangler.toml
-name = 'empty-boat-23ee'
+name = 'calm-pine-933a'
 main = "src/worker.js"
 compatibility_date = "2026-04-21"
 
@@ -10,4 +10,4 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "apitest_bind"
 database_name = "apitest"
-database_id = "2dfcaa0c-1045-4b34-a6ea-a8da9fae6b58"
+database_id = "5f155f13-2487-47b8-a436-eb660b552a93"
