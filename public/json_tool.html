@@ -11,6 +11,7 @@
       --text: #251c15;
       --muted: #6f6256;
       --accent: #bf5b32;
+      --error: #dc3545;
       --line: rgba(84, 66, 49, 0.12);
       --radius: 20px;
     }
@@ -29,7 +30,7 @@
 
     .container {
       width: 100%;
-      max-width: 900px;
+      max-width: 1000px;
       background: var(--paper);
       backdrop-filter: blur(20px);
       border-radius: var(--radius);
@@ -40,6 +41,9 @@
 
     .header {
       margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
     }
 
     .header h1 {
@@ -55,29 +59,76 @@
     }
 
     .editor-wrapper {
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    textarea {
-      width: 100%;
-      height: 400px;
-      padding: 20px;
-      border-radius: 12px;
+    /* 编辑器容器样式 */
+    .editor-container {
+      display: flex;
+      height: 500px;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.5);
-      font-family: "Fira Code", monospace;
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--text);
-      resize: vertical;
-      outline: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+      font-family: "Fira Code", "Consolas", monospace;
       transition: border-color 0.2s;
     }
 
-    textarea:focus {
+    .editor-container:focus-within {
       border-color: var(--accent);
+    }
+
+    /* 行号槽 */
+    #lineNumbers {
+      width: 48px;
+      background: rgba(84, 66, 49, 0.04);
+      border-right: 1px solid var(--line);
+      padding: 20px 0;
+      text-align: right;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      user-select: none;
+    }
+
+    #lineNumbers div {
+      padding: 0 10px;
+      height: 1.6em;
+      transition: all 0.2s;
+    }
+
+    #lineNumbers div.error-line {
+      background: rgba(220, 53, 69, 0.15);
+      color: var(--error);
+      font-weight: bold;
+      position: relative;
+    }
+
+    #lineNumbers div.error-line::before {
+      content: "▶";
+      position: absolute;
+      left: 4px;
+      font-size: 10px;
+      top: 1px;
+    }
+
+    /* 文本输入区 */
+    textarea {
+      flex: 1;
+      padding: 20px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      overflow-y: scroll;
+      white-space: pre;
     }
 
     .actions {
@@ -87,7 +138,7 @@
     }
 
     .btn {
-      padding: 10px 20px;
+      padding: 10px 22px;
       border-radius: 999px;
       border: none;
       font-weight: 700;
@@ -111,23 +162,24 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
-    .btn:active {
-      transform: translateY(0);
+    .status {
+      font-size: 13px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: none;
+      animation: fadeIn 0.3s ease;
     }
 
-    .status {
-      margin-top: 12px;
-      font-size: 13px;
-      padding: 10px 16px;
-      border-radius: 8px;
-      display: none;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .status.error {
       display: block;
-      background: rgba(220, 53, 69, 0.1);
-      color: #dc3545;
-      border: 1px solid rgba(220, 53, 69, 0.2);
+      background: rgba(220, 53, 69, 0.08);
+      color: var(--error);
+      border: 1px solid rgba(220, 53, 69, 0.15);
     }
 
     .back-nav {
@@ -139,6 +191,7 @@
       text-decoration: none;
       font-size: 14px;
       font-weight: 600;
+      transition: color 0.2s;
     }
 
     .back-nav a:hover {
@@ -149,12 +202,20 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>JSON 格式化 & 互转</h1>
-      <p>支持普通字符串与格式化 JSON 的自由转换，自动检测语法错误。</p>
+      <div>
+        <h1>JSON 格式化 & 语法检查</h1>
+        <p>提供实时行号显示与精确的错误位置标记，支持一键格式化与压缩。</p>
+      </div>
+      <div id="statusTip" style="font-size: 12px; color: var(--muted);"></div>
     </div>
 
     <div class="editor-wrapper">
-      <textarea id="jsonInput" placeholder="在此粘贴 JSON 字符串..."></textarea>
+      <div class="editor-container">
+        <div id="lineNumbers"></div>
+        <textarea id="jsonInput" placeholder="在此粘贴 JSON 字符串..." spellcheck="false" 
+                  oninput="updateLineNumbers()" 
+                  onscroll="syncScroll()"></textarea>
+      </div>
       
       <div id="errorMessage" class="status error"></div>
 
@@ -173,7 +234,26 @@
 
   <script>
     const input = document.getElementById('jsonInput');
+    const lineNumbers = document.getElementById('lineNumbers');
     const errorMsg = document.getElementById('errorMessage');
+    const statusTip = document.getElementById('statusTip');
+
+    // 初始化行号
+    updateLineNumbers();
+
+    function updateLineNumbers() {
+      const lines = input.value.split('\n').length;
+      let html = '';
+      for (let i = 1; i <= lines; i++) {
+        html += `<div id="ln-${i}">${i}</div>`;
+      }
+      lineNumbers.innerHTML = html;
+      syncScroll();
+    }
+
+    function syncScroll() {
+      lineNumbers.scrollTop = input.scrollTop;
+    }
 
     function formatJSON() {
       try {
@@ -182,8 +262,11 @@
         const obj = JSON.parse(value);
         input.value = JSON.stringify(obj, null, 2);
         hideError();
+        updateLineNumbers();
+        statusTip.textContent = '格式化成功';
+        setTimeout(() => statusTip.textContent = '', 2000);
       } catch (e) {
-        showError(e.message);
+        handleParseError(e, input.value);
       }
     }
 
@@ -194,30 +277,83 @@
         const obj = JSON.parse(value);
         input.value = JSON.stringify(obj);
         hideError();
+        updateLineNumbers();
+        statusTip.textContent = '压缩成功';
+        setTimeout(() => statusTip.textContent = '', 2000);
       } catch (e) {
-        showError(e.message);
+        handleParseError(e, input.value);
       }
+    }
+
+    function handleParseError(e, text) {
+      const msg = e.message;
+      let errorLine = -1;
+      
+      // 尝试解析错误位置 (Chrome/Edge/Node 格式: "...at position 123")
+      const posMatch = msg.match(/at position (\d+)/);
+      if (posMatch) {
+        const pos = parseInt(posMatch[1]);
+        errorLine = text.substring(0, pos).split('\n').length;
+      }
+      
+      // 现代浏览器支持行号 (如 Firefox: "JSON.parse: expected property name... at line 2 column 5")
+      const lineMatch = msg.match(/at line (\d+)/);
+      if (lineMatch) {
+        errorLine = parseInt(lineMatch[1]);
+      }
+
+      showError(msg, errorLine);
+    }
+
+    function showError(msg, errorLine) {
+      errorMsg.textContent = '❌ 语法错误: ' + msg;
+      errorMsg.style.display = 'block';
+      
+      // 移除之前的错误标记
+      document.querySelectorAll('#lineNumbers div').forEach(el => el.classList.remove('error-line'));
+      
+      // 添加新标记并滚动
+      if (errorLine > 0) {
+        const errorEl = document.getElementById(`ln-${errorLine}`);
+        if (errorEl) {
+          errorEl.classList.add('error-line');
+          // 尝试让错误行居中显示
+          const containerHeight = document.querySelector('.editor-container').clientHeight;
+          input.scrollTop = errorEl.offsetTop - (containerHeight / 2);
+          syncScroll();
+        }
+      }
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none';
+      document.querySelectorAll('#lineNumbers div').forEach(el => el.classList.remove('error-line'));
     }
 
     function copyToClipboard() {
       input.select();
       document.execCommand('copy');
-      alert('已复制到剪贴板');
+      statusTip.textContent = '已复制到剪贴板';
+      setTimeout(() => statusTip.textContent = '', 2000);
     }
 
     function clearAll() {
       input.value = '';
       hideError();
+      updateLineNumbers();
     }
 
-    function showError(msg) {
-      errorMsg.textContent = '语法错误: ' + msg;
-      errorMsg.style.display = 'block';
-    }
-
-    function hideError() {
-      errorMsg.style.display = 'none';
-    }
+    // 智能处理 Tab 键
+    input.onkeydown = function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 2;
+        updateLineNumbers();
+      }
+    };
   </script>
 </body>
 </html>
