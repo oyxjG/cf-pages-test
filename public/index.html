@@ -432,6 +432,21 @@
       gap: 14px;
     }
 
+    .tools-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (min-width: 1080px) {
+      .tools-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .full-width {
+      display: block;
+      width: 100%;
+    }
+
     .link-card {
       border-radius: 18px;
       padding: 16px;
@@ -483,7 +498,8 @@
       }
 
       .card-grid,
-      .link-grid {
+      .link-grid,
+      .tools-grid {
         grid-template-columns: 1fr;
       }
 
@@ -643,13 +659,13 @@
             <p class="muted">工具只是其中一类，不再喧宾夺主。把真正常用的几个入口留下来就够了。</p>
           </div>
 
-          <div class="split">
+          <div class="full-width">
             <article class="feature">
               <div class="eyebrow">Pinned Tools</div>
               <h4>高频入口区</h4>
               <p class="muted">可以挂二维码工具、文件转换、便签、服务器面板、邮箱、AI 助手、代码仓库、图床等快捷入口。</p>
 
-              <div class="link-grid">
+              <div class="link-grid tools-grid">
                 <a class="link-card" href="/login.html">
                   <strong>控制台入口</strong>
                   <span>进入现有登录页和用户管理控制台，作为后台与管理功能的统一入口。</span>
@@ -674,34 +690,6 @@
                   <strong>文件中转站</strong>
                   <span>预留给上传、转换、图床或剪贴板等文件类工具的统一入口。</span>
                 </a>
-              </div>
-            </article>
-
-            <article class="feature">
-              <div class="eyebrow">Workflow</div>
-              <h4>顺手就能改的结构</h4>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-time">01</div>
-                  <div>
-                    <strong>替换标题</strong>
-                    <span>把“工具集合”换成“工作台”或“常用入口”。</span>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-time">02</div>
-                  <div>
-                    <strong>替换链接</strong>
-                    <span>把示例卡片改成你自己的页面、外链或应用地址。</span>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-time">03</div>
-                  <div>
-                    <strong>裁掉不用模块</strong>
-                    <span>如果你更偏博客或生活页，直接删掉工具区的卡片即可。</span>
-                  </div>
-                </div>
               </div>
             </article>
           </div>
