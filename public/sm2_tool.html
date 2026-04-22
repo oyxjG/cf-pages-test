@@ -253,6 +253,7 @@
       <div class="result-header">
         <label>解密明文结果</label>
         <div style="display: flex; align-items: center; gap: 12px;">
+          <span id="copyTip" style="font-size: 12px; color: var(--accent); opacity: 0; transition: opacity 0.3s;">已复制</span>
           <span id="timeStats" class="time-stats"></span>
           <button onclick="copyPlainResult()" style="padding: 6px 14px; font-size: 12px; border-radius: 8px; background: rgba(84, 66, 49, 0.08); color: var(--text); box-shadow: none;">复制结果</button>
         </div>
@@ -307,12 +308,14 @@
 
     async function copyPlainResult() {
       const output = document.getElementById('outputPre');
+      const tip = document.getElementById('copyTip');
       const text = output.innerText;
       if (!text) return;
       
       try {
         await navigator.clipboard.writeText(text);
-        alert('解密结果已复制到剪贴板');
+        tip.style.opacity = 1;
+        setTimeout(() => tip.style.opacity = 0, 1500);
       } catch (err) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -320,7 +323,8 @@
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        alert('解密结果已复制到剪贴板');
+        tip.style.opacity = 1;
+        setTimeout(() => tip.style.opacity = 0, 1500);
       }
     }
 
