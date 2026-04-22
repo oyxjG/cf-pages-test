@@ -252,9 +252,15 @@
     <div id="resultArea">
       <div class="result-header">
         <label>解密明文结果</label>
-        <span id="timeStats" class="time-stats"></span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span id="timeStats" class="time-stats"></span>
+          <button onclick="copyPlainResult()" style="padding: 6px 14px; font-size: 12px; border-radius: 8px; background: rgba(84, 66, 49, 0.08); color: var(--text); box-shadow: none;">复制结果</button>
+        </div>
       </div>
-      <div id="outputContainer" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+      <div id="outputContainer" 
+           tabindex="0"
+           onkeydown="handleResultKeyDown(event)"
+           style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); max-height: 400px; overflow-y: auto; outline: none; position: relative; transition: border-color 0.2s;">
         <pre id="outputPre"></pre>
       </div>
     </div>
@@ -286,6 +292,37 @@
 
   <script>
     const DEFAULT_PRIV_KEY = "4e8e840cf91fbd024c6c47cecd86bcd1e13b27f6eeeba833e65a3929ba883e6a";
+
+    function handleResultKeyDown(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        const outputPre = document.getElementById('outputPre');
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(outputPre);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+
+    async function copyPlainResult() {
+      const output = document.getElementById('outputPre');
+      const text = output.innerText;
+      if (!text) return;
+      
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('解密结果已复制到剪贴板');
+      } catch (err) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('解密结果已复制到剪贴板');
+      }
+    }
 
     async function handleDecrypt() {
       const input = document.getElementById('cipherInput').value.trim();
