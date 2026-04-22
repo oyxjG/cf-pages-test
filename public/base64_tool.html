@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Base64 互转工具 - 高级聚合面板</title>
+  <style>
+    :root {
+      --bg: #f3ede4;
+      --paper: rgba(255, 251, 246, 0.85);
+      --text: #251c15;
+      --muted: #6f6256;
+      --accent: #bf5b32;
+      --line: rgba(84, 66, 49, 0.12);
+      --radius: 20px;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", sans-serif;
+      background: linear-gradient(135deg, #f6f0e8 0%, var(--bg) 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--paper);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: 0 30px 90px rgba(67, 43, 25, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .back-link {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    .header {
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tool-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    textarea {
+      width: 100%;
+      height: 160px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.5);
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      background: white;
+    }
+
+    .control-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 8px 0;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: 999px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn.primary { background: var(--accent); color: white; }
+    .btn.secondary { background: rgba(84, 66, 49, 0.08); color: var(--text); }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+    .copied-tip {
+        font-size: 12px;
+        color: var(--accent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .status-area {
+        height: 20px;
+        text-align: center;
+        margin-top: 12px;
+        font-size: 13px;
+        color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    返回首页
+  </a>
+
+  <div class="container">
+    <div class="header">
+        <h1>Base64 编码 & 解码</h1>
+        <p>提供文本与 Base64 格式的极速互转，适配 UTF-8 字符集。</p>
+    </div>
+
+    <div class="tool-grid">
+        <div class="field">
+            <div class="field-label">
+                <label>文本内容 (Clear Text)</label>
+                <div class="copied-tip" id="tip-text">已复制</div>
+            </div>
+            <textarea id="plainText" placeholder="在此输入普通文本..." oninput="autoEncode()"></textarea>
+            <div style="text-align: right;">
+                <button class="btn secondary" onclick="copyText('plainText', 'tip-text')">复制文本</button>
+            </div>
+        </div>
+
+        <div class="control-row">
+            <div style="font-size: 24px; color: var(--line);">⇅</div>
+        </div>
+
+        <div class="field">
+            <div class="field-label">
+                <label>Base64 结果</label>
+                <div class="copied-tip" id="tip-base64">已复制</div>
+            </div>
+            <textarea id="base64Text" placeholder="在此输入 Base64 字符串..." oninput="autoDecode()"></textarea>
+            <div style="text-align: right; display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn secondary" onclick="clearAll()">清空全页</button>
+                <button class="btn secondary" onclick="copyText('base64Text', 'tip-base64')">复制 Base64</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="statusArea" class="status-area"></div>
+  </div>
+
+  <script>
+    const plainInput = document.getElementById('plainText');
+    const base64Input = document.getElementById('base64Text');
+    const statusArea = document.getElementById('statusArea');
+
+    // 处理 UTF-8 的 Base64 编码
+    function utob(str) {
+        return window.btoa(unescape(encodeURIComponent(str)));
+    }
+
+    // 处理 UTF-8 的 Base64 解码
+    function btou(str) {
+        return decodeURIComponent(escape(window.atob(str)));
+    }
+
+    function autoEncode() {
+        try {
+            const val = plainInput.value;
+            if (!val) {
+                base64Input.value = '';
+                statusArea.textContent = '';
+                return;
+            }
+            base64Input.value = utob(val);
+            statusArea.textContent = '';
+        } catch (e) {
+            statusArea.textContent = '编码失败：' + e.message;
+        }
+    }
+
+    function autoDecode() {
+        try {
+            const val = base64Input.value.trim();
+            if (!val) {
+                plainInput.value = '';
+                statusArea.textContent = '';
+                return;
+            }
+            plainInput.value = btou(val);
+            statusArea.textContent = '';
+        } catch (e) {
+            statusArea.textContent = '解码失败：请检查输入的 Base64 格式是否正确';
+        }
+    }
+
+    function copyText(id, tipId) {
+        const el = document.getElementById(id);
+        const tip = document.getElementById(tipId);
+        if (!el.value) return;
+        
+        navigator.clipboard.writeText(el.value).then(() => {
+            tip.style.opacity = 1;
+            setTimeout(() => tip.style.opacity = 0, 1500);
+        });
+    }
+
+    function clearAll() {
+        plainInput.value = '';
+        base64Input.value = '';
+        statusArea.textContent = '';
+    }
+  </script>
+</body>
+</html>
