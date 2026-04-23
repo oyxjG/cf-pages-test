@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>法定假日查询与工作日计算</title>
+  <style>
+    :root {
+      --bg: #f3ede4;
+      --bg-deep: #d7c7b6;
+      --paper: rgba(255, 251, 246, 0.82);
+      --paper-strong: rgba(255, 253, 250, 0.96);
+      --line: rgba(84, 66, 49, 0.12);
+      --text: #251c15;
+      --muted: #6f6256;
+      --accent: #bf5b32;
+      --accent-soft: #e9c7ae;
+      --teal: #2d786c;
+      --mustard: #ca9d3a;
+      --berry: #8c4964;
+      --shadow: 0 28px 80px rgba(67, 43, 25, 0.14);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(191, 91, 50, 0.18), transparent 26%),
+        radial-gradient(circle at 88% 12%, rgba(45, 120, 108, 0.16), transparent 22%),
+        linear-gradient(135deg, #f6f0e8 0%, var(--bg) 45%, #e6dbce 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(8px);
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      top: -100px;
+      right: -90px;
+      background: radial-gradient(circle, rgba(202, 157, 58, 0.18), transparent 68%);
+    }
+
+    body::after {
+      width: 340px;
+      height: 340px;
+      bottom: -120px;
+      left: -120px;
+      background: radial-gradient(circle, rgba(140, 73, 100, 0.12), transparent 70%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--paper-strong);
+      color: var(--text);
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input[type="date"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.6);
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text);
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    input[type="date"]:focus,
+    input[type="number"]:focus {
+      background: #fff;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.1);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(45, 120, 108, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: #246359;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(84, 66, 49, 0.3);
+    }
+
+    .result-box {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--line);
+      display: none;
+    }
+
+    .result-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-highlight {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .result-highlight small {
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .stat-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed rgba(84, 66, 49, 0.1);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--muted);
+    }
+
+    .stat-val {
+      font-weight: 600;
+    }
+
+    .detail-list {
+      margin-top: 20px;
+      font-size: 13px;
+    }
+
+    .detail-title {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-title::before {
+      content: "";
+      display: block;
+      width: 4px;
+      height: 12px;
+      background: var(--mustard);
+      border-radius: 2px;
+    }
+
+    .detail-items {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 16px 0;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    
+    .detail-items li {
+      padding-left: 10px;
+    }
+
+    .tag-paid {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(191, 91, 50, 0.1);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <a href="index.html" class="back-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+      <h1>法定假日与工作日计算器</h1>
+    </div>
+
+    <div class="grid">
+      <!-- 时段 -> 工作天数 -->
+      <div class="card">
+        <h2 class="card-title">时段 → 工作天数</h2>
+        
+        <div class="form-group">
+          <label>开始日期</label>
+          <input type="date" id="start-date-1">
+        </div>
+        
+        <div class="form-group">
+          <label>结束日期</label>
+          <input type="date" id="end-date-1">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="calcWorkdays()">计算工作日</button>
+          <button class="btn btn-secondary" onclick="setRange('thisMonth')">本月</button>
+          <button class="btn btn-secondary" onclick="setRange('prevMonth')">上月</button>
+          <button class="btn btn-secondary" onclick="setRange('nextMonth')">下月</button>
+        </div>
+
+        <div class="result-box" id="result-1">
+          <div class="result-highlight" id="res1-title">-- <small>个工作日</small></div>
+          
+          <div class="stat-list">
+            <div class="stat-row"><span class="stat-label">日期区间</span><span class="stat-val" id="res1-range">--</span></div>
+            <div class="stat-row"><span class="stat-label">合计天数</span><span class="stat-val" id="res1-total">--</span></div>
+            <div class="stat-row"><span class="stat-label">周末天数</span><span class="stat-val" id="res1-weekend">--</span></div>
+            <div class="stat-row"><span class="stat-label">法定假日</span><span class="stat-val" id="res1-holiday">--</span></div>
+            <div class="stat-row"><span class="stat-label">调休上班</span><span class="stat-val" id="res1-makeup">--</span></div>
+            <div class="stat-row"><span class="stat-label">带薪假期</span><span class="stat-val" id="res1-paid">--</span></div>
+            <div class="stat-row"><span class="stat-label">计薪天数</span><span class="stat-val" id="res1-paydays">--</span></div>
+          </div>
+
+          <div class="detail-list" id="res1-details">
+            <!-- 动态注入明细 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 工作天数 -> 日期 -->
+      <div class="card">
+        <h2 class="card-title">工作天数 → 日期</h2>
+        
+        <div class="form-group">
+          <label>开始日期</label>
+          <input type="date" id="start-date-2">
+        </div>
+        
+        <div class="form-group">
+          <label>工作天数</label>
+          <input type="number" id="work-days-count" placeholder="例如：20" min="1">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="calcTargetDate()">计算日期</button>
+        </div>
+
+        <div class="result-box" id="result-2">
+          <div style="margin-bottom: 16px; font-size: 15px; line-height: 1.6; color: var(--text);" id="res2-summary">
+            从 <strong id="res2-start">--</strong> 开始，工作满 <strong id="res2-count">--</strong> 个工作日，最后一天是 <strong id="res2-target-inline">--</strong>。
+          </div>
+          
+          <div class="stat-list">
+            <div class="stat-row"><span class="stat-label">日期区间</span><span class="stat-val" id="res2-range">--</span></div>
+            <div class="stat-row"><span class="stat-label">合计天数</span><span class="stat-val" id="res2-total">--</span></div>
+            <div class="stat-row"><span class="stat-label">工作天数</span><span class="stat-val" id="res2-workdays">--</span></div>
+          </div>
+          
+          <div style="font-size: 13px; color: var(--muted); margin-bottom: 20px;" id="res2-hint">
+            提示：统计时包含开始和结束这两天
+          </div>
+
+          <div class="detail-list" id="res2-details">
+            <!-- 动态注入明细 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+  <script>
+    const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+
+    function initDates() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      
+      document.getElementById('start-date-1').value = todayStr;
+      document.getElementById('end-date-1').value = todayStr;
+      document.getElementById('start-date-2').value = todayStr;
+      document.getElementById('work-days-count').value = 20;
+    }
+
+    function formatDate(date) {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function setRange(type) {
+      const now = new Date();
+      let start, end;
+      
+      if (type === 'thisMonth') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      } else if (type === 'prevMonth') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0);
+      } else if (type === 'nextMonth') {
+        start = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+      }
+      
+      document.getElementById('start-date-1').value = formatDate(start);
+      document.getElementById('end-date-1').value = formatDate(end);
+      calcWorkdays();
+    }
+
+    function calcWorkdays() {
+      if (typeof HolidayUtil === 'undefined') {
+        alert("节假日库加载失败，请检查网络。");
+        return;
+      }
+
+      const startStr = document.getElementById('start-date-1').value;
+      const endStr = document.getElementById('end-date-1').value;
+      
+      if (!startStr || !endStr) {
+        alert("请选择完整的开始和结束日期");
+        return;
+      }
+
+      let start = new Date(startStr);
+      let end = new Date(endStr);
+      
+      if (start > end) {
+        const temp = start;
+        start = end;
+        end = temp;
+      }
+
+      let workDays = 0;
+      let weekendDays = 0;
+      let legalHolidayDays = 0;
+      let makeUpWorkDays = 0;
+      let paidHolidayDays = 0;
+
+      let weekendList = [];
+      let holidayList = [];
+      let makeUpWorkList = [];
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        let y = d.getFullYear();
+        let m = d.getMonth() + 1;
+        let day = d.getDate();
+        let ymd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        let h = HolidayUtil.getHoliday(y, m, day);
+        let w = d.getDay();
+        let isWk = (w === 0 || w === 6);
+        let weekStr = `周${weekNames[w]}`;
+        
+        if (h) {
+          if (h.isWork()) {
+            makeUpWorkDays++;
+            workDays++;
+            makeUpWorkList.push(`${ymd}: ${h.getName()}调休 (${weekStr})`);
+          } else {
+            legalHolidayDays++;
+            let isPaid = (ymd === h.getTarget());
+            if (isPaid) paidHolidayDays++;
+            
+            holidayList.push(`${ymd}: ${h.getName()}(${weekStr})${isPaid ? '<span class="tag-paid">带薪</span>' : ''}`);
+          }
+        } else {
+          if (isWk) {
+            weekendDays++;
+            weekendList.push(`${ymd}: ${weekStr}`);
+          } else {
+            workDays++;
+          }
+        }
+      }
+
+      let totalDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      let paidDays = workDays + paidHolidayDays;
+
+      document.getElementById('res1-title').innerHTML = `${workDays} <small>个工作日</small>`;
+      document.getElementById('res1-range').innerText = `${formatDate(start)} ~ ${formatDate(end)}`;
+      document.getElementById('res1-total').innerText = totalDays;
+      document.getElementById('res1-weekend').innerText = weekendDays;
+      document.getElementById('res1-holiday').innerText = legalHolidayDays;
+      document.getElementById('res1-makeup').innerText = makeUpWorkDays;
+      document.getElementById('res1-paid').innerText = paidHolidayDays;
+      document.getElementById('res1-paydays').innerText = paidDays;
+
+      let detailsHtml = '';
+      
+      if (holidayList.length > 0) {
+        detailsHtml += `<div class="detail-title">节日放假</div><ul class="detail-items">`;
+        holidayList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
+        detailsHtml += `</ul>`;
+      }
+      
+      if (makeUpWorkList.length > 0) {
+        detailsHtml += `<div class="detail-title" style="color:var(--teal)">调休上班</div><ul class="detail-items">`;
+        makeUpWorkList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
+        detailsHtml += `</ul>`;
+      }
+
+      if (weekendList.length > 0) {
+        detailsHtml += `<div class="detail-title">周末放假 <span style="font-weight:normal;font-size:12px;color:var(--muted)">(已排除重叠节日)</span></div><ul class="detail-items">`;
+        weekendList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
+        detailsHtml += `</ul>`;
+      }
+
+      document.getElementById('res1-details').innerHTML = detailsHtml;
+      document.getElementById('result-1').classList.add('active');
+    }
+
+    function calcTargetDate() {
+      if (typeof HolidayUtil === 'undefined') {
+        alert("节假日库加载失败，请检查网络。");
+        return;
+      }
+
+      const startStr = document.getElementById('start-date-2').value;
+      const workDaysCountInput = document.getElementById('work-days-count').value;
+      
+      if (!startStr || !workDaysCountInput) {
+        alert("请选择开始日期并输入工作天数");
+        return;
+      }
+
+      let targetWorkDays = parseInt(workDaysCountInput);
+      if (targetWorkDays <= 0) {
+        alert("工作天数必须大于0");
+        return;
+      }
+
+      let d = new Date(startStr);
+      let count = 0;
+      let resultDate = '';
+      let resultWeek = '';
+      let startDateStrFormatted = '';
+      let startWeekStr = '';
+      let workDateList = [];
+
+      // 防止死循环的硬性保护
+      let maxLoops = targetWorkDays * 5; 
+      let loop = 0;
+
+      while (count < targetWorkDays && loop < maxLoops) {
+        let y = d.getFullYear();
+        let m = d.getMonth() + 1;
+        let day = d.getDate();
+        let currentYmd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        let h = HolidayUtil.getHoliday(y, m, day);
+        let w = d.getDay();
+        let isWk = (w === 0 || w === 6);
+        let weekStr = `周${weekNames[w]}`;
+        
+        if (loop === 0) {
+           startDateStrFormatted = currentYmd;
+           startWeekStr = weekStr;
+        }
+        
+        let isWorkDay = false;
+        let workTypeDesc = '工作日';
+        if (h) {
+          if (h.isWork()) {
+            isWorkDay = true;
+            workTypeDesc = h.getName() + '调休';
+          }
+        } else {
+          if (!isWk) isWorkDay = true;
+        }
+        
+        if (isWorkDay) {
+          count++;
+          resultDate = currentYmd;
+          resultWeek = weekStr;
+          workDateList.push(`${currentYmd}: ${workTypeDesc}(${weekStr})`);
+        }
+        
+        if (count < targetWorkDays) {
+          d.setDate(d.getDate() + 1);
+        }
+        loop++;
+      }
+
+      document.getElementById('res2-start').innerText = `${startDateStrFormatted}(${startWeekStr})`;
+      document.getElementById('res2-count').innerText = targetWorkDays;
+      document.getElementById('res2-target-inline').innerText = `${resultDate}(${resultWeek})`;
+      
+      document.getElementById('res2-range').innerText = `${startDateStrFormatted} ~ ${resultDate}`;
+      document.getElementById('res2-total').innerText = loop;
+      document.getElementById('res2-workdays').innerText = targetWorkDays;
+      document.getElementById('res2-hint').innerText = `提示：统计时包含${startDateStrFormatted}、${resultDate}这两天`;
+
+      let detailsHtml = '';
+      if (workDateList.length > 0) {
+        detailsHtml += `<div class="detail-title">上班日期:</div><ul class="detail-items">`;
+        workDateList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
+        detailsHtml += `</ul>`;
+      }
+
+      document.getElementById('res2-details').innerHTML = detailsHtml;
+      document.getElementById('result-2').classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', initDates);
+  </script>
+</body>
+</html>
