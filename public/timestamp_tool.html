@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unix 时间戳转换工具</title>
+  <style>
+    :root {
+      --bg: #f3ede4;
+      --bg-deep: #d7c7b6;
+      --paper: rgba(255, 251, 246, 0.82);
+      --paper-strong: rgba(255, 253, 250, 0.96);
+      --line: rgba(84, 66, 49, 0.12);
+      --text: #251c15;
+      --muted: #6f6256;
+      --accent: #bf5b32;
+      --accent-soft: #e9c7ae;
+      --teal: #2d786c;
+      --mustard: #ca9d3a;
+      --berry: #8c4964;
+      --shadow: 0 28px 80px rgba(67, 43, 25, 0.14);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(191, 91, 50, 0.18), transparent 26%),
+        radial-gradient(circle at 88% 12%, rgba(45, 120, 108, 0.16), transparent 22%),
+        linear-gradient(135deg, #f6f0e8 0%, var(--bg) 45%, #e6dbce 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(8px);
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      top: -100px;
+      right: -90px;
+      background: radial-gradient(circle, rgba(202, 157, 58, 0.18), transparent 68%);
+    }
+
+    body::after {
+      width: 340px;
+      height: 340px;
+      bottom: -120px;
+      left: -120px;
+      background: radial-gradient(circle, rgba(140, 73, 100, 0.12), transparent 70%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--paper-strong);
+      color: var(--text);
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: block;
+      width: 4px;
+      height: 14px;
+      background: var(--teal);
+      border-radius: 2px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      flex: 1;
+      min-width: 200px;
+      transition: border-color 0.2s;
+    }
+
+    .form-group:focus-within {
+      border-color: var(--teal);
+      background: #fff;
+    }
+
+    .form-addon {
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.03);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      border-right: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .form-control {
+      flex: 1;
+      border: none;
+      padding: 12px 16px;
+      background: transparent;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(45, 120, 108, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: #246359;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: #fff;
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .radio-label input[type="radio"] {
+      accent-color: var(--teal);
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .date-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .date-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .date-group input {
+      width: 60px;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.6);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      text-align: center;
+      outline: none;
+      transition: all 0.2s;
+    }
+    
+    .date-group input.year {
+      width: 70px;
+    }
+
+    .date-group input:focus {
+      border-color: var(--teal);
+      background: #fff;
+    }
+    
+    /* 移除 input type=number 的上下箭头 */
+    .date-group input[type=number]::-webkit-inner-spin-button, 
+    .date-group input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1px dashed rgba(84, 66, 49, 0.15);
+      margin: 0;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <a href="index.html" class="back-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+      <h1>Unix 时间戳互转工具</h1>
+    </div>
+
+    <div class="card">
+      <!-- 实时时间戳 -->
+      <div>
+        <h2 class="section-title">实时 Unix 时间戳</h2>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="unit" value="s" checked onchange="changeUnit('s')">
+            10位时间戳 (秒级)
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="unit" value="ms" onchange="changeUnit('ms')">
+            13位时间戳 (毫秒级)
+          </label>
+        </div>
+        
+        <div class="row">
+          <div class="form-group">
+            <div class="form-addon">当前时间戳</div>
+            <input type="text" class="form-control" id="current-ts" readonly>
+          </div>
+          <button class="btn btn-outline" onclick="copyValue('current-ts')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            复制
+          </button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- 时间戳转日期 -->
+      <div>
+        <h2 class="section-title">时间戳 → 北京时间 (日期)</h2>
+        <div class="row">
+          <div class="form-group">
+            <div class="form-addon">时间戳</div>
+            <input type="text" class="form-control" id="input-ts" placeholder="例如：1776938620">
+          </div>
+          
+          <button class="btn btn-primary" onclick="tsToDate()">转换日期 →</button>
+          
+          <div class="form-group">
+            <div class="form-addon">北京时间</div>
+            <input type="text" class="form-control" id="res-date" placeholder="转换后的时间" readonly>
+          </div>
+          
+          <button class="btn btn-outline" onclick="copyValue('res-date')">复制</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- 日期转时间戳 -->
+      <div>
+        <h2 class="section-title">北京时间 (日期) → 时间戳</h2>
+        <div class="row" style="align-items: center;">
+          <div class="date-inputs">
+            <div class="date-group">
+              <input type="number" id="in-y" class="year"> <span>年</span>
+            </div>
+            <div class="date-group">
+              <input type="number" id="in-m"> <span>月</span>
+            </div>
+            <div class="date-group">
+              <input type="number" id="in-d"> <span>日</span>
+            </div>
+            <div class="date-group" style="margin-left: 8px;">
+              <input type="number" id="in-h"> <span>时</span>
+            </div>
+            <div class="date-group">
+              <input type="number" id="in-min"> <span>分</span>
+            </div>
+            <div class="date-group">
+              <input type="number" id="in-sec"> <span>秒</span>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick="dateToTs()" style="margin-left: auto;">转换时间戳 →</button>
+        </div>
+        
+        <div class="row" style="margin-top: 16px;">
+          <div class="form-group">
+            <div class="form-addon">时间戳</div>
+            <input type="text" class="form-control" id="res-ts" placeholder="转换后的时间戳" readonly>
+          </div>
+          <button class="btn btn-outline" onclick="copyValue('res-ts')">复制</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast">复制成功</div>
+
+  <script>
+    let currentUnit = 's';
+    let timerId = null;
+
+    // 格式化时间前导零
+    function padZero(num) {
+      return String(num).padStart(2, '0');
+    }
+
+    // 更新当前实时时间戳
+    function updateCurrentTs() {
+      const now = new Date();
+      const ts = currentUnit === 's' ? Math.floor(now.getTime() / 1000) : now.getTime();
+      document.getElementById('current-ts').value = ts;
+    }
+
+    // 切换秒/毫秒单位
+    function changeUnit(unit) {
+      currentUnit = unit;
+      updateCurrentTs();
+      
+      // 当切换单位时，智能调整已有输入框的长度提示
+      const tsInput = document.getElementById('input-ts');
+      if (tsInput.value) {
+          if (unit === 's' && tsInput.value.length === 13) {
+              tsInput.value = Math.floor(parseInt(tsInput.value) / 1000);
+          } else if (unit === 'ms' && tsInput.value.length === 10) {
+              tsInput.value = parseInt(tsInput.value) * 1000;
+          }
+      }
+    }
+
+    // 时间戳转日期
+    function tsToDate() {
+      const tsVal = document.getElementById('input-ts').value.trim();
+      if (!tsVal) return;
+      
+      let ts = parseInt(tsVal);
+      if (isNaN(ts)) return;
+      
+      // 智能判断：如果是10位则乘以1000
+      if (tsVal.length <= 10) {
+        ts = ts * 1000;
+      }
+
+      const d = new Date(ts);
+      const res = `${d.getFullYear()}-${padZero(d.getMonth()+1)}-${padZero(d.getDate())} ${padZero(d.getHours())}:${padZero(d.getMinutes())}:${padZero(d.getSeconds())}`;
+      
+      document.getElementById('res-date').value = res;
+    }
+
+    // 日期转时间戳
+    function dateToTs() {
+      const y = parseInt(document.getElementById('in-y').value) || 0;
+      const m = parseInt(document.getElementById('in-m').value) || 1;
+      const d = parseInt(document.getElementById('in-d').value) || 1;
+      const h = parseInt(document.getElementById('in-h').value) || 0;
+      const min = parseInt(document.getElementById('in-min').value) || 0;
+      const s = parseInt(document.getElementById('in-sec').value) || 0;
+
+      if (y === 0) return;
+
+      const dateObj = new Date(y, m - 1, d, h, min, s);
+      let ts = dateObj.getTime();
+      
+      if (currentUnit === 's') {
+        ts = Math.floor(ts / 1000);
+      }
+      
+      document.getElementById('res-ts').value = ts;
+    }
+
+    // 复制功能
+    function copyValue(elementId) {
+      const input = document.getElementById(elementId);
+      if (!input || !input.value) return;
+      
+      input.select();
+      document.execCommand("copy");
+      
+      showToast("已复制: " + input.value);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // 初始化
+    function init() {
+      timerId = setInterval(updateCurrentTs, 100);
+      
+      // 预填日期输入框为当前时间
+      const now = new Date();
+      document.getElementById('in-y').value = now.getFullYear();
+      document.getElementById('in-m').value = padZero(now.getMonth() + 1);
+      document.getElementById('in-d').value = padZero(now.getDate());
+      document.getElementById('in-h').value = padZero(now.getHours());
+      document.getElementById('in-min').value = padZero(now.getMinutes());
+      document.getElementById('in-sec').value = padZero(now.getSeconds());
+      
+      // 预填时间戳输入框
+      document.getElementById('input-ts').value = Math.floor(now.getTime() / 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
