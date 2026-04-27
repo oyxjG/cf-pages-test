@@ -164,17 +164,26 @@
     .collapsible::before { content: "-"; }
     .collapsed .collapsible::before { content: "+"; }
     
-    .fold-content { display: inline; }
+    .fold-content { display: block; }
     .collapsed .fold-content { display: none; }
+
+    /* 摘要预览样式 */
     .collapsed::after {
-      content: attr(data-placeholder);
+      content: " " attr(data-placeholder) " ";
+      display: inline-block;
       background: rgba(191, 91, 50, 0.1);
       color: var(--accent);
-      padding: 0 4px;
+      padding: 0 8px;
       border-radius: 4px;
       font-size: 12px;
       margin-left: 4px;
       cursor: pointer;
+      font-family: sans-serif;
+      vertical-align: middle;
+    }
+
+    .collapsed .close-brace {
+      display: inline; /* 确保闭合括号在折叠时也显示 */
     }
 
     .actions {
@@ -344,7 +353,8 @@
       
       if (keys.length === 0) return openBrace + closeBrace;
       
-      let html = `<span class="collapsible-wrapper">`;
+      const placeholder = isArray ? `Array(${obj.length})` : `Object(${Object.keys(obj).length})`;
+      let html = `<span class="collapsible-wrapper" data-placeholder="${placeholder}">`;
       html += `<span class="collapsible"></span>${openBrace}`;
       html += `<div class="fold-content">`;
       
@@ -360,8 +370,7 @@
       }
       
       html += items.join(',') + `\n${spacing}</div>`;
-      const placeholder = isArray ? `Array(${obj.length})` : `Object(${Object.keys(obj).length})`;
-      html += `<span class="close-brace" data-placeholder="${placeholder}">${closeBrace}</span></span>`;
+      html += `<span class="close-brace">${closeBrace}</span></span>`;
       
       return html;
     }
