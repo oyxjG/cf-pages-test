@@ -513,6 +513,104 @@
                 gap: 8px;
             }
         }
+
+        /* Tools Section Optimization */
+        .tools-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tools-filter {
+            display: flex;
+            gap: 4px;
+            background: rgba(84, 66, 49, 0.05);
+            padding: 4px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+        }
+
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 999px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--paper-strong);
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .tools-search {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 320px;
+        }
+
+        .tools-search input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: var(--paper-strong);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .tools-search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(191, 91, 50, 0.1);
+        }
+
+        .tools-search svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        .tools-grid .link-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tools-grid .link-card.hidden {
+            display: none;
+        }
+
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            grid-column: 1 / -1;
+            background: rgba(84, 66, 49, 0.02);
+            border-radius: var(--radius-xl);
+            border: 1px dashed var(--line);
+        }
+
+        .no-results.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -671,49 +769,66 @@
                         <p class="muted">可以挂二维码工具、文件转换、便签、服务器面板、邮箱、AI
                             助手、代码仓库、图床等快捷入口。</p>
 
-                        <div class="link-grid tools-grid">
-                            <a class="link-card" href="/login.html" target="_blank" rel="noopener noreferrer">
+                        <div class="tools-header">
+                            <div class="tools-filter">
+                                <button class="filter-btn active" data-filter="all">全部</button>
+                                <button class="filter-btn" data-filter="dev">开发工具</button>
+                                <button class="filter-btn" data-filter="daily">日常生活</button>
+                                <button class="filter-btn" data-filter="security">安全加密</button>
+                                <button class="filter-btn" data-filter="admin">管理系统</button>
+                            </div>
+                            <div class="tools-search">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="text" id="toolSearch" placeholder="搜索工具名称或描述...">
+                            </div>
+                        </div>
+
+                        <div class="link-grid tools-grid" id="toolsGrid">
+                            <a class="link-card" href="/login.html" target="_blank" rel="noopener noreferrer" data-category="admin">
                                 <strong>控制台入口</strong>
                                 <span>进入现有登录页 and 用户管理控制台，作为后台与管理功能的统一入口。</span>
                             </a>
-                            <a class="link-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
                                 <strong>工作日与假日计算器</strong>
                                 <span>精确推算区间工作日、调休明细，支持工作天数正向推演。</span>
                             </a>
-                            <a class="link-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
                                 <strong>Unix 时间戳转换</strong>
                                 <span>提供实时变化的时间戳，支持日期与秒级/毫秒级时间戳的高效双向转换。</span>
                             </a>
                             <a class="link-card" href="/tool/password_generator.html" target="_blank"
-                               rel="noopener noreferrer">
+                               rel="noopener noreferrer" data-category="security">
                                 <strong>密码生成器</strong>
                                 <span>快速生成高强度密码，支持长度调节、字符集切换和一键复制。</span>
                             </a>
-                            <a class="link-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
                                 <strong>二维码工具</strong>
                                 <span>支持二维码生成与解析，适合放进日常高频使用的工具集合。</span>
                             </a>
-                            <a class="link-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
                                 <strong>Base64 互转</strong>
                                 <span>高效实现普通文本与 Base64 编码的实时互转，支持 UTF-8 字符。</span>
                             </a>
-                            <a class="link-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
                                 <strong>JSON 格式化</strong>
                                 <span>提供实时行号显示与精确的错误位置标记，支持一键格式化与压缩。</span>
                             </a>
                             <a class="link-card" href="/tool/language_detector.html" target="_blank"
-                               rel="noopener noreferrer">
+                               rel="noopener noreferrer" data-category="dev">
                                 <strong>语言自动识别</strong>
                                 <span>智能探测自然语言种类及编程语言类型，支持多维特征分析。</span>
                             </a>
-                            <a class="link-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
                                 <strong>颜色转换器</strong>
                                 <span>支持 HEX、RGB、CMYK、HSL、HSV 全格式互转，内置调色盘。</span>
                             </a>
-                            <a class="link-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer">
+                            <a class="link-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer" data-category="security">
                                 <strong>SM2 解密工具</strong>
                                 <span>集成国密 SM2 异步解密算法，支持长密文高性能解析与 JSON 格式化预览。</span>
                             </a>
+                            <div class="no-results" id="noResults">
+                                <p>没有找到匹配的工具，换个关键词试试？</p>
+                            </div>
                         </div>
                     </article>
                 </div>
@@ -929,6 +1044,54 @@
         }
 
         updateHolidayStats();
+
+        // --- 工具过滤与搜索逻辑 ---
+        const toolSearch = document.getElementById('toolSearch');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const toolCards = document.querySelectorAll('#toolsGrid .link-card');
+        const noResults = document.getElementById('noResults');
+
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        function applyFilter() {
+            let visibleCount = 0;
+            toolCards.forEach(card => {
+                const category = card.getAttribute('data-category');
+                const title = card.querySelector('strong').innerText.toLowerCase();
+                const desc = card.querySelector('span').innerText.toLowerCase();
+                
+                const matchesFilter = (currentFilter === 'all' || category === currentFilter);
+                const matchesSearch = (title.includes(searchQuery) || desc.includes(searchQuery));
+
+                if (matchesFilter && matchesSearch) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            if (visibleCount === 0) {
+                noResults.classList.add('visible');
+            } else {
+                noResults.classList.remove('visible');
+            }
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-filter');
+                applyFilter();
+            });
+        });
+
+        toolSearch.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            applyFilter();
+        });
     });
 </script>
 </body>
