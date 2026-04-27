@@ -164,7 +164,7 @@
     .collapsible::before { content: "-"; }
     .collapsed .collapsible::before { content: "+"; }
     
-    .fold-content { display: block; }
+    .fold-content { display: inline; }
     .collapsed .fold-content { display: none; }
 
     /* 摘要预览样式 */
@@ -361,16 +361,17 @@
       const items = [];
       if (isArray) {
         obj.forEach((val, i) => {
-          items.push(`\n${nextSpacing}${renderJSON(val, indent + 2)}`);
+          items.push(`${renderJSON(val, indent + 2)}`);
         });
       } else {
         Object.keys(obj).forEach(key => {
-          items.push(`\n${nextSpacing}<span class="json-key">"${escapeHtml(key)}"</span>: ${renderJSON(obj[key], indent + 2)}`);
+          items.push(`<span class="json-key">"${escapeHtml(key)}"</span>: ${renderJSON(obj[key], indent + 2)}`);
         });
       }
       
-      html += items.join(',') + `\n${spacing}</div>`;
-      html += `<span class="close-brace">${closeBrace}</span></span>`;
+      const joinStr = `,\n${' '.repeat(indent + 2)}`;
+      html += `\n${' '.repeat(indent + 2)}` + items.join(joinStr);
+      html += `\n${spacing}</div><span class="close-brace">${closeBrace}</span></span>`;
       
       return html;
     }
