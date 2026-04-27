@@ -971,10 +971,11 @@
 <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // 检查库是否加载
-        if (typeof HolidayUtil === 'undefined') {
-            console.error('Lunar.js library not loaded');
-            return;
+        // 1. 节假日统计逻辑 (依赖外部库)
+        if (typeof HolidayUtil !== 'undefined') {
+            updateHolidayStats();
+        } else {
+            console.warn('HolidayUtil not loaded, skipping holiday stats update.');
         }
 
         function updateHolidayStats() {
@@ -993,14 +994,14 @@
                 if (holiday) {
                     if (holiday.isWork()) remainingWorkdaysMonth++;
                 } else {
-                    // 普通日期：周六周日休息，周一至周五工作
                     const weekDay = solar.getWeek();
                     if (weekDay !== 0 && weekDay !== 6) remainingWorkdaysMonth++;
                 }
             }
-            document.getElementById('remaining-workdays-month').innerText = remainingWorkdaysMonth;
+            const monthEl = document.getElementById('remaining-workdays-month');
+            if (monthEl) monthEl.innerText = remainingWorkdaysMonth;
 
-            // 2. 获取本年剩余工作日 (粗略计算后续月份 + 本月剩余)
+            // 2. 获取本年剩余工作日
             let remainingWorkdaysYear = remainingWorkdaysMonth;
             for (let m = month + 1; m <= 12; m++) {
                 const daysInM = new Date(year, m, 0).getDate();
@@ -1015,11 +1016,11 @@
                     }
                 }
             }
-            document.getElementById('remaining-workdays-year').innerText = remainingWorkdaysYear;
+            const yearEl = document.getElementById('remaining-workdays-year');
+            if (yearEl) yearEl.innerText = remainingWorkdaysYear;
 
             // 3. 距离下一个法定假期
             const holidays = HolidayUtil.getHolidays(year);
-            // 如果今年没剩多少假期了，也顺便查下明年元旦
             const nextYearHolidays = HolidayUtil.getHolidays(year + 1);
             const allHolidays = [...holidays, ...nextYearHolidays];
 
@@ -1028,70 +1029,68 @@
 
             if (futureHolidays.length > 0) {
                 const next = futureHolidays[0];
-                const targetStr = next.getTarget(); // YYYY-MM-DD
-                const targetDate = new Date(targetStr);
-                const diffTime = targetDate - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const targetDate = new Date(next.getTarget());
+                const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
 
-                document.getElementById('next-holiday-name').innerText = next.getName();
-                document.getElementById('next-holiday-days').innerText = `${diffDays} 天`;
-                document.getElementById('hero-next-holiday').innerText = `${diffDays} 天`;
-                document.getElementById('tool-holiday-status').innerText = `下个假期：${next.getName()} (还剩 ${diffDays} 天)`;
-            } else {
-                document.getElementById('next-holiday-name').innerText = '暂无假期安排';
-                document.getElementById('next-holiday-days').innerText = '--';
+                const nextNameEl = document.getElementById('next-holiday-name');
+                const nextDaysEl = document.getElementById('next-holiday-days');
+                const heroNextEl = document.getElementById('hero-next-holiday');
+                const toolStatusEl = document.getElementById('tool-holiday-status');
+
+                if (nextNameEl) nextNameEl.innerText = next.getName();
+                if (nextDaysEl) nextDaysEl.innerText = `${diffDays} 天`;
+                if (heroNextEl) heroNextEl.innerText = `${diffDays} 天`;
+                if (toolStatusEl) toolStatusEl.innerText = `下个假期：${next.getName()} (还剩 ${diffDays} 天)`;
             }
         }
 
-        updateHolidayStats();
-
-        // --- 工具过滤与搜索逻辑 ---
+        // 2. 工具过滤与搜索逻辑 (不依赖外部库)
         const toolSearch = document.getElementById('toolSearch');
         const filterBtns = document.querySelectorAll('.filter-btn');
         const toolCards = document.querySelectorAll('#toolsGrid .link-card');
         const noResults = document.getElementById('noResults');
 
-        let currentFilter = 'all';
-        let searchQuery = '';
+        if (toolSearch && toolCards.length > 0) {
+            let currentFilter = 'all';
+            let searchQuery = '';
 
-        function applyFilter() {
-            let visibleCount = 0;
-            toolCards.forEach(card => {
-                const category = card.getAttribute('data-category');
-                const title = card.querySelector('strong').innerText.toLowerCase();
-                const desc = card.querySelector('span').innerText.toLowerCase();
-                
-                const matchesFilter = (currentFilter === 'all' || category === currentFilter);
-                const matchesSearch = (title.includes(searchQuery) || desc.includes(searchQuery));
+            const applyFilter = () => {
+                let visibleCount = 0;
+                toolCards.forEach(card => {
+                    const category = card.getAttribute('data-category');
+                    const title = (card.querySelector('strong')?.innerText || '').toLowerCase();
+                    const desc = (card.querySelector('span')?.innerText || '').toLowerCase();
+                    
+                    const matchesFilter = (currentFilter === 'all' || category === currentFilter);
+                    const matchesSearch = (title.includes(searchQuery) || desc.includes(searchQuery));
 
-                if (matchesFilter && matchesSearch) {
-                    card.classList.remove('hidden');
-                    visibleCount++;
-                } else {
-                    card.classList.add('hidden');
+                    if (matchesFilter && matchesSearch) {
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                if (noResults) {
+                    noResults.classList.toggle('visible', visibleCount === 0);
                 }
+            };
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.getAttribute('data-filter');
+                    applyFilter();
+                });
             });
 
-            if (visibleCount === 0) {
-                noResults.classList.add('visible');
-            } else {
-                noResults.classList.remove('visible');
-            }
-        }
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.getAttribute('data-filter');
+            toolSearch.addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
                 applyFilter();
             });
-        });
-
-        toolSearch.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
-            applyFilter();
-        });
+        }
     });
 </script>
 </body>
