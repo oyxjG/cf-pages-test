@@ -128,7 +128,7 @@
       display: none;
       background: white;
       word-break: break-all;
-      white-space: pre-wrap;
+      white-space: pre;
     }
 
     /* 着色样式 */
@@ -136,6 +136,46 @@
     .json-string { color: #2d786c; }
     .json-number { color: #ca9d3a; }
     .json-boolean { color: #bf5b32; font-weight: bold; }
+    .json-muted { color: var(--muted); opacity: 0.7; }
+
+    /* 折叠样式 */
+    .collapsible {
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      background: rgba(84, 66, 49, 0.08);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      margin-right: 4px;
+      font-size: 10px;
+      line-height: 1;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .collapsible:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .collapsible::before { content: "-"; }
+    .collapsed .collapsible::before { content: "+"; }
+    
+    .fold-content { display: inline; }
+    .collapsed .fold-content { display: none; }
+    .collapsed::after {
+      content: attr(data-placeholder);
+      background: rgba(191, 91, 50, 0.1);
+      color: var(--accent);
+      padding: 0 4px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 4px;
+      cursor: pointer;
+    }
 
     .actions {
       display: flex;
@@ -198,7 +238,7 @@
     <div class="header">
       <div>
         <h1>JSON 格式化 & 语法检查</h1>
-        <p>提供实时行号显示与精确的错误位置标记，支持一键格式化与压缩。</p>
+        <p>支持多层级折叠展开、实时行号显示与语法高亮。</p>
       </div>
       <div id="statusTip" style="font-size: 12px; color: var(--muted);"></div>
     </div>
@@ -209,7 +249,7 @@
         <textarea id="jsonInput" placeholder="在此粘贴 JSON 字符串..." spellcheck="false" 
                   oninput="updateLineNumbers()" 
                   onscroll="syncScroll()"></textarea>
-        <pre id="jsonRender" onkeydown="handleRenderKeyDown(event)" tabindex="0"></pre>
+        <div id="jsonRender" onkeydown="handleRenderKeyDown(event)" tabindex="0" onclick="handleRenderClick(event)"></div>
       </div>
       
       <div id="errorMessage" class="status error"></div>
@@ -256,15 +296,15 @@
         const obj = JSON.parse(value);
         
         // 渲染着色视图
-        render.innerHTML = syntaxHighlight(obj);
+        render.innerHTML = renderJSON(obj);
         showRender();
         
-        // 更新 textarea 内容供后续使用（如复制或压缩）
+        // 更新 textarea 内容供后续使用
         input.value = JSON.stringify(obj, null, 2);
         
         hideError();
         updateLineNumbers();
-        statusTip.textContent = '格式化并着色成功';
+        statusTip.textContent = '格式化完成';
         setTimeout(() => statusTip.textContent = '', 2000);
       } catch (e) {
         handleParseError(e, input.value);
@@ -288,24 +328,59 @@
       updateLineNumbers();
     }
 
-    function syntaxHighlight(obj) {
-      let json = JSON.stringify(obj, null, 4);
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        let cls = 'json-number';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'json-key';
-          } else {
-            cls = 'json-string';
+    function renderJSON(obj, indent = 0) {
+      const spacing = ' '.repeat(indent);
+      const nextSpacing = ' '.repeat(indent + 2);
+      
+      if (obj === null) return '<span class="json-muted">null</span>';
+      if (typeof obj === 'number') return `<span class="json-number">${obj}</span>`;
+      if (typeof obj === 'boolean') return `<span class="json-boolean">${obj}</span>`;
+      if (typeof obj === 'string') return `<span class="json-string">"${escapeHtml(obj)}"</span>`;
+      
+      const isArray = Array.isArray(obj);
+      const openBrace = isArray ? '[' : '{';
+      const closeBrace = isArray ? ']' : '}';
+      const keys = isArray ? obj : Object.keys(obj);
+      
+      if (keys.length === 0) return openBrace + closeBrace;
+      
+      let html = `<span class="collapsible-wrapper">`;
+      html += `<span class="collapsible"></span>${openBrace}`;
+      html += `<div class="fold-content">`;
+      
+      const items = [];
+      if (isArray) {
+        obj.forEach((val, i) => {
+          items.push(`\n${nextSpacing}${renderJSON(val, indent + 2)}`);
+        });
+      } else {
+        Object.keys(obj).forEach(key => {
+          items.push(`\n${nextSpacing}<span class="json-key">"${escapeHtml(key)}"</span>: ${renderJSON(obj[key], indent + 2)}`);
+        });
+      }
+      
+      html += items.join(',') + `\n${spacing}</div>`;
+      const placeholder = isArray ? `Array(${obj.length})` : `Object(${Object.keys(obj).length})`;
+      html += `<span class="close-brace" data-placeholder="${placeholder}">${closeBrace}</span></span>`;
+      
+      return html;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function handleRenderClick(e) {
+      if (e.target.classList.contains('collapsible') || e.target.hasAttribute('data-placeholder')) {
+        const wrapper = e.target.closest('.collapsible-wrapper');
+        if (wrapper) {
+          wrapper.classList.toggle('collapsed');
+          const closeBrace = wrapper.querySelector(':scope > .close-brace');
+          if (wrapper.classList.contains('collapsed')) {
+            closeBrace.setAttribute('data-placeholder', closeBrace.getAttribute('data-placeholder'));
           }
-        } else if (/true|false/.test(match)) {
-            cls = 'json-boolean';
-        } else if (/null/.test(match)) {
-            cls = 'json-muted';
         }
-        return '<span class="' + cls + '">' + match + '</span>';
-      });
+      }
     }
 
     function handleRenderKeyDown(e) {
