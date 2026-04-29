@@ -316,6 +316,37 @@ body::after {
     margin-bottom: 6px;
 }
 
+.holiday-highlight {
+    color: #ff4d4d !important;
+    font-weight: 800;
+}
+
+/* 假期统计卡片样式 */
+.stat-holiday strong {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.stat-holiday .holiday-number {
+    font-size: 26px;
+    color: #fff5ea;
+}
+
+.stat-holiday .holiday-badge {
+    font-size: 20px;
+    font-weight: 800;
+    background: rgba(255, 77, 77, 0.15);
+    padding: 2px 10px;
+    border-radius: 6px;
+    line-height: 1.2;
+}
+
+.stat-holiday .holiday-desc {
+    display: block;
+}
+
 .section {
     display: grid;
     gap: 16px;
