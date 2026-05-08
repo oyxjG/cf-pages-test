@@ -137,4 +137,71 @@ document.addEventListener('DOMContentLoaded', () => {
             applyFilter();
         });
     }
+    // 3. 实时时钟逻辑
+    function updateClock() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        
+        const clockEl = document.getElementById('main-clock');
+        const statusEl = document.getElementById('clock-status');
+        
+        if (clockEl) {
+            clockEl.innerText = `${hours}:${minutes}`;
+        }
+        
+        if (statusEl) {
+            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const dayName = days[now.getDay()];
+            const solarDateStr = `${now.getMonth() + 1}月${now.getDate()}日 ${dayName}`;
+            
+            let dateStr = solarDateStr;
+            if (typeof Lunar !== 'undefined') {
+                const lunar = Lunar.fromDate(now);
+                const lunarStr = `农历${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`;
+                dateStr += ` · ${lunarStr}`;
+            }
+            statusEl.innerText = dateStr;
+        }
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // 4. 进度条更新逻辑
+    function updateProgressBars() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const day = now.getDate();
+        
+        // 1. 本月进度
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const monthPercent = Math.min(100, (day / daysInMonth) * 100);
+        const monthBar = document.getElementById('month-progress');
+        if (monthBar) monthBar.style.width = `${monthPercent}%`;
+        
+        // 2. 本年进度
+        const startOfYear = new Date(year, 0, 1);
+        const daysInYear = ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 366 : 365;
+        const diffDays = Math.ceil((now - startOfYear) / (1000 * 60 * 60 * 24));
+        const yearPercent = Math.min(100, (diffDays / daysInYear) * 100);
+        const yearBar = document.getElementById('year-progress');
+        if (yearBar) yearBar.style.width = `${yearPercent}%`;
+        
+        // 3. 假期进度 (以30天为一个周期进行模拟展示)
+        const holidayBar = document.getElementById('holiday-progress');
+        if (holidayBar) {
+            const nextDaysEl = document.getElementById('hero-next-holiday');
+            if (nextDaysEl) {
+                const daysRemaining = parseInt(nextDaysEl.innerText) || 0;
+                const holidayPercent = Math.max(5, Math.min(100, 100 - (daysRemaining / 30) * 100));
+                holidayBar.style.width = `${holidayPercent}%`;
+            }
+        }
+    }
+
+    // 延迟一会执行，确保数据已填入
+    setTimeout(updateProgressBars, 500);
 });
