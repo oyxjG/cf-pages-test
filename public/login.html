@@ -1,560 +1,258 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>用户管理</title>
-  <style>
-    :root {
-      --bg: #f3efe7;
-      --bg-soft: #fbf8f2;
-      --panel: rgba(255, 252, 246, 0.86);
-      --line: rgba(69, 59, 47, 0.14);
-      --text: #28211b;
-      --muted: #73685c;
-      --accent: #b95c2e;
-      --accent-deep: #8d3f18;
-      --success-bg: #eef7ee;
-      --success-text: #1f6a39;
-      --danger-bg: #fff0ec;
-      --danger-text: #a53e21;
-      --shadow: 0 24px 80px rgba(54, 37, 23, 0.12);
-      --radius-xl: 28px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 个人聚合面板</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+        }
 
-    * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: radial-gradient(circle at top left, #1e1b4b, #020617);
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(185, 92, 46, 0.16), transparent 28%),
-        radial-gradient(circle at 85% 15%, rgba(54, 109, 91, 0.16), transparent 20%),
-        linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 42%, #ece5da 100%);
-      position: relative;
-      overflow-x: hidden;
-    }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(8px);
-    }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    body::before {
-      width: 360px;
-      height: 360px;
-      top: -120px;
-      right: -80px;
-      background: radial-gradient(circle, rgba(185, 92, 46, 0.18), transparent 65%);
-    }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
 
-    body::after {
-      width: 340px;
-      height: 340px;
-      left: -100px;
-      bottom: -110px;
-      background: radial-gradient(circle, rgba(61, 111, 93, 0.14), transparent 64%);
-    }
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 40px 20px 56px;
-    }
+        .header p {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
 
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.1fr);
-      gap: 28px;
-      align-items: stretch;
-    }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
 
-    .hero-aside,
-    .card {
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-    }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+        }
 
-    .hero-aside {
-      background: linear-gradient(160deg, rgba(40, 33, 27, 0.94), rgba(67, 48, 36, 0.9));
-      color: #f7f1e8;
-      border-radius: var(--radius-xl);
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 620px;
-    }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-    .brand-mark {
-      width: 56px;
-      height: 56px;
-      border-radius: 18px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04));
-      border: 1px solid rgba(255,255,255,0.12);
-      font-size: 22px;
-      letter-spacing: 0.08em;
-      margin-bottom: 22px;
-    }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent-deep);
-      background: rgba(185, 92, 46, 0.1);
-    }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
 
-    .hero-aside .eyebrow {
-      color: #ffcfb8;
-      background: rgba(255, 255, 255, 0.08);
-    }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
 
-    .hero-aside h1,
-    .card h2 {
-      margin: 18px 0 10px;
-      line-height: 1.05;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
+        .toggle-password:hover {
+            color: white;
+        }
 
-    .hero-aside h1 {
-      font-size: clamp(36px, 5vw, 58px);
-    }
+        .btn-login {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
 
-    .card h2 {
-      font-size: clamp(32px, 4vw, 42px);
-    }
+        .btn-login:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
 
-    .hero-aside p,
-    .lead,
-    .muted {
-      margin: 0;
-      line-height: 1.75;
-      color: var(--muted);
-      font-size: 15px;
-    }
+        .btn-login:active {
+            transform: translateY(0);
+        }
 
-    .hero-aside p,
-    .hero-meta {
-      color: rgba(247, 241, 232, 0.76);
-    }
+        .footer-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 28px;
-    }
+        .footer-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
 
-    .hero-stat {
-      border-radius: 20px;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
 
-    .hero-stat strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 22px;
-      color: #fff7ef;
-    }
-
-    .hero-meta {
-      padding-top: 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      font-size: 14px;
-    }
-
-    .card {
-      background: linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(255, 250, 244, 0.88));
-      border-radius: var(--radius-xl);
-      padding: 28px;
-      min-height: 620px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 8px;
-      background: linear-gradient(90deg, var(--accent) 0%, #d39748 42%, #4e8e73 100%);
-      opacity: 0.92;
-    }
-
-    .panel-head {
-      margin-bottom: 26px;
-    }
-
-    .panel-copy {
-      max-width: 520px;
-      margin-top: 12px;
-    }
-
-    .surface {
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 20px;
-      margin-top: 18px;
-    }
-
-    .row {
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #5e5246;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    input {
-      width: 100%;
-      padding: 15px 16px;
-      border: 1px solid rgba(100, 79, 59, 0.18);
-      border-radius: var(--radius-md);
-      font-size: 16px;
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.9);
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-    }
-
-    input::placeholder {
-      color: #9a8f84;
-    }
-
-    input:focus {
-      border-color: rgba(185, 92, 46, 0.48);
-      box-shadow: 0 0 0 4px rgba(185, 92, 46, 0.12);
-      transform: translateY(-1px);
-    }
-
-    .actions,
-    .topbar,
-    .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .topbar {
-      justify-content: space-between;
-      margin-bottom: 22px;
-    }
-
-    .toolbar {
-      justify-content: space-between;
-      margin: 18px 0 0;
-    }
-
-    button {
-      appearance: none;
-      border: none;
-      border-radius: 14px;
-      padding: 14px 20px;
-      background: linear-gradient(135deg, var(--accent) 0%, #ca7a40 100%);
-      color: #fffdf8;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      box-shadow: 0 12px 24px rgba(185, 92, 46, 0.22);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 28px rgba(185, 92, 46, 0.28);
-      filter: saturate(1.05);
-    }
-
-    button.secondary {
-      background: linear-gradient(135deg, #54473d 0%, #705d4d 100%);
-      box-shadow: 0 10px 22px rgba(50, 37, 27, 0.18);
-    }
-
-    .ghost-button {
-      background: rgba(255, 255, 255, 0.76);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: none;
-    }
-
-    .msg {
-      margin-top: 16px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.6;
-      display: none;
-      border: 1px solid transparent;
-    }
-
-    .msg.success {
-      display: block;
-      background: var(--success-bg);
-      color: var(--success-text);
-      border-color: rgba(31, 106, 57, 0.14);
-    }
-
-    .msg.error {
-      display: block;
-      background: var(--danger-bg);
-      color: var(--danger-text);
-      border-color: rgba(165, 62, 33, 0.14);
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 14px;
-      align-items: end;
-      margin-top: 20px;
-    }
-
-    .table-wrap {
-      margin-top: 22px;
-      overflow: hidden;
-      border-radius: 22px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.66);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      padding: 16px 18px;
-      text-align: left;
-      font-size: 14px;
-      border-bottom: 1px solid rgba(77, 64, 52, 0.08);
-    }
-
-    th {
-      background: rgba(90, 70, 51, 0.06);
-      color: #5a4d40;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    tbody tr:hover {
-      background: rgba(185, 92, 46, 0.04);
-    }
-
-    td:first-child {
-      font-weight: 700;
-      color: var(--accent-deep);
-      width: 90px;
-    }
-
-    .footer-note {
-      margin-top: 18px;
-      font-size: 13px;
-      color: #8a7d70;
-    }
-
-    @media (max-width: 920px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-aside,
-      .card {
-        min-height: auto;
-      }
-
-      .hero-aside {
-        padding-bottom: 24px;
-      }
-    }
-
-    @media (max-width: 680px) {
-      .container {
-        padding: 20px 14px 36px;
-      }
-
-      .hero-aside,
-      .card {
-        border-radius: 22px;
-        padding: 20px;
-      }
-
-      .hero-grid,
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .actions,
-      .topbar,
-      .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      button {
-        width: 100%;
-      }
-
-      .table-wrap {
-        overflow-x: auto;
-      }
-
-      table {
-        min-width: 560px;
-      }
-    }
-  </style>
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="hero">
-      <aside class="hero-aside">
-        <div>
-          <div class="brand-mark">UM</div>
-          <div class="eyebrow">Worker Console</div>
-          <h1>用户管理控制台</h1>
-          <p>一个基于 Cloudflare Worker 与 D1 的轻量后台，用来登录、查询和维护站点用户。</p>
+    <div class="login-container">
+        <div class="header">
+            <h1>欢迎回来</h1>
+            <p>登录以访问您的数字化面板</p>
+        </div>
 
-          <div class="hero-grid">
-            <div class="hero-stat">
-              <strong>D1</strong>
-              <span>数据持久化与本地开发同步验证</span>
+        <div id="error-msg" class="error-msg"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入用户名" required>
             </div>
-            <div class="hero-stat">
-              <strong>API</strong>
-              <span>登录、列表查询、用户新增三条主链路</span>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                    <button type="button" class="toggle-password" id="toggle-password" title="显示/隐藏密码">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
             </div>
-          </div>
+            <button type="submit" class="btn-login" id="submit-btn">立即登录</button>
+        </form>
+
+        <div class="footer-links">
+            没有账号？ <a href="/register.html">立即注册</a>
         </div>
-
-        <div class="hero-meta">
-          当前界面已经接入后端接口，你可以直接登录并管理用户数据。
-        </div>
-      </aside>
-
-      <div id="loginView" class="card">
-        <div class="panel-head">
-          <div class="eyebrow">Access</div>
-          <h2>登录这个系统</h2>
-          <p class="panel-copy lead">使用已存在的用户名和密码进入管理面板。登录后可以查看用户列表并继续新增账户。</p>
-        </div>
-
-        <div class="surface">
-          <div class="row">
-            <label for="username">用户名</label>
-            <input id="username" placeholder="请输入用户名" />
-          </div>
-          <div class="row">
-            <label for="password">密码</label>
-            <input id="password" type="password" placeholder="请输入密码" />
-          </div>
-          <div class="actions">
-            <button id="loginBtn">登录</button>
-          </div>
-          <div id="loginMsg" class="msg"></div>
-        </div>
-
-        <div class="footer-note">建议在生产环境中将密码改为哈希存储，并增加会话控制。</div>
-      </div>
-
-      <div id="adminView" class="card hidden">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Dashboard</div>
-            <h2>用户管理</h2>
-            <div class="muted" id="welcomeText"></div>
-          </div>
-          <div>
-            <button class="secondary" id="logoutBtn">退出</button>
-          </div>
-        </div>
-
-        <div class="surface">
-          <div class="toolbar">
-            <div class="muted">刷新列表查看最新用户数据，或者直接新增新的测试账号。</div>
-            <button class="ghost-button" id="refreshBtn">刷新用户列表</button>
-          </div>
-
-          <div class="grid">
-            <div>
-              <label for="newUsername">新用户名</label>
-              <input id="newUsername" placeholder="例如：alice" />
-            </div>
-            <div>
-              <label for="newPassword">新密码</label>
-              <input id="newPassword" type="password" placeholder="例如：123456" />
-            </div>
-            <div>
-              <button id="addUserBtn">新增用户</button>
-            </div>
-          </div>
-
-          <div id="adminMsg" class="msg"></div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>用户名</th>
-                <th>创建时间</th>
-              </tr>
-            </thead>
-            <tbody id="userTableBody">
-              <tr><td colspan="3">暂无数据</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <script type="module" src="/app.js"></script>
+    <script>
+        // 密码可见性切换
+        const toggleBtn = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+
+        toggleBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            if (isPassword) {
+                toggleBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+            } else {
+                toggleBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+            }
+        });
+
+        const loginForm = document.getElementById('login-form');
+        const errorMsg = document.getElementById('error-msg');
+        const submitBtn = document.getElementById('submit-btn');
+
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            errorMsg.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerText = '登录中...';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (result.ok) {
+                    // 保存登录状态（这里简单存入 localStorage）
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    window.location.href = '/index.html';
+                } else {
+                    errorMsg.innerText = result.msg;
+                    errorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                errorMsg.innerText = '连接服务器失败';
+                errorMsg.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '立即登录';
+            }
+        };
+    </script>
 </body>
 </html>

@@ -1,19 +1,43 @@
-import { findUserByUsernamePassword, getAllUsers, addUser, userExists } from "../repositories/user-repository.js";
+import { findUserByUsernamePassword, getAllUsers, addUser, userExists, updateLastLogin } from "../repositories/user-repository.js";
+import { hashPassword } from "../utils/crypto.js";
 
 export async function loginWithPassword(db, username, password) {
-  return findUserByUsernamePassword(db, username, password);
+  const hashedPassword = await hashPassword(password);
+  const user = await findUserByUsernamePassword(db, username, hashedPassword);
+  
+  if (user) {
+    if (user.status === 1) {
+      throw new Error("账号已被停用");
+    }
+    // 异步更新登录时间
+    updateLastLogin(db, user.id).catch(console.error);
+  }
+  
+  return user;
 }
 
 export async function listUsers(db) {
   return getAllUsers(db);
 }
 
-export async function createUser(db, username, password) {
+export async function createUser(db, userData) {
+  const { username, password } = userData;
   const exists = await userExists(db, username);
   if (exists) {
     return { ok: false, msg: "用户名已存在", status: 409 };
   }
 
-  await addUser(db, username, password);
-  return { ok: true, msg: "新增成功", status: 200 };
+  const hashedPassword = await hashPassword(password);
+  await addUser(db, { ...userData, password: hashedPassword });
+  return { ok: true, msg: "注册成功", status: 200 };
+}
+
+export async function setUserStatus(db, userId, status) {
+  await toggleUserStatus(db, userId, status);
+  return { ok: true, msg: status === 0 ? "已启用" : "已停用" };
+}
+
+export async function deleteUser(db, userId) {
+  await logicalDeleteUser(db, userId);
+  return { ok: true, msg: "用户已删除" };
 }

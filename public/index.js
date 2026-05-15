@@ -14,8 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 统一计算基准：如果今天还没结束，且法理上是工作日，则包含今天
         const isTodayWorkday = () => {
+            if (typeof HolidayUtil === 'undefined') return true;
             const holiday = HolidayUtil.getHoliday(year, month, day);
             if (holiday) return holiday.isWork();
+            if (typeof Solar === 'undefined') return true;
             const solar = Solar.fromYmd(year, month, day);
             const weekDay = solar.getWeek();
             return weekDay !== 0 && weekDay !== 6;
@@ -25,15 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let remainingWorkdaysMonth = 0;
         const daysInMonth = new Date(year, month, 0).getDate();
         for (let d = day; d <= daysInMonth; d++) {
-            const solar = Solar.fromYmd(year, month, d);
-            const holiday = HolidayUtil.getHoliday(year, month, d);
-
             let isWork = false;
-            if (holiday) {
-                if (holiday.isWork()) isWork = true;
-            } else {
-                const weekDay = solar.getWeek();
-                if (weekDay !== 0 && weekDay !== 6) isWork = true;
+            if (typeof HolidayUtil !== 'undefined') {
+                const holiday = HolidayUtil.getHoliday(year, month, d);
+                if (holiday) {
+                    if (holiday.isWork()) isWork = true;
+                } else if (typeof Solar !== 'undefined') {
+                    const solar = Solar.fromYmd(year, month, d);
+                    const weekDay = solar.getWeek();
+                    if (weekDay !== 0 && weekDay !== 6) isWork = true;
+                }
             }
             if (isWork) remainingWorkdaysMonth++;
         }
@@ -276,4 +279,42 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTodos();
     }
 
+    // 6. 登录状态检测
+    const userJson = localStorage.getItem('user');
+    const profileIdentity = document.querySelector('.profile-content .identity');
+    const avatarEl = document.querySelector('.profile-content .avatar');
+    const adminConsoleCard = document.querySelector('a[data-category="admin"]');
+    if (adminConsoleCard) adminConsoleCard.style.display = 'none'; // 默认隐藏
+
+    if (userJson && profileIdentity && avatarEl) {
+        const user = JSON.parse(userJson);
+        
+        // 如果是管理员，显示控制台
+        if (user.role === 'admin' && adminConsoleCard) {
+            adminConsoleCard.style.display = 'block';
+        }
+        
+        // 更新昵称和角色
+        profileIdentity.innerHTML = `
+            <strong>${user.nick_name || user.username}</strong>
+            <span>${user.role === 'admin' ? '管理员' : '普通用户'} / 已登录</span>
+            <button id="logout-btn" style="background: none; border: none; color: #f472b6; font-size: 0.75rem; cursor: pointer; padding: 0; margin-top: 4px; text-decoration: underline;">退出登录</button>
+        `;
+
+        // 如果有首字母，更新头像文本
+        if (user.nick_name || user.username) {
+            avatarEl.innerText = (user.nick_name || user.username).substring(0, 2).toUpperCase();
+        }
+
+        // 绑定退出登录
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            localStorage.removeItem('user');
+            window.location.reload();
+        });
+    } else if (profileIdentity) {
+        // 未登录状态展示
+        profileIdentity.innerHTML += `
+            <a href="/login.html" style="color: #818cf8; font-size: 0.8125rem; text-decoration: none; margin-top: 8px; display: block;">👉 点击登录</a>
+        `;
+    }
 });

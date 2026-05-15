@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 个人聚合面板</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --primary: #6366f1;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--panel);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3rem;
+        }
+
+        nav a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        nav a.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--panel);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-card span { color: var(--text-muted); font-size: 0.875rem; }
+        .stat-card h3 { margin: 0.5rem 0 0; font-size: 1.5rem; }
+
+        /* Table */
+        .table-container {
+            background: var(--panel);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.2);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.625rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .btn-action {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        .btn-action:hover { background: rgba(255,255,255,0.1); }
+        .btn-delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo">ADMIN PANEL</div>
+        <nav>
+            <a href="#" class="active">用户管理</a>
+            <a href="/index.html">返回首页</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <h1>用户列表</h1>
+            <div id="admin-info" style="font-size: 0.875rem; color: var(--text-muted);"></div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>总注册用户</span>
+                <h3 id="stat-total">0</h3>
+            </div>
+            <div class="stat-card">
+                <span>活跃账号</span>
+                <h3 id="stat-active">0</h3>
+            </div>
+            <div class="stat-card">
+                <span>今日新增</span>
+                <h3 id="stat-today">0</h3>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="user-table">
+                <thead>
+                    <tr>
+                        <th>用户</th>
+                        <th>角色</th>
+                        <th>状态</th>
+                        <th>联系方式</th>
+                        <th>最后登录</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list">
+                    <!-- JS 渲染 -->
+                </tbody>
+            </table>
+            <div id="loading" class="loading">加载数据中...</div>
+        </div>
+    </main>
+
+    <script>
+        // 权限检查
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.role !== 'admin') {
+            alert('您没有访问权限！');
+            window.location.href = '/index.html';
+        } else {
+            document.getElementById('admin-info').innerText = `管理员: ${user.nick_name || user.username}`;
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                const result = await res.json();
+                if (result.ok) {
+                    renderTable(result.data);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderTable(users) {
+            const list = document.getElementById('user-list');
+            list.innerHTML = '';
+            
+            // 简单统计
+            document.getElementById('stat-total').innerText = users.length;
+            document.getElementById('stat-active').innerText = users.filter(u => u.status === 0).length;
+            
+            users.forEach(u => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div style="font-weight: 600;">${u.nick_name || u.username}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">@${u.username}</div>
+                    </td>
+                    <td>${u.role}</td>
+                    <td>
+                        <span class="badge ${u.status === 0 ? 'badge-success' : 'badge-danger'}">
+                            ${u.status === 0 ? '正常' : '已停用'}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.75rem;">${u.email || '-'}</div>
+                        <div style="font-size: 0.75rem;">${u.phone || '-'}</div>
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.75rem;">${u.last_login_at || '从未'}</td>
+                    <td>
+                        <button class="btn-action" onclick="toggleStatus(${u.id}, ${u.status})">
+                            ${u.status === 0 ? '禁用' : '启用'}
+                        </button>
+                        ${u.role !== 'admin' ? `<button class="btn-action btn-delete" onclick="deleteUser(${u.id})">删除</button>` : ''}
+                    </td>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        async function toggleStatus(userId, currentStatus) {
+            const newStatus = currentStatus === 0 ? 1 : 0;
+            const res = await fetch('/api/admin/update-status', {
+                method: 'POST',
+                body: JSON.stringify({ userId, status: newStatus })
+            });
+            const result = await res.json();
+            if (result.ok) loadUsers();
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？此操作不可逆。')) return;
+            const res = await fetch('/api/admin/delete-user', {
+                method: 'POST',
+                body: JSON.stringify({ userId })
+            });
+            const result = await res.json();
+            if (result.ok) loadUsers();
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

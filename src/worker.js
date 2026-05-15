@@ -33,32 +33,50 @@ export default {
         return json({ ok: false, msg: "用户名或密码不能为空" }, 400);
       }
 
-      const user = await loginWithPassword(env.apitest_bind, username, password);
-      if (!user) {
-        return json({ ok: false, msg: "用户名或密码错误" }, 401);
+      try {
+        const user = await loginWithPassword(env.apitest_bind, username, password);
+        if (!user) {
+          return json({ ok: false, msg: "用户名或密码错误" }, 401);
+        }
+        return json({ ok: true, msg: "登录成功", user });
+      } catch (err) {
+        return json({ ok: false, msg: err.message }, 403);
       }
-
-      return json({ ok: true, msg: "登录成功", user });
     }
 
-    if (url.pathname === "/api/users") {
-      const users = await listUsers(env.apitest_bind);
-      return json({ ok: true, data: users });
-    }
-
-    if (url.pathname === "/api/add-user") {
+    if (url.pathname === "/api/register") {
       if (request.method !== "POST") return methodNotAllowed();
 
       const body = await parseJsonSafe(request);
-      const username = (body?.username || "").trim();
-      const password = (body?.password || "").trim();
-
-      if (!username || !password) {
-        return json({ ok: false, msg: "参数错误：用户名和密码不能为空" }, 400);
+      if (!body?.username || !body?.password) {
+        return json({ ok: false, msg: "用户名和密码不能为空" }, 400);
       }
 
-      const result = await createUser(env.apitest_bind, username, password);
+      const result = await createUser(env.apitest_bind, body);
       return json({ ok: result.ok, msg: result.msg }, result.status);
+    }
+
+    // --- 管理后台接口 (简易权限检查) ---
+    if (url.pathname.startsWith("/api/admin/")) {
+      // 实际项目中这里应该检查 JWT Token，这里暂时通过路径区分逻辑
+      if (url.pathname === "/api/admin/users") {
+        const users = await listUsers(env.apitest_bind);
+        return json({ ok: true, data: users });
+      }
+
+      if (url.pathname === "/api/admin/update-status") {
+        if (request.method !== "POST") return methodNotAllowed();
+        const { userId, status } = await parseJsonSafe(request);
+        const result = await import("./services/user-service.js").then(m => m.setUserStatus(env.apitest_bind, userId, status));
+        return json(result);
+      }
+
+      if (url.pathname === "/api/admin/delete-user") {
+        if (request.method !== "POST") return methodNotAllowed();
+        const { userId } = await parseJsonSafe(request);
+        const result = await import("./services/user-service.js").then(m => m.deleteUser(env.apitest_bind, userId));
+        return json(result);
+      }
     }
 
     if (env.ASSETS) {

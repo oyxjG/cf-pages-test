@@ -1,443 +1,500 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>个人聚合面板</title>
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="index.css">
     <script src="theme.js"></script>
 </head>
+
 <body>
-<main class="page">
-    <div class="shell">
-        <aside class="sidebar">
-            <!-- Digital Garden Card -->
-            <section class="panel profile-card">
-                <div class="profile-header">
-                    <div class="badge">Digital Garden</div>
-                    <button id="theme-toggle" class="theme-btn" title="切换深色模式">
-                        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                    </button>
-                </div>
-                <div class="profile-content">
-                    <div class="avatar">KT</div>
-                    <div class="identity">
-                        <strong>空瞳</strong>
-                        <span>开发者 / 终身学习者 / 效率探索者</span>
+    <main class="page">
+        <div class="shell">
+            <aside class="sidebar">
+                <!-- Digital Garden Card -->
+                <section class="panel profile-card">
+                    <div class="profile-header">
+                        <div class="badge">Digital Garden</div>
+                        <button id="theme-toggle" class="theme-btn" title="切换深色模式">
+                            <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" style="display: none;">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
                     </div>
-                </div>
-            </section>
-
-            <!-- Clock Card -->
-            <section class="panel clock-card">
-                <div class="clock-display" id="main-clock">00:00</div>
-                <div class="clock-status" id="clock-status">加载中...</div>
-            </section>
-
-            <!-- Navigation Card -->
-            <section class="panel nav-panel">
-                <div class="badge">Navigation</div>
-                <div class="nav-list">
-                    <a class="nav-item" href="#tools">
-                        <div class="nav-title">
-                            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                            <span>生产力工具</span>
-                        </div>
-                        <span class="nav-num">01</span>
-                    </a>
-                    <a class="nav-item" href="#projects">
-                        <div class="nav-title">
-                            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
-                            <span>项目与灵感</span>
-                        </div>
-                        <span class="nav-num">02</span>
-                    </a>
-                    <a class="nav-item" href="#fun">
-                        <div class="nav-title">
-                            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><path d="M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path></svg>
-                            <span>娱乐放松</span>
-                        </div>
-                        <span class="nav-num">03</span>
-                    </a>
-                    <a class="nav-item" href="#rhythm">
-                        <div class="nav-title">
-                            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                            <span>近期动态</span>
-                        </div>
-                        <span class="nav-num">04</span>
-                    </a>
-                </div>
-            </section>
-
-            <!-- Motto Card -->
-            <section class="panel motto-panel">
-                <div class="badge">Motto</div>
-                <div class="motto-stack">
-                    <div class="motto-item">
-                        <strong>设计哲学</strong>
-                        <p>追求极简与功能的平衡，在复杂的世界中寻找秩序。</p>
-                    </div>
-                    <div class="motto-item">
-                        <strong>视觉风格</strong>
-                        <p>采用极致的深夜模式与流变美学，构建深邃且充满律动的数字力场。</p>
-                    </div>
-                </div>
-            </section>
-        </aside>
-
-        <div class="main">
-            <section class="hero">
-                <div class="hero-content">
-                    <div class="badge">Workspace</div>
-                    <h2>保持热爱，奔赴山海。</h2>
-                    
-                    <div class="toolbar">
-                        <a class="button primary" href="#tools">开启生产力</a>
-                        <a class="button secondary" href="#projects">探索新项目</a>
-                    </div>
-                </div>
-
-                <div class="hero-stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <strong id="remaining-workdays-month">--</strong>
-                        </div>
-                        <div class="stat-desc">
-                            <span>本月剩余奋斗日，合理规划每一步进度。</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="month-progress" style="width: 0%"></div>
+                    <div class="profile-content">
+                        <div class="avatar">KT</div>
+                        <div class="identity">
+                            <strong>空瞳</strong>
+                            <span>开发者 / 终身学习者 / 效率探索者</span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <strong id="remaining-workdays-year">--</strong>
-                        </div>
-                        <div class="stat-desc">
-                            <span>本年剩余奋斗日，把握时间的长度与厚度。</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="year-progress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <strong id="hero-next-holiday">--</strong>
-                            <div id="hero-next-holiday-name" class="holiday-badge">加载中</div>
-                        </div>
-                        <div class="stat-desc">
-                            <span>奔赴下一个假期，期待每一次的满电出发。</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="holiday-progress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="section" id="life">
-                <div class="section-head">
-                    <div>
-                        <div class="badge">Lifestyle</div>
-                        <h3>生活节奏</h3>
-                    </div>
-                    <p class="muted">捕捉生活的点滴，管理日常支出与愿望，让生活更加有序。记录，是为了更好地生活。</p>
-                </div>
+                <!-- Clock Card -->
+                <section class="panel clock-card">
+                    <div class="clock-display" id="main-clock">00:00</div>
+                    <div class="clock-status" id="clock-status">加载中...</div>
+                </section>
 
-                <div class="card-grid">
-                    <article class="card tall todo-card" id="todo-panel">
-                        <div class="accent-strip"></div>
-                        <div class="eyebrow">Routine</div>
-                        <h4>今日待办</h4>
-                        <div class="todo-input-wrapper">
-                            <input type="text" id="todo-input" placeholder="添加新任务..." maxlength="50">
-                            <button id="add-todo" title="添加任务">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                        </div>
-                        <div class="todo-list" id="todo-list">
-                            <!-- 待办事项将通过 JS 渲染 -->
-                        </div>
-                        <div class="todo-footer">
-                            <span id="todo-stats">0 个任务</span>
-                            <button id="clear-completed" class="text-btn">清除已完成</button>
-                        </div>
-                    </article>
-
-                    <article class="card tall">
-                        <div class="accent-strip"></div>
-                        <div class="eyebrow">Finance</div>
-                        <h4>财务管理</h4>
-                        <p class="muted">
-                            监控预算与开支，追踪订阅服务，保持健康的财务状态。让每一分钱都有迹可循。</p>
-                        <div class="chips">
-                            <span class="chip gold">支出分析</span>
-                            <span class="chip warm">预算管控</span>
-                            <span class="chip">订阅项目</span>
-                        </div>
-                    </article>
-
-                    <article class="card tall">
-                        <div class="accent-strip"></div>
-                        <div class="eyebrow">Exploration</div>
-                        <h4>愿望与足迹</h4>
-                        <p class="muted">
-                            记录向往的远方与心仪的好物。这不仅是清单，更是对未来的期许与生活的热爱。</p>
-                        <div class="chips">
-                            <span class="chip">旅行计划</span>
-                            <span class="chip warm">探店收藏</span>
-                            <span class="chip gold">心愿单</span>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="section" id="tools">
-                <div class="section-head">
-                    <div>
-                        <div class="badge">Efficiency</div>
-                        <h3>生产力工具</h3>
-                    </div>
-                    <p class="muted">精选高频使用的生产力工具，旨在消除繁琐，提升效率。工欲善其事，必先利其器。</p>
-                </div>
-
-                <div class="full-width">
-                    <article class="feature">
-                        <div class="eyebrow">Workflow</div>
-                        <h4>快速入口</h4>
-                        <p class="muted">集成开发、日常、安全等各类实用小工具，一键直达，响应迅速。</p>
-
-                        <div class="tools-header">
-                            <div class="tools-filter">
-                                <button class="filter-btn active" data-filter="all">全部</button>
-                                <button class="filter-btn" data-filter="dev">开发</button>
-                                <button class="filter-btn" data-filter="daily">生活</button>
-                                <button class="filter-btn" data-filter="security">安全</button>
-                                <button class="filter-btn" data-filter="admin">管理</button>
+                <!-- Navigation Card -->
+                <section class="panel nav-panel">
+                    <div class="badge">Navigation</div>
+                    <div class="nav-list">
+                        <a class="nav-item" href="#tools">
+                            <div class="nav-title">
+                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                                <span>生产力工具</span>
                             </div>
-                            <div class="tools-search">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <input type="text" id="toolSearch" placeholder="搜索工具...">
+                            <span class="nav-num">01</span>
+                        </a>
+                        <a class="nav-item" href="#projects">
+                            <div class="nav-title">
+                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5">
+                                    </path>
+                                    <path d="M9 18h6"></path>
+                                    <path d="M10 22h4"></path>
+                                </svg>
+                                <span>项目与灵感</span>
+                            </div>
+                            <span class="nav-num">02</span>
+                        </a>
+                        <a class="nav-item" href="#fun">
+                            <div class="nav-title">
+                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                                    <path d="M6 12h4"></path>
+                                    <path d="M8 10v4"></path>
+                                    <path d="M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z">
+                                    </path>
+                                </svg>
+                                <span>娱乐放松</span>
+                            </div>
+                            <span class="nav-num">03</span>
+                        </a>
+                        <a class="nav-item" href="#rhythm">
+                            <div class="nav-title">
+                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                                <span>近期动态</span>
+                            </div>
+                            <span class="nav-num">04</span>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Motto Card -->
+                <section class="panel motto-panel">
+                    <div class="badge">Motto</div>
+                    <div class="motto-stack">
+                        <div class="motto-item">
+                            <strong>设计哲学</strong>
+                            <p>追求极简与功能的平衡，在复杂的世界中寻找秩序。</p>
+                        </div>
+                        <div class="motto-item">
+                            <strong>视觉风格</strong>
+                            <p>采用极致的深夜模式与流变美学，构建深邃且充满律动的数字力场。</p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="main">
+                <section class="hero">
+                    <div class="hero-content">
+                        <div class="badge">Workspace</div>
+                        <h2>保持热爱，奔赴山海。</h2>
+
+                        <div class="toolbar">
+                            <a class="button primary" href="#tools">开启生产力</a>
+                            <a class="button secondary" href="#projects">探索新项目</a>
+                        </div>
+                    </div>
+
+                    <div class="hero-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <strong id="remaining-workdays-month">--</strong>
+                            </div>
+                            <div class="stat-desc">
+                                <span>本月剩余奋斗日，合理规划每一步进度。</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="month-progress" style="width: 0%"></div>
                             </div>
                         </div>
-
-                        <div class="link-grid tools-grid" id="toolsGrid">
-                            <a class="link-card" href="/login.html" target="_blank" rel="noopener noreferrer" data-category="admin">
-                                <strong>👤 管理控制台</strong>
-                                <span>集中管理用户与系统设置，高效维护平台运行。</span>
-                            </a>
-                            <a class="link-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
-                                <strong>📅 节假日计算器</strong>
-                                <span>精准掌握工作日与调休安排，轻松规划您的休假时光。</span>
-                            </a>
-                            <a class="link-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
-                                <strong>🕒 时间戳转换</strong>
-                                <span>实时时间戳展示与双向格式转换，开发者必备的效率利器。</span>
-                            </a>
-                            <a class="link-card" href="/tool/password_generator.html" target="_blank"
-                               rel="noopener noreferrer" data-category="security">
-                                <strong>🔐 高强度密码生成</strong>
-                                <span>保障账号安全，自定义规则生成极难破解的复杂密码。</span>
-                            </a>
-                            <a class="link-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
-                                <strong>📷 二维码生成与识别</strong>
-                                <span>快速创建与解析二维码，满足日常各种交互需求。</span>
-                            </a>
-                            <a class="link-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
-                                <strong>🔗 Base64 处理</strong>
-                                <span>文本与 Base64 编码的即时转换，支持多种字符集。</span>
-                            </a>
-                            <a class="link-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
-                                <strong>📦 JSON 格式化工具</strong>
-                                <span>一键美美化与校验 JSON 数据，清晰展示层级结构。</span>
-                            </a>
-                            <a class="link-card" href="/tool/language_detector.html" target="_blank"
-                               rel="noopener noreferrer" data-category="dev">
-                                <strong>🌐 语种智能检测</strong>
-                                <span>通过 AI 算法识别文本语种，支持多种自然语言与代码。</span>
-                            </a>
-                            <a class="link-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
-                                <strong>🎨 全能颜色转换</strong>
-                                <span>HEX、RGB 等多格式互转，内置专业调色工具。</span>
-                            </a>
-                            <a class="link-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer" data-category="security">
-                                <strong>🛡️ 国密解密工具</strong>
-                                <span>安全处理 SM2 加密数据，提供高性能的解析与预览。</span>
-                            </a>
-                            <a class="link-card" href="/tool/shelf_life_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
-                                <strong>⏳ 保质期计算工具</strong>
-                                <span>快速计算商品到期日与剩余天数，轻松管理库存与消费。</span>
-                            </a>
-                            <div class="no-results" id="noResults">
-                                <p>未匹配到相关工具，请尝试其他关键词。</p>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <strong id="remaining-workdays-year">--</strong>
+                            </div>
+                            <div class="stat-desc">
+                                <span>本年剩余奋斗日，把握时间的长度与厚度。</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="year-progress" style="width: 0%"></div>
                             </div>
                         </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="section" id="projects">
-                <div class="section-head">
-                    <div>
-                        <div class="badge">Creations</div>
-                        <h3>项目与灵感</h3>
-                    </div>
-                    <p class="muted">展示我的最新作品、技术博客与偶尔闪现的灵感。探索未知，并将其转化为可见的价值。</p>
-                </div>
-
-                <div class="card-grid">
-                    <article class="card">
-                        <div class="eyebrow">Articles</div>
-                        <h4>技术博客</h4>
-                        <p class="muted">记录技术成长、项目复盘与行业洞察。在写作中沉淀，在交流中成长。</p>
-                        <div class="chips">
-                            <span class="chip">前端开发</span>
-                            <span class="chip warm">架构思考</span>
-                            <span class="chip gold">经验分享</span>
-                        </div>
-                    </article>
-
-                    <article class="card">
-                        <div class="eyebrow">Laboratory</div>
-                        <h4>实验项目</h4>
-                        <p class="muted">展示各类创意原型、开源项目与技术实验。探索技术的边界与更多可能性。</p>
-                        <div class="chips">
-                            <span class="chip">Open Source</span>
-                            <span class="chip warm">Creative Coding</span>
-                            <span class="chip gold">Demo</span>
-                        </div>
-                    </article>
-
-                    <article class="card">
-                        <div class="eyebrow">Flash</div>
-                        <h4>灵感碎片</h4>
-                        <p class="muted">收集那一刻的火花与思考。虽不成体系，却是构建未来的重要基石。</p>
-                        <div class="chips">
-                            <span class="chip">想法</span>
-                            <span class="chip warm">思考</span>
-                            <span class="chip gold">草稿</span>
-                        </div>
-                    </article>
-                </div>
-
-                <div class="featured-project clickable" onclick="window.open('/tool/opencv_beauty.html', '_blank')">
-                    <div class="featured-content">
-                        <div class="badge">Featured Experiment</div>
-                        <h4>OpenCV 实时美颜实验室</h4>
-                        <p class="muted">探索 WebAssembly 与计算机视觉的边界。通过高性能的双边滤波算法，在浏览器端实现电影级的实时视频磨皮与光感调节实验。</p>
-                        <div class="chips">
-                            <span class="chip">OpenCV.js</span>
-                            <span class="chip warm">WASM Turbo</span>
-                            <span class="chip gold">Computer Vision</span>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <strong id="hero-next-holiday">--</strong>
+                                <div id="hero-next-holiday-name" class="holiday-badge">加载中</div>
+                            </div>
+                            <div class="stat-desc">
+                                <span>奔赴下一个假期，期待每一次的满电出发。</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="holiday-progress" style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="featured-visual">
-                        <div class="visual-placeholder">
-                             <div class="visual-glow"></div>
-                             <div class="visual-text">CV ENGINE</div>
+                </section>
+
+                <section class="section" id="life">
+                    <div class="section-head">
+                        <div>
+                            <div class="badge">Lifestyle</div>
+                            <h3>生活节奏</h3>
                         </div>
+                        <p class="muted">捕捉生活的点滴，管理日常支出与愿望，让生活更加有序。记录，是为了更好地生活。</p>
                     </div>
-                </div>
-            </section>
 
-            <section class="section" id="fun">
-                <div class="section-head">
-                    <div>
-                        <div class="badge">Relaxation</div>
-                        <h3>娱乐放松</h3>
+                    <div class="card-grid">
+                        <article class="card tall todo-card" id="todo-panel">
+                            <div class="accent-strip"></div>
+                            <div class="eyebrow">Routine</div>
+                            <h4>今日待办</h4>
+                            <div class="todo-input-wrapper">
+                                <input type="text" id="todo-input" placeholder="添加新任务..." maxlength="50">
+                                <button id="add-todo" title="添加任务">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="todo-list" id="todo-list">
+                                <!-- 待办事项将通过 JS 渲染 -->
+                            </div>
+                            <div class="todo-footer">
+                                <span id="todo-stats">0 个任务</span>
+                                <button id="clear-completed" class="text-btn">清除已完成</button>
+                            </div>
+                        </article>
+
+                        <article class="card tall">
+                            <div class="accent-strip"></div>
+                            <div class="eyebrow">Finance</div>
+                            <h4>财务管理</h4>
+                            <p class="muted">
+                                监控预算与开支，追踪订阅服务，保持健康的财务状态。让每一分钱都有迹可循。</p>
+                            <div class="chips">
+                                <span class="chip gold">支出分析</span>
+                                <span class="chip warm">预算管控</span>
+                                <span class="chip">订阅项目</span>
+                            </div>
+                        </article>
+
+                        <article class="card tall">
+                            <div class="accent-strip"></div>
+                            <div class="eyebrow">Exploration</div>
+                            <h4>愿望与足迹</h4>
+                            <p class="muted">
+                                记录向往的远方与心仪的好物。这不仅是清单，更是对未来的期许与生活的热爱。</p>
+                            <div class="chips">
+                                <span class="chip">旅行计划</span>
+                                <span class="chip warm">探店收藏</span>
+                                <span class="chip gold">心愿单</span>
+                            </div>
+                        </article>
                     </div>
-                    <p class="muted">在高效工作之余，也需要片刻的宁静与快乐。游戏是为了更好地出发。</p>
-                </div>
+                </section>
 
-                <div class="full-width">
-                    <article class="feature">
-                        <div class="eyebrow">Games</div>
-                        <h4>数字游乐场</h4>
-                        <p class="muted">精选几款经典耐玩的小游戏，缓解压力，找回童心。</p>
-
-                        <div class="link-grid tools-grid">
-                            <a class="link-card" href="/game/minesweeper/index.html" target="_blank"
-                               rel="noopener noreferrer">
-                                <strong>💣 经典扫雷</strong>
-                                <span>逻辑与运气的博弈，重温那份紧张与快感。</span>
-                            </a>
-                            <a class="link-card" href="/game/flappy_bird/index.html" target="_blank"
-                               rel="noopener noreferrer">
-                                <strong>🐦 像素飞鸟</strong>
-                                <span>极简操作，极限挑战。你能飞多远？</span>
-                            </a>
-                            <a class="link-card" href="/game/running_rabbit/index.html" target="_blank"
-                               rel="noopener noreferrer">
-                                <strong>🐰 灵动萌兔</strong>
-                                <span>快节奏跑酷，躲避障碍，向着终点全速前进。</span>
-                            </a>
-                            <a class="link-card" href="/game/3d_racing/index.html" target="_blank"
-                               rel="noopener noreferrer">
-                                <strong>🚗 漫步公路</strong>
-                                <span>身临其境的 3D 驾驶体验，享受无尽的驾驶禅意。</span>
-                            </a>
+                <section class="section" id="tools">
+                    <div class="section-head">
+                        <div>
+                            <div class="badge">Efficiency</div>
+                            <h3>生产力工具</h3>
                         </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="section" id="rhythm">
-                <div class="section-head">
-                    <div>
-                        <div class="badge">Rhythm</div>
-                        <h3>近期动态</h3>
+                        <p class="muted">精选高频使用的生产力工具，旨在消除繁琐，提升效率。工欲善其事，必先利其器。</p>
                     </div>
-                    <p class="muted">专注当下的重要事项，保持节奏，稳步前行。每一周，都是一个新的起点。</p>
-                </div>
 
-                <div class="split">
-                    <article class="feature">
-                        <div class="eyebrow">Top Priorities</div>
-                        <h4>本周核心目标</h4>
-                        <div class="timeline">
-                            <div class="timeline-item">
-                                <div class="timeline-time">1</div>
-                                <div>
-                                    <strong>完善数字花园架构</strong>
-                                    <span>深度优化首页布局与交互逻辑，构建清晰的内容展示路径。</span>
+                    <div class="full-width">
+                        <article class="feature">
+                            <div class="eyebrow">Workflow</div>
+                            <h4>快速入口</h4>
+                            <p class="muted">集成开发、日常、安全等各类实用小工具，一键直达，响应迅速。</p>
+
+                            <div class="tools-header">
+                                <div class="tools-filter">
+                                    <button class="filter-btn active" data-filter="all">全部</button>
+                                    <button class="filter-btn" data-filter="dev">开发</button>
+                                    <button class="filter-btn" data-filter="daily">生活</button>
+                                    <button class="filter-btn" data-filter="security">安全</button>
+                                    <button class="filter-btn" data-filter="admin">管理</button>
+                                </div>
+                                <div class="tools-search">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" id="toolSearch" placeholder="搜索工具...">
                                 </div>
                             </div>
-                            <div class="timeline-item">
-                                <div class="timeline-time">2</div>
-                                <div>
-                                    <strong>更新深度技术博文</strong>
-                                    <span>总结近期项目实战经验，输出高质量的内容分享。</span>
+
+                            <div class="link-grid tools-grid" id="toolsGrid">
+                                <a class="link-card" href="/admin/index.html" data-category="admin">
+                                    <strong>👤 管理控制台</strong>
+                                    <span>集中管理用户与系统设置，高效维护平台运行。</span>
+                                </a>
+                                <a class="link-card" href="/tool/holiday_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="daily">
+                                    <strong>📅 节假日计算器</strong>
+                                    <span>精准掌握工作日与调休安排，轻松规划您的休假时光。</span>
+                                </a>
+                                <a class="link-card" href="/tool/timestamp_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="dev">
+                                    <strong>🕒 时间戳转换</strong>
+                                    <span>实时时间戳展示与双向格式转换，开发者必备的效率利器。</span>
+                                </a>
+                                <a class="link-card" href="/tool/password_generator.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="security">
+                                    <strong>🔐 高强度密码生成</strong>
+                                    <span>保障账号安全，自定义规则生成极难破解的复杂密码。</span>
+                                </a>
+                                <a class="link-card" href="/tool/qrcode_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="daily">
+                                    <strong>📷 二维码生成与识别</strong>
+                                    <span>快速创建与解析二维码，满足日常各种交互需求。</span>
+                                </a>
+                                <a class="link-card" href="/tool/base64_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="dev">
+                                    <strong>🔗 Base64 处理</strong>
+                                    <span>文本与 Base64 编码的即时转换，支持多种字符集。</span>
+                                </a>
+                                <a class="link-card" href="/tool/json_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="dev">
+                                    <strong>📦 JSON 格式化工具</strong>
+                                    <span>一键美美化与校验 JSON 数据，清晰展示层级结构。</span>
+                                </a>
+                                <a class="link-card" href="/tool/language_detector.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="dev">
+                                    <strong>🌐 语种智能检测</strong>
+                                    <span>通过 AI 算法识别文本语种，支持多种自然语言与代码。</span>
+                                </a>
+                                <a class="link-card" href="/tool/color_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="dev">
+                                    <strong>🎨 全能颜色转换</strong>
+                                    <span>HEX、RGB 等多格式互转，内置专业调色工具。</span>
+                                </a>
+                                <a class="link-card" href="/tool/sm2_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="security">
+                                    <strong>🛡️ 国密解密工具</strong>
+                                    <span>安全处理 SM2 加密数据，提供高性能的解析与预览。</span>
+                                </a>
+                                <a class="link-card" href="/tool/shelf_life_tool.html" target="_blank"
+                                    rel="noopener noreferrer" data-category="daily">
+                                    <strong>⏳ 保质期计算工具</strong>
+                                    <span>快速计算商品到期日与剩余天数，轻松管理库存与消费。</span>
+                                </a>
+                                <div class="no-results" id="noResults">
+                                    <p>未匹配到相关工具，请尝试其他关键词。</p>
                                 </div>
                             </div>
-                            <div class="timeline-item">
-                                <div class="timeline-time">3</div>
-                                <div>
-                                    <strong>迭代效率工具库</strong>
-                                    <span>优化现有工具性能，并规划引入更多实用的生产力助手。</span>
-                                </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="section" id="projects">
+                    <div class="section-head">
+                        <div>
+                            <div class="badge">Creations</div>
+                            <h3>项目与灵感</h3>
+                        </div>
+                        <p class="muted">展示我的最新作品、技术博客与偶尔闪现的灵感。探索未知，并将其转化为可见的价值。</p>
+                    </div>
+
+                    <div class="card-grid">
+                        <article class="card">
+                            <div class="eyebrow">Articles</div>
+                            <h4>技术博客</h4>
+                            <p class="muted">记录技术成长、项目复盘与行业洞察。在写作中沉淀，在交流中成长。</p>
+                            <div class="chips">
+                                <span class="chip">前端开发</span>
+                                <span class="chip warm">架构思考</span>
+                                <span class="chip gold">经验分享</span>
+                            </div>
+                        </article>
+
+                        <article class="card">
+                            <div class="eyebrow">Laboratory</div>
+                            <h4>实验项目</h4>
+                            <p class="muted">展示各类创意原型、开源项目与技术实验。探索技术的边界与更多可能性。</p>
+                            <div class="chips">
+                                <span class="chip">Open Source</span>
+                                <span class="chip warm">Creative Coding</span>
+                                <span class="chip gold">Demo</span>
+                            </div>
+                        </article>
+
+                        <article class="card">
+                            <div class="eyebrow">Flash</div>
+                            <h4>灵感碎片</h4>
+                            <p class="muted">收集那一刻的火花与思考。虽不成体系，却是构建未来的重要基石。</p>
+                            <div class="chips">
+                                <span class="chip">想法</span>
+                                <span class="chip warm">思考</span>
+                                <span class="chip gold">草稿</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="featured-project clickable" onclick="window.open('/tool/opencv_beauty.html', '_blank')">
+                        <div class="featured-content">
+                            <div class="badge">Featured Experiment</div>
+                            <h4>OpenCV 实时美颜实验室</h4>
+                            <p class="muted">探索 WebAssembly 与计算机视觉的边界。通过高性能的双边滤波算法，在浏览器端实现电影级的实时视频磨皮与光感调节实验。</p>
+                            <div class="chips">
+                                <span class="chip">OpenCV.js</span>
+                                <span class="chip warm">WASM Turbo</span>
+                                <span class="chip gold">Computer Vision</span>
                             </div>
                         </div>
-                    </article>
+                        <div class="featured-visual">
+                            <div class="visual-placeholder">
+                                <div class="visual-glow"></div>
+                                <div class="visual-text">CV ENGINE</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                    <article class="feature">
-                        <div class="eyebrow">Vision</div>
-                        <h4>未来展望</h4>
-                        <p class="muted">
-                            我将持续丰富这个数字空间，包括但不限于作品集、阅读深度思考、以及更多有趣的交互式实验。使其不仅是一个工具集，更是一个有灵魂的个人阵地。</p>
-                        <p class="footer-note">
-                            保持热爱，奔赴山海。每一个小小的改进，都是向理想生活的迈进。</p>
-                    </article>
-                </div>
-            </section>
+                <section class="section" id="fun">
+                    <div class="section-head">
+                        <div>
+                            <div class="badge">Relaxation</div>
+                            <h3>娱乐放松</h3>
+                        </div>
+                        <p class="muted">在高效工作之余，也需要片刻的宁静与快乐。游戏是为了更好地出发。</p>
+                    </div>
+
+                    <div class="full-width">
+                        <article class="feature">
+                            <div class="eyebrow">Games</div>
+                            <h4>数字游乐场</h4>
+                            <p class="muted">精选几款经典耐玩的小游戏，缓解压力，找回童心。</p>
+
+                            <div class="link-grid tools-grid">
+                                <a class="link-card" href="/game/minesweeper/index.html" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <strong>💣 经典扫雷</strong>
+                                    <span>逻辑与运气的博弈，重温那份紧张与快感。</span>
+                                </a>
+                                <a class="link-card" href="/game/flappy_bird/index.html" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <strong>🐦 像素飞鸟</strong>
+                                    <span>极简操作，极限挑战。你能飞多远？</span>
+                                </a>
+                                <a class="link-card" href="/game/running_rabbit/index.html" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <strong>🐰 灵动萌兔</strong>
+                                    <span>快节奏跑酷，躲避障碍，向着终点全速前进。</span>
+                                </a>
+                                <a class="link-card" href="/game/3d_racing/index.html" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <strong>🚗 漫步公路</strong>
+                                    <span>身临其境的 3D 驾驶体验，享受无尽的驾驶禅意。</span>
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="section" id="rhythm">
+                    <div class="section-head">
+                        <div>
+                            <div class="badge">Rhythm</div>
+                            <h3>近期动态</h3>
+                        </div>
+                        <p class="muted">专注当下的重要事项，保持节奏，稳步前行。每一周，都是一个新的起点。</p>
+                    </div>
+
+                    <div class="split">
+                        <article class="feature">
+                            <div class="eyebrow">Top Priorities</div>
+                            <h4>本周核心目标</h4>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-time">1</div>
+                                    <div>
+                                        <strong>完善数字花园架构</strong>
+                                        <span>深度优化首页布局与交互逻辑，构建清晰的内容展示路径。</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time">2</div>
+                                    <div>
+                                        <strong>更新深度技术博文</strong>
+                                        <span>总结近期项目实战经验，输出高质量的内容分享。</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time">3</div>
+                                    <div>
+                                        <strong>迭代效率工具库</strong>
+                                        <span>优化现有工具性能，并规划引入更多实用的生产力助手。</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="feature">
+                            <div class="eyebrow">Vision</div>
+                            <h4>未来展望</h4>
+                            <p class="muted">
+                                我将持续丰富这个数字空间，包括但不限于作品集、阅读深度思考、以及更多有趣的交互式实验。使其不仅是一个工具集，更是一个有灵魂的个人阵地。</p>
+                            <p class="footer-note">
+                                保持热爱，奔赴山海。每一个小小的改进，都是向理想生活的迈进。</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
         </div>
-    </div>
 
-</main>
+    </main>
 
-<script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
-<script src="index.js"></script>
+    <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+    <script src="index.js"></script>
 </body>
-</html>
 
+</html>
