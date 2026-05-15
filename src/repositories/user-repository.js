@@ -19,6 +19,25 @@ export async function getAllUsers(db) {
   return results || [];
 }
 
+export async function getUserStats(db) {
+  const stats = await db
+    .prepare(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as active,
+        SUM(CASE WHEN created_at >= date('now', 'localtime') THEN 1 ELSE 0 END) as today
+      FROM users 
+      WHERE is_delete = 0
+    `)
+    .first();
+  
+  return {
+    total: stats.total || 0,
+    active: stats.active || 0,
+    today: stats.today || 0
+  };
+}
+
 export async function userExists(db, username) {
   const row = await db
     .prepare("SELECT id FROM users WHERE username = ?")
@@ -37,12 +56,12 @@ export async function addUser(db, { username, password, nick_name, phone, email 
 
 export async function updateLastLogin(db, userId) {
   return db
-    .prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?")
+    .prepare("UPDATE users SET last_login_at = datetime('now', 'localtime') WHERE id = ?")
     .bind(userId)
     .run();
 }
 
-export async function toggleUserStatus(db, userId, newStatus) {
+export async function setUserStatus(db, userId, newStatus) {
   return db
     .prepare("UPDATE users SET status = ? WHERE id = ?")
     .bind(newStatus, userId)

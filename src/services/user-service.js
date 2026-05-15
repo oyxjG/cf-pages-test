@@ -1,4 +1,4 @@
-import { findUserByUsernamePassword, getAllUsers, addUser, userExists, updateLastLogin } from "../repositories/user-repository.js";
+import { findUserByUsernamePassword, getAllUsers, addUser, userExists, updateLastLogin, setUserStatus as repoSetUserStatus, logicalDeleteUser, getUserStats } from "../repositories/user-repository.js";
 import { hashPassword } from "../utils/crypto.js";
 
 export async function loginWithPassword(db, username, password) {
@@ -20,6 +20,12 @@ export async function listUsers(db) {
   return getAllUsers(db);
 }
 
+export async function getUserSummary(db) {
+  const users = await getAllUsers(db);
+  const stats = await getUserStats(db);
+  return { users, stats };
+}
+
 export async function createUser(db, userData) {
   const { username, password } = userData;
   const exists = await userExists(db, username);
@@ -33,7 +39,7 @@ export async function createUser(db, userData) {
 }
 
 export async function setUserStatus(db, userId, status) {
-  await toggleUserStatus(db, userId, status);
+  await repoSetUserStatus(db, userId, status);
   return { ok: true, msg: status === 0 ? "已启用" : "已停用" };
 }
 

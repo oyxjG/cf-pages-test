@@ -4,37 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册 - 个人聚合面板</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --primary: #8b5cf6;
-            --primary-hover: #7c3aed;
+            --glass: var(--paper);
+            --glass-border: var(--line);
+            --primary: var(--accent);
+            --primary-hover: var(--teal);
         }
 
         body {
             margin: 0;
             padding: 0;
             font-family: 'Inter', -apple-system, sans-serif;
-            background: radial-gradient(circle at bottom right, #2e1065, #020617);
-            color: #f8fafc;
+            background: linear-gradient(135deg, var(--bg), var(--bg-deep));
+            color: var(--text);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         .container {
             width: 100%;
-            max-width: 450px;
+            max-width: 480px;
             padding: 2.5rem;
-            margin: 1rem;
-            background: var(--glass);
+            margin: 2rem 1rem;
+            background: var(--paper-strong);
             backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
             animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -45,21 +48,21 @@
 
         .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .header h1 {
-            font-size: 2rem;
+            font-size: 2.25rem;
             font-weight: 800;
             margin: 0;
-            background: linear-gradient(to right, #a78bfa, #f472b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text);
+            letter-spacing: -1px;
         }
 
         .header p {
-            color: #94a3b8;
-            margin-top: 0.5rem;
+            color: var(--muted);
+            margin-top: 0.75rem;
+            font-size: 1rem;
         }
 
         .form-grid {
@@ -78,10 +81,10 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.8125rem;
-            color: #94a3b8;
-            font-weight: 500;
+            margin-bottom: 0.625rem;
+            font-size: 0.875rem;
+            color: var(--muted);
+            font-weight: 600;
         }
 
         .input-wrapper {
@@ -92,91 +95,98 @@
 
         .form-group input {
             width: 100%;
-            padding: 0.75rem 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: white;
-            font-size: 0.9375rem;
-            transition: all 0.2s;
+            padding: 0.875rem 1.125rem;
+            background: var(--input-bg);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             box-sizing: border-box;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+            border-color: var(--accent);
+            background: var(--paper-strong);
+            box-shadow: 0 0 0 4px var(--accent-soft);
         }
 
         .toggle-password {
             position: absolute;
-            right: 12px;
+            right: 14px;
             background: none;
             border: none;
-            color: #94a3b8;
+            color: var(--muted);
             cursor: pointer;
-            padding: 4px;
+            padding: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            border-radius: 8px;
         }
 
         .toggle-password:hover {
-            color: white;
+            color: var(--accent);
+            background: rgba(0,0,0,0.05);
         }
 
         .btn-register {
             width: 100%;
-            padding: 0.875rem;
-            background: var(--primary);
-            color: white;
+            padding: 1rem;
+            background: var(--accent);
+            color: var(--btn-text);
             border: none;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 12px rgba(191, 91, 50, 0.2);
         }
 
         .btn-register:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 6px 20px rgba(191, 91, 50, 0.3);
         }
 
         .footer-links {
             text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.875rem;
-            color: #94a3b8;
+            margin-top: 2rem;
+            font-size: 0.9375rem;
+            color: var(--muted);
         }
 
         .footer-links a {
-            color: var(--primary);
+            color: var(--accent);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
+            margin-left: 0.5rem;
         }
 
         .error-msg, .success-msg {
-            padding: 0.75rem;
-            border-radius: 12px;
+            padding: 1rem;
+            border-radius: var(--radius-md);
             font-size: 0.875rem;
             margin-bottom: 1.5rem;
             display: none;
+            text-align: center;
             animation: fadeIn 0.3s ease;
         }
 
         .error-msg {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
+            color: #ef4444;
         }
 
         .success-msg {
             background: rgba(34, 197, 94, 0.1);
             border: 1px solid rgba(34, 197, 94, 0.2);
-            color: #86efac;
+            color: #10b981;
         }
 
         @keyframes fadeIn {
@@ -184,13 +194,49 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* 主题切换按钮样式 */
+        #theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        #theme-toggle:hover {
+            transform: translateY(-2px);
+            background: var(--paper-strong);
+        }
+
         @media (max-width: 480px) {
             .form-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
+            .container { padding: 1.5rem; }
+            #theme-toggle {
+                top: 1rem;
+                right: 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 主题切换按钮 -->
+    <button id="theme-toggle" title="切换主题">
+        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+
     <div class="container">
         <div class="header">
             <h1>开启新篇章</h1>

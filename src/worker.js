@@ -60,8 +60,8 @@ export default {
     if (url.pathname.startsWith("/api/admin/")) {
       // 实际项目中这里应该检查 JWT Token，这里暂时通过路径区分逻辑
       if (url.pathname === "/api/admin/users") {
-        const users = await listUsers(env.apitest_bind);
-        return json({ ok: true, data: users });
+        const { users, stats } = await import("./services/user-service.js").then(m => m.getUserSummary(env.apitest_bind));
+        return json({ ok: true, data: users, stats });
       }
 
       if (url.pathname === "/api/admin/update-status") {
