@@ -147,16 +147,22 @@
                 </div>
 
                 <div class="card-grid">
-                    <article class="card tall">
+                    <article class="card tall todo-card" id="todo-panel">
                         <div class="accent-strip"></div>
                         <div class="eyebrow">Routine</div>
-                        <h4>今日安排</h4>
-                        <p class="muted">
-                            清晨规划、午后深耕、傍晚复盘。在这里可以快速查看每日的待办重点与时间分配。</p>
-                        <div class="chips">
-                            <span class="chip warm">待办事项</span>
-                            <span class="chip">日程表</span>
-                            <span class="chip gold">重要提醒</span>
+                        <h4>今日待办</h4>
+                        <div class="todo-input-wrapper">
+                            <input type="text" id="todo-input" placeholder="添加新任务..." maxlength="50">
+                            <button id="add-todo" title="添加任务">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                        <div class="todo-list" id="todo-list">
+                            <!-- 待办事项将通过 JS 渲染 -->
+                        </div>
+                        <div class="todo-footer">
+                            <span id="todo-stats">0 个任务</span>
+                            <button id="clear-completed" class="text-btn">清除已完成</button>
                         </div>
                     </article>
 

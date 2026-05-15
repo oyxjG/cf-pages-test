@@ -205,4 +205,75 @@ document.addEventListener('DOMContentLoaded', () => {
     // 延迟一会执行，确保数据已填入
     setTimeout(updateProgressBars, 500);
 
+    // 5. 今日待办逻辑 (LocalStorage 存储)
+    const todoInput = document.getElementById('todo-input');
+    const addTodoBtn = document.getElementById('add-todo');
+    const todoList = document.getElementById('todo-list');
+    const todoStats = document.getElementById('todo-stats');
+    const clearCompletedBtn = document.getElementById('clear-completed');
+
+    if (todoInput && todoList) {
+        let todos = JSON.parse(localStorage.getItem('garden-todos') || '[]');
+
+        const saveTodos = () => {
+            localStorage.setItem('garden-todos', JSON.stringify(todos));
+        };
+
+        const renderTodos = () => {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const item = document.createElement('div');
+                item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <div class="todo-checkbox" onclick="toggleTodo(${index})">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <span class="todo-text">${todo.text}</span>
+                    <button class="delete-todo" onclick="deleteTodo(${index})" title="删除">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                `;
+                todoList.appendChild(item);
+            });
+
+            const remaining = todos.filter(t => !t.completed).length;
+            todoStats.innerText = `${remaining} 个未完成`;
+        };
+
+        window.toggleTodo = (index) => {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+            renderTodos();
+        };
+
+        window.deleteTodo = (index) => {
+            todos.splice(index, 1);
+            saveTodos();
+            renderTodos();
+        };
+
+        const addNewTodo = () => {
+            const text = todoInput.value.trim();
+            if (text) {
+                todos.unshift({ text, completed: false });
+                todoInput.value = '';
+                saveTodos();
+                renderTodos();
+            }
+        };
+
+        addTodoBtn.addEventListener('click', addNewTodo);
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addNewTodo();
+        });
+
+        clearCompletedBtn.addEventListener('click', () => {
+            todos = todos.filter(t => !t.completed);
+            saveTodos();
+            renderTodos();
+        });
+
+        renderTodos();
+    }
+
 });
