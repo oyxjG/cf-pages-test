@@ -204,4 +204,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 延迟一会执行，确保数据已填入
     setTimeout(updateProgressBars, 500);
+
 });

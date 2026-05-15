@@ -4,22 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>颜色代码转换器 - 高级聚合面板</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme.js"></script>
   <style>
     :root {
-      --bg: #f3ede4;
-      --paper: rgba(255, 251, 246, 0.85);
-      --text: #251c15;
-      --muted: #6f6256;
-      --accent: #bf5b32;
-      --line: rgba(84, 66, 49, 0.12);
-      --radius: 20px;
+      /* 变量已由 theme.css 提供 */
     }
 
     body {
       margin: 0;
       min-height: 100vh;
       font-family: "Avenir Next", "PingFang SC", sans-serif;
-      background: linear-gradient(135deg, #f6f0e8 0%, var(--bg) 100%);
+      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
       color: var(--text);
       display: flex;
       flex-direction: column;
@@ -34,8 +30,8 @@
       backdrop-filter: blur(20px);
       border-radius: var(--radius);
       padding: 32px;
-      box-shadow: 0 30px 90px rgba(67, 43, 25, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
     }
 
     .back-link {
@@ -109,7 +105,7 @@
       padding: 12px;
       border-radius: 10px;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--input-bg);
       font-family: "Fira Code", monospace;
       font-size: 14px;
       outline: none;
@@ -117,7 +113,7 @@
       transition: border-color 0.2s;
     }
 
-    input:focus { border-color: var(--accent); background: white; }
+    input:focus { border-color: var(--accent); background: var(--bg-deep, var(--bg)); }
 
     .btn {
       padding: 12px 24px;
@@ -127,8 +123,8 @@
       cursor: pointer;
       transition: all 0.2s;
       font-size: 14px;
-      background: #3182ce;
-      color: white;
+      background: var(--accent);
+      color: var(--btn-text);
       margin-top: 20px;
     }
 

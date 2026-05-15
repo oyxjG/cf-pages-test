@@ -4,7 +4,9 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>个人聚合面板</title>
+    <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="index.css">
+    <script src="theme.js"></script>
 </head>
 <body>
 <main class="page">
@@ -12,7 +14,13 @@
         <aside class="sidebar">
             <!-- Digital Garden Card -->
             <section class="panel profile-card">
-                <div class="badge">Digital Garden</div>
+                <div class="profile-header">
+                    <div class="badge">Digital Garden</div>
+                    <button id="theme-toggle" class="theme-btn" title="切换深色模式">
+                        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </div>
                 <div class="profile-content">
                     <div class="avatar">KT</div>
                     <div class="identity">
@@ -73,7 +81,7 @@
                     </div>
                     <div class="motto-item">
                         <strong>视觉风格</strong>
-                        <p>采用温暖的纸质质感，营造舒适且具有人文气息的数字空间。</p>
+                        <p>采用极致的深夜模式与流变美学，构建深邃且充满律动的数字力场。</p>
                     </div>
                 </div>
             </section>

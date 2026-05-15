@@ -4,25 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>法定假日查询与工作日计算</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme.js"></script>
   <style>
     :root {
-      --bg: #f3ede4;
-      --bg-deep: #d7c7b6;
-      --paper: rgba(255, 251, 246, 0.82);
-      --paper-strong: rgba(255, 253, 250, 0.96);
-      --line: rgba(84, 66, 49, 0.12);
-      --text: #251c15;
-      --muted: #6f6256;
-      --accent: #bf5b32;
-      --accent-soft: #e9c7ae;
-      --teal: #2d786c;
-      --mustard: #ca9d3a;
-      --berry: #8c4964;
-      --shadow: 0 28px 80px rgba(67, 43, 25, 0.14);
-      --radius-xl: 30px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
+      /* 变量已由 theme.css 提供 */
     }
 
     * {
@@ -35,9 +21,9 @@
       font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(191, 91, 50, 0.18), transparent 26%),
-        radial-gradient(circle at 88% 12%, rgba(45, 120, 108, 0.16), transparent 22%),
-        linear-gradient(135deg, #f6f0e8 0%, var(--bg) 45%, #e6dbce 100%);
+        radial-gradient(circle at top left, rgba(224, 122, 95, 0.08), transparent 26%),
+        radial-gradient(circle at 88% 12%, rgba(129, 178, 154, 0.08), transparent 22%),
+        linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 45%, var(--grad-end) 100%);
       overflow-x: hidden;
     }
 
@@ -122,7 +108,7 @@
 
     .card {
       background: var(--paper);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--line);
       backdrop-filter: blur(16px);
       box-shadow: var(--shadow);
       border-radius: var(--radius-lg);
@@ -159,7 +145,7 @@
       padding: 12px 16px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.6);
+      background: var(--input-bg);
       font-family: inherit;
       font-size: 15px;
       color: var(--text);
@@ -169,7 +155,7 @@
 
     input[type="date"]:focus,
     input[type="number"]:focus {
-      background: #fff;
+      background: var(--bg-deep, var(--bg));
       border-color: var(--teal);
       box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.1);
     }
@@ -193,7 +179,7 @@
 
     .btn-primary {
       background: var(--teal);
-      color: #fff;
+      color: var(--btn-text);
       box-shadow: 0 4px 12px rgba(45, 120, 108, 0.2);
     }
 
@@ -203,13 +189,13 @@
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--btn-secondary-bg);
       border: 1px solid var(--line);
       color: var(--text);
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.9);
+      background: var(--paper-strong);
       border-color: rgba(84, 66, 49, 0.3);
     }
 
@@ -217,7 +203,7 @@
       margin-top: 24px;
       padding: 20px;
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.6);
+      background: var(--input-bg);
       border: 1px solid var(--line);
       display: none;
     }

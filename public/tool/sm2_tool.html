@@ -4,18 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SM2 国密解密工具</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme.js"></script>
   <script src="sm2_lib.js"></script>
   <style>
     :root {
-      --bg: #f3ede4;
-      --paper: rgba(255, 251, 246, 0.85);
-      --text: #251c15;
-      --muted: #6f6256;
-      --accent: #bf5b32;
-      --accent-hover: #a34a26;
-      --shadow: 0 28px 80px rgba(67, 43, 25, 0.14);
-      --radius: 24px;
-      --border: rgba(84, 66, 49, 0.12);
+      /* 变量已由 theme.css 提供 */
     }
 
     * { box-sizing: border-box; }
@@ -24,9 +18,7 @@
       margin: 0;
       min-height: 100vh;
       font-family: "Avenir Next", "PingFang SC", system-ui, sans-serif;
-      background: 
-        radial-gradient(circle at top left, rgba(191, 91, 50, 0.1), transparent 30%),
-        linear-gradient(135deg, #f6f0e8 0%, var(--bg) 100%);
+      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
       color: var(--text);
       display: flex;
       align-items: center;
@@ -39,7 +31,7 @@
       max-width: 800px;
       background: var(--paper);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 40px;
@@ -87,7 +79,7 @@
       padding: 16px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--input-bg);
       font-family: "Fira Code", monospace;
       font-size: 14px;
       color: var(--text);
@@ -98,7 +90,7 @@
 
     textarea:focus {
       border-color: var(--accent);
-      background: white;
+      background: var(--bg-deep, var(--bg));
       box-shadow: 0 0 0 4px rgba(191, 91, 50, 0.1);
     }
 
@@ -112,7 +104,7 @@
       padding: 14px 32px;
       border-radius: 99px;
       background: var(--accent);
-      color: white;
+      color: var(--btn-text);
       border: none;
       font-weight: 800;
       font-size: 15px;
@@ -141,9 +133,9 @@
     #resultArea {
       margin-top: 10px;
       padding: 24px;
-      background: rgba(84, 66, 49, 0.04);
+      background: var(--input-bg);
       border-radius: 18px;
-      border: 1px dashed var(--border);
+      border: 1px dashed var(--line);
       display: none;
       animation: fadeIn 0.4s ease;
     }
@@ -163,7 +155,7 @@
     .time-stats {
       font-size: 12px;
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.6);
+      background: var(--btn-secondary-bg);
       padding: 4px 10px;
       border-radius: 99px;
     }
@@ -177,9 +169,10 @@
       line-height: 1.6;
     }
 
-    .json-key { color: #8c4964; font-weight: 700; }
-    .json-string { color: #2d786c; }
-    .json-number { color: #ca9d3a; }
+    /* 着色样式 - 适配主题变量 */
+    .json-key { color: var(--berry); font-weight: 700; }
+    .json-string { color: var(--teal); }
+    .json-number { color: var(--mustard); }
 
     #errorArea {
       background: rgba(220, 38, 38, 0.05);
@@ -261,7 +254,7 @@
       <div id="outputContainer" 
            tabindex="0"
            onkeydown="handleResultKeyDown(event)"
-           style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); max-height: 400px; overflow-y: auto; outline: none; position: relative; transition: border-color 0.2s;">
+           style="background: var(--bg-deep, var(--bg)); padding: 20px; border-radius: 12px; border: 1px solid var(--line); max-height: 400px; overflow-y: auto; outline: none; position: relative; transition: border-color 0.2s;">
         <pre id="outputPre"></pre>
       </div>
     </div>
