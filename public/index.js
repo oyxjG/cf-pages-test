@@ -284,14 +284,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileIdentity = document.querySelector('.profile-content .identity');
     const avatarEl = document.querySelector('.profile-content .avatar');
     const adminConsoleCard = document.querySelector('a[data-category="admin"]');
-    if (adminConsoleCard) adminConsoleCard.style.display = 'none'; // 默认隐藏
+    const adminFilterBtn = document.getElementById('admin-filter-btn');
+    
+    // 默认隐藏所有管理相关入口
+    if (adminConsoleCard) adminConsoleCard.style.display = 'none';
+    if (adminFilterBtn) adminFilterBtn.style.display = 'none';
 
     if (userJson && profileIdentity && avatarEl) {
         const user = JSON.parse(userJson);
         
-        // 如果是管理员，显示控制台
-        if (user.role === 'admin' && adminConsoleCard) {
-            adminConsoleCard.style.display = 'block';
+        // 如果是管理员，显示管理相关入口
+        if (user.role === 'admin') {
+            if (adminConsoleCard) adminConsoleCard.style.display = 'block';
+            if (adminFilterBtn) adminFilterBtn.style.display = 'inline-block';
         }
         
         // 更新昵称和角色
