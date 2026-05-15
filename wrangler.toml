@@ -11,3 +11,9 @@ binding = "ASSETS"
 binding = "apitest_bind"
 database_name = "apitest"
 database_id = "5f155f13-2487-47b8-a436-eb660b552a93"
+
+[[kv_namespaces]]
+binding = "CF_TEST"  # 在代码中调用的变量名（通常用大写）
+id = "1bcccf51173d48edb19a441802b8c704"  # 从 Cloudflare 控制台 KV 页面获取的长字符串 ID
+# 如果你需要在本地开发时也能访问（使用模拟数据）
+#preview_id = "你的预览ID(可选)"
