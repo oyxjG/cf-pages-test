@@ -134,17 +134,22 @@ export default {
 
         if (request.method === "GET") {
           const { results } = await db.prepare(
-            "SELECT text, completed, strftime('%s', created_at) * 1000 AS createdAt, strftime('%s', completed_at) * 1000 AS completedAt FROM todos WHERE user_id = ? ORDER BY id DESC"
+            "SELECT text, completed, created_at AS createdAt, completed_at AS completedAt FROM todos WHERE user_id = ? ORDER BY id DESC"
           ).bind(userId).all();
           
           return json({ 
             ok: true, 
-            data: results.map(r => ({ 
-                text: r.text, 
-                completed: !!r.completed,
-                createdAt: r.createdAt,
-                completedAt: r.completedAt
-            })) 
+            data: results.map(r => {
+                // 读取时：如果是字符串则转为毫秒数
+                const cAt = typeof r.createdAt === 'string' ? new Date(r.createdAt).getTime() : r.createdAt;
+                const compAt = typeof r.completedAt === 'string' ? new Date(r.completedAt).getTime() : r.completedAt;
+                return {
+                    text: r.text, 
+                    completed: !!r.completed,
+                    createdAt: cAt,
+                    completedAt: compAt
+                };
+            }) 
           });
         }
 
@@ -155,25 +160,26 @@ export default {
           }
 
           try {
-            // 使用事务：删除旧数据并插入新数据
             const statements = [
               db.prepare("DELETE FROM todos WHERE user_id = ?").bind(userId)
             ];
 
             for (const todo of todos) {
-              const createdAtSeconds = todo.createdAt ? Math.floor(todo.createdAt / 1000) : null;
-              const completedAtSeconds = todo.completedAt ? Math.floor(todo.completedAt / 1000) : null;
+              // 存储时：将数字毫秒数转为 ISO 字符串，以确保兼容 D1 的 DATETIME 类型
+              const cAtStr = todo.createdAt ? new Date(todo.createdAt).toISOString() : new Date().toISOString();
+              const compAtStr = todo.completedAt ? new Date(todo.completedAt).toISOString() : null;
               
               statements.push(
-                db.prepare("INSERT INTO todos (user_id, text, completed, created_at, completed_at) VALUES (?, ?, ?, COALESCE(datetime(?, 'unixepoch'), CURRENT_TIMESTAMP), datetime(?, 'unixepoch'))")
-                  .bind(userId, todo.text, todo.completed ? 1 : 0, createdAtSeconds, completedAtSeconds)
+                db.prepare("INSERT INTO todos (user_id, text, completed, created_at, completed_at) VALUES (?, ?, ?, ?, ?)")
+                  .bind(userId, todo.text, todo.completed ? 1 : 0, cAtStr, compAtStr)
               );
             }
 
             await db.batch(statements);
             return json({ ok: true, msg: "同步成功" });
           } catch (err) {
-            return json({ ok: false, msg: "数据库同步失败" }, 500);
+            console.error('D1 Sync Error:', err.message);
+            return json({ ok: false, msg: "数据库同步失败: " + err.message }, 500);
           }
         }
 

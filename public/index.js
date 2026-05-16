@@ -216,9 +216,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearCompletedBtn = document.getElementById('clear-completed');
 
     if (todoInput && todoList) {
-        let todos = JSON.parse(localStorage.getItem('garden-todos') || '[]');
         const token = localStorage.getItem('token');
         const isLoggedIn = !!token;
+        
+        // 解析用户 ID 以实现存储隔离
+        let userId = null;
+        if (isLoggedIn) {
+            const payload = parseJwt(token);
+            userId = payload?.userId;
+        }
+
+        const storageKey = userId ? `garden-todos-${userId}` : 'garden-todos';
+        let todos = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+        // 迁移逻辑：如果刚登录且个人空间为空，尝试从公共空间迁移数据
+        if (isLoggedIn && userId && todos.length === 0) {
+            const publicTodos = JSON.parse(localStorage.getItem('garden-todos') || '[]');
+            if (publicTodos.length > 0) {
+                console.log('Migrating public todos to user account...');
+                todos = publicTodos;
+                localStorage.setItem(storageKey, JSON.stringify(todos));
+                localStorage.removeItem('garden-todos'); // 迁移后清理公共空间
+            }
+        }
 
         const syncTodos = async () => {
             if (!isLoggedIn) return;
@@ -263,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const saveTodos = (shouldSync = true) => {
-            localStorage.setItem('garden-todos', JSON.stringify(todos));
+            localStorage.setItem(storageKey, JSON.stringify(todos));
             if (shouldSync) syncTodos();
         };
 
@@ -272,21 +292,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const renderTodos = () => {
             todoList.innerHTML = '';
             
-            // 过滤掉已标记为“隐藏”的已完成任务（仅限当前点击清除后的效果）
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+            // 数据清洗：确保所有任务的时间戳都是数字格式
+            todos.forEach(t => {
+                if (typeof t.createdAt === 'string') {
+                    // 如果是 ISO 字符串或其它格式，尝试转为毫秒数
+                    const parsed = new Date(t.createdAt).getTime();
+                    if (!isNaN(parsed)) t.createdAt = parsed;
+                }
+            });
+
+            // 核心逻辑：显示（今天创建的任务）+（以前未完成的任务）
+            const relevantTodos = todos.filter(t => {
+                const createdAtNum = Number(t.createdAt) || 0;
+                const isCreatedToday = createdAtNum >= startOfToday;
+                const isPending = !t.completed;
+                return isCreatedToday || isPending;
+            });
+
+            // 过滤掉已标记为“隐藏”的已完成任务（仅限当前点击隐藏后的效果）
             const visibleTodos = hideCompletedInView 
-                ? todos.filter(t => !t.completed) 
-                : todos;
+                ? relevantTodos.filter(t => !t.completed) 
+                : relevantTodos;
 
             visibleTodos.forEach((todo) => {
-                // 在原始 todos 数组中找到索引，确保操作正确
                 const originalIndex = todos.indexOf(todo);
+                const createdAtNum = Number(todo.createdAt) || 0;
+                const isHistory = createdAtNum < startOfToday;
                 const item = document.createElement('div');
-                item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                item.className = `todo-item ${todo.completed ? 'completed' : ''} ${isHistory ? 'history-task' : ''}`;
                 item.innerHTML = `
                     <div class="todo-checkbox" onclick="toggleTodo(${originalIndex})">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
-                    <span class="todo-text">${todo.text}</span>
+                    <div class="todo-content-wrapper" style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                        <span class="todo-text">${todo.text}</span>
+                        ${isHistory ? '<span class="todo-tag">历史积压</span>' : ''}
+                    </div>
                     <button class="delete-todo" onclick="deleteTodo(${originalIndex})" title="删除">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
@@ -295,7 +339,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const remaining = todos.filter(t => !t.completed).length;
-            todoStats.innerText = `${remaining} 个未完成 ${isLoggedIn ? '(已同步)' : '(本地模式)'}`;
+            const historyPending = relevantTodos.filter(t => {
+                const createdAtNum = Number(t.createdAt) || 0;
+                return createdAtNum < startOfToday && !t.completed;
+            }).length;
+            
+            let statsText = `${remaining} 个未完成`;
+            if (historyPending > 0) {
+                statsText += ` (含 ${historyPending} 个积压)`;
+            }
+            todoStats.innerText = `${statsText} ${isLoggedIn ? '☁️' : '📍'}`;
             
             // 如果所有已完成都被隐藏了，且没有未完成的，可以给个提示或者保持原样
             // 这里维持原样即可，用户可以在任务中心看到全部
