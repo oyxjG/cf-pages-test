@@ -244,9 +244,31 @@
             document.getElementById('admin-info').innerText = `管理员: ${user.nick_name || user.username}`;
         }
 
+        async function adminFetch(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            };
+            if (options.body && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const res = await fetch(url, { ...options, headers });
+            if (res.status === 401) {
+                alert('会话已失效，请重新登录');
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+                return null;
+            }
+            return res;
+        }
+
         async function loadUsers() {
             try {
-                const res = await fetch('/api/admin/users');
+                const res = await adminFetch('/api/admin/users');
+                if (!res) return;
                 const result = await res.json();
                 if (result.ok) {
                     renderTable(result.data, result.stats);
@@ -300,20 +322,22 @@
 
         async function toggleStatus(userId, currentStatus) {
             const newStatus = currentStatus === 0 ? 1 : 0;
-            const res = await fetch('/api/admin/update-status', {
+            const res = await adminFetch('/api/admin/update-status', {
                 method: 'POST',
                 body: JSON.stringify({ userId, status: newStatus })
             });
+            if (!res) return;
             const result = await res.json();
             if (result.ok) loadUsers();
         }
 
         async function deleteUser(userId) {
             if (!confirm('确定要删除该用户吗？此操作不可逆。')) return;
-            const res = await fetch('/api/admin/delete-user', {
+            const res = await adminFetch('/api/admin/delete-user', {
                 method: 'POST',
                 body: JSON.stringify({ userId })
             });
+            if (!res) return;
             const result = await res.json();
             if (result.ok) loadUsers();
         }

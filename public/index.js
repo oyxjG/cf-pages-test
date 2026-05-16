@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 绑定退出登录
         document.getElementById('logout-btn')?.addEventListener('click', () => {
             localStorage.removeItem('user');
+            localStorage.removeItem('token');
             window.location.reload();
         });
     } else if (profileIdentity) {
