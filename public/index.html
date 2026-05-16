@@ -191,7 +191,12 @@
                         <article class="card tall todo-card" id="todo-panel">
                             <div class="accent-strip"></div>
                             <div class="eyebrow">Routine</div>
-                            <h4>今日待办</h4>
+                            <div class="todo-header">
+                                <h4>今日待办</h4>
+                                <a href="/tasks.html" class="icon-btn tasks-link" title="进入任务中心">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                </a>
+                            </div>
                             <div class="todo-input-wrapper">
                                 <input type="text" id="todo-input" placeholder="添加新任务..." maxlength="50">
                                 <button id="add-todo" title="添加任务">

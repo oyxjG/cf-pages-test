@@ -125,6 +125,60 @@ export default {
         return json({ ok: result.ok, msg: result.msg }, result.status);
       }
 
+      if (pathname === "/api/todos") {
+        const db = env.apitest_bind;
+        if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+        
+        const userId = authUser.userId;
+
+        if (request.method === "GET") {
+          const { results } = await db.prepare(
+            "SELECT text, completed, strftime('%s', created_at) * 1000 AS createdAt, strftime('%s', completed_at) * 1000 AS completedAt FROM todos WHERE user_id = ? ORDER BY id DESC"
+          ).bind(userId).all();
+          
+          return json({ 
+            ok: true, 
+            data: results.map(r => ({ 
+                text: r.text, 
+                completed: !!r.completed,
+                createdAt: r.createdAt,
+                completedAt: r.completedAt
+            })) 
+          });
+        }
+
+        if (request.method === "POST") {
+          const { todos } = await parseJsonSafe(request);
+          if (!Array.isArray(todos)) {
+            return json({ ok: false, msg: "Invalid todos data" }, 400);
+          }
+
+          try {
+            // 使用事务：删除旧数据并插入新数据
+            const statements = [
+              db.prepare("DELETE FROM todos WHERE user_id = ?").bind(userId)
+            ];
+
+            for (const todo of todos) {
+              const createdAtSeconds = todo.createdAt ? Math.floor(todo.createdAt / 1000) : null;
+              const completedAtSeconds = todo.completedAt ? Math.floor(todo.completedAt / 1000) : null;
+              
+              statements.push(
+                db.prepare("INSERT INTO todos (user_id, text, completed, created_at, completed_at) VALUES (?, ?, ?, COALESCE(datetime(?, 'unixepoch'), CURRENT_TIMESTAMP), datetime(?, 'unixepoch'))")
+                  .bind(userId, todo.text, todo.completed ? 1 : 0, createdAtSeconds, completedAtSeconds)
+              );
+            }
+
+            await db.batch(statements);
+            return json({ ok: true, msg: "同步成功" });
+          } catch (err) {
+            return json({ ok: false, msg: "数据库同步失败" }, 500);
+          }
+        }
+
+        return methodNotAllowed();
+      }
+
       // 管理后台接口额外权限检查
       if (pathname.startsWith("/api/admin/")) {
         if (authUser.role !== 'admin') {

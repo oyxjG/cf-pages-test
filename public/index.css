@@ -1040,17 +1040,62 @@ body::after {
 .delete-todo:hover {
     color: #ff4d4d;
 }
+.todo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.todo-header h4 {
+    margin: 0;
+}
+
+.tasks-link {
+    background: transparent;
+    border-color: transparent;
+    color: var(--muted);
+    opacity: 0.6;
+}
+
+.tasks-link:hover {
+    background: var(--paper-strong);
+    border-color: var(--line);
+    color: var(--accent);
+    opacity: 1;
+}
 
 .todo-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: auto;
-    padding-top: 12px;
+    padding-top: 14px;
     border-top: 1px solid var(--line);
+    margin-top: auto;
 }
 
-#todo-stats {
+.icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--paper-strong);
+    color: var(--accent);
+    border: 1px solid var(--line);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.delete-todo {
     font-size: 12px;
     color: var(--muted);
 }

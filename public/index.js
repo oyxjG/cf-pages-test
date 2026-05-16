@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 延迟一会执行，确保数据已填入
     setTimeout(updateProgressBars, 500);
 
-    // 5. 今日待办逻辑 (LocalStorage 存储)
+    // 5. 今日待办逻辑 (LocalStorage + Cloud Sync)
     const todoInput = document.getElementById('todo-input');
     const addTodoBtn = document.getElementById('add-todo');
     const todoList = document.getElementById('todo-list');
@@ -217,9 +217,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (todoInput && todoList) {
         let todos = JSON.parse(localStorage.getItem('garden-todos') || '[]');
+        const token = localStorage.getItem('token');
+        const isLoggedIn = !!token;
 
-        const saveTodos = () => {
+        const syncTodos = async () => {
+            if (!isLoggedIn) return;
+            try {
+                const res = await fetch('/api/todos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ todos })
+                });
+                const data = await res.json();
+                if (!data.ok) console.error('Sync failed:', data.msg);
+            } catch (err) {
+                console.error('Sync error:', err);
+            }
+        };
+
+        const fetchTodos = async () => {
+            if (!isLoggedIn) return;
+            try {
+                const res = await fetch('/api/todos', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                if (result.ok && Array.isArray(result.data)) {
+                    if (result.data.length > 0) {
+                        // 云端有数据，以云端为准
+                        todos = result.data;
+                        saveTodos(false); 
+                        renderTodos();
+                    } else if (todos.length > 0) {
+                        // 云端没数据但本地有，说明是初次登录，自动推送到云端
+                        console.log('Detected local todos, performing initial sync...');
+                        syncTodos();
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch todos error:', err);
+            }
+        };
+
+        const saveTodos = (shouldSync = true) => {
             localStorage.setItem('garden-todos', JSON.stringify(todos));
+            if (shouldSync) syncTodos();
         };
 
         const renderTodos = () => {
@@ -240,11 +285,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const remaining = todos.filter(t => !t.completed).length;
-            todoStats.innerText = `${remaining} 个未完成`;
+            todoStats.innerText = `${remaining} 个未完成 ${isLoggedIn ? '(已同步)' : '(本地模式)'}`;
         };
 
         window.toggleTodo = (index) => {
-            todos[index].completed = !todos[index].completed;
+            const isNowCompleted = !todos[index].completed;
+            todos[index].completed = isNowCompleted;
+            // 记录完成时间：如果切换为完成则打戳，否则清空
+            todos[index].completedAt = isNowCompleted ? Date.now() : null;
+            
             saveTodos();
             renderTodos();
         };
@@ -258,7 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const addNewTodo = () => {
             const text = todoInput.value.trim();
             if (text) {
-                todos.unshift({ text, completed: false });
+                todos.unshift({ 
+                    text, 
+                    completed: false,
+                    createdAt: Date.now() // 增加时间戳
+                });
                 todoInput.value = '';
                 saveTodos();
                 renderTodos();
@@ -276,7 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTodos();
         });
 
+        // 初始化
         renderTodos();
+        if (isLoggedIn) fetchTodos();
     }
 
     // 6. 登录状态检测

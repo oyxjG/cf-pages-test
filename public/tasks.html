@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>任务中心 - 个人聚合面板</title>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        .tasks-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            gap: 24px;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .task-group {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .group-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .group-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--line);
+        }
+
+        .history-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            background: var(--paper-strong);
+            border: 1px solid var(--line);
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            border-color: var(--accent-soft);
+            transform: translateX(4px);
+        }
+
+        .history-item.completed {
+            opacity: 0.6;
+        }
+
+        .history-item.completed .task-text {
+            text-decoration: line-through;
+        }
+
+        .task-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            background: var(--paper);
+            border: 1.5px solid var(--line);
+            color: transparent;
+        }
+
+        .completed .task-status {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .task-time {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .analysis-card {
+            padding: 32px;
+            background: linear-gradient(135deg, var(--paper-strong), var(--paper));
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .chart-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 12px solid var(--line);
+            position: relative;
+            display: grid;
+            place-items: center;
+        }
+
+        .chart-value {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        .chart-bar {
+            position: absolute;
+            top: -12px; left: -12px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            border: 12px solid var(--accent);
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+            transform: rotate(45deg);
+        }
+
+        .local-warning {
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(202, 157, 58, 0.1);
+            border: 1px solid rgba(202, 157, 58, 0.2);
+            color: var(--mustard);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        /* 筛选栏样式优化：嵌入式 */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 12px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            border-radius: 10px;
+            background: var(--paper-strong);
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .filter-chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(191, 91, 50, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .filter-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <div class="tasks-container">
+            <header class="tasks-header">
+                <a href="/" class="back-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    返回首页
+                </a>
+                <div class="badge">Task Center</div>
+            </header>
+
+            <section class="panel analysis-card">
+                <div class="analysis-info">
+                    <div class="eyebrow">Data Analysis</div>
+                    <h3>任务完成情况</h3>
+                    <p class="muted">基于当前周期的统计数据。登录云端可查看完整历史趋势。</p>
+                    <div class="stats-grid" style="margin-top: 24px;">
+                        <div class="mini-stat">
+                            <strong id="total-tasks">--</strong>
+                            <span>总任务</span>
+                        </div>
+                        <div class="mini-stat">
+                            <strong id="completed-tasks">--</strong>
+                            <span>已完成</span>
+                        </div>
+                        <div class="mini-stat">
+                            <strong id="avg-time">--</strong>
+                            <span>平均耗时</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: center;">
+                    <div class="chart-placeholder">
+                        <div class="chart-bar" id="completion-chart"></div>
+                        <span class="chart-value" id="rate-value">--%</span>
+                    </div>
+                </div>
+            </section>
+
+            <div id="local-mode-notice" class="local-warning" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>您当前处于本地模式，仅展示最近 7 天数据。建议<a href="/login.html" style="color: inherit; font-weight: 800;">登录</a>以解锁永久云端历史。</span>
+            </div>
+
+            <div id="task-history" class="task-history-container">
+                <!-- 由 JS 渲染 -->
+                <div style="text-align: center; padding: 60px; color: var(--muted);">加载中...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="tasks.js"></script>
+</body>
+
+</html>
