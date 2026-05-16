@@ -762,28 +762,104 @@ body::after {
 
 @media (max-width: 720px) {
     .page {
-        padding: 16px 12px 40px;
+        padding: 16px 12px 80px; /* 增加底部边距，防止被可能存在的底部栏遮挡 */
+    }
+
+    .shell {
+        gap: 16px;
     }
 
     .panel,
     .card,
     .feature,
     .hero {
-        padding: 18px;
-        border-radius: 22px;
+        padding: 20px;
+        border-radius: 24px;
+    }
+
+    .hero {
+        gap: 32px; /* 减小英雄区域内部间距 */
+    }
+
+    .hero h2 {
+        font-size: 28px; /* 稍微减小标题字号 */
     }
 
     .card-grid,
     .link-grid,
-    .tools-grid {
-        grid-template-columns: 1fr;
+    .tools-grid,
+    .hero-stats-grid {
+        grid-template-columns: 1fr; /* 全部改为单列 */
+        gap: 12px;
     }
 
-    .toolbar,
-    .section-head,
-    .history-actions {
+    .stat-card {
+        padding: 16px 20px;
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-header {
+        min-width: 85px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .stat-header strong {
+        font-size: 26px;
+    }
+
+    .stat-desc {
+        min-height: auto;
+        flex: 1;
+    }
+
+    .stat-desc span {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 0;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .holiday-badge {
+        font-size: 10px;
+        padding: 1px 6px;
+    }
+
+    .toolbar {
         flex-direction: column;
         align-items: stretch;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .button {
+        justify-content: center;
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .section-head h3 {
+        font-size: 24px;
     }
 
     .timeline-item {
