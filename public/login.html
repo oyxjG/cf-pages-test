@@ -278,8 +278,7 @@
                 const result = await response.json();
 
                 if (result.ok) {
-                    // 保存登录状态（这里存储用户信息和 Token）
-                    localStorage.setItem('user', JSON.stringify(result.user));
+                    // 保存登录状态（仅存储 Token，用户信息将从 Token 中解析）
                     localStorage.setItem('token', result.token);
                     window.location.href = '/index.html';
                 } else {

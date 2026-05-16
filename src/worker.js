@@ -88,6 +88,7 @@ export default {
           const payload = {
             userId: user.id,
             username: user.username,
+            nick_name: user.nick_name,
             role: user.role,
             uuid: uuid,
             exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)

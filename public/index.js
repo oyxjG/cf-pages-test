@@ -334,20 +334,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLoggedIn) fetchTodos();
     }
 
-    // 6. 登录状态检测
-    const userJson = localStorage.getItem('user');
+    // 6. 登录状态检测与用户信息解析
+    const token = localStorage.getItem('token');
     const profileIdentity = document.querySelector('.profile-content .identity');
     const avatarEl = document.querySelector('.profile-content .avatar');
     const adminConsoleCard = document.querySelector('a[data-category="admin"]');
     const adminFilterBtn = document.getElementById('admin-filter-btn');
     
+    // 解析 JWT Payload 的工具函数
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    }
+
     // 默认隐藏所有管理相关入口
     if (adminConsoleCard) adminConsoleCard.style.display = 'none';
     if (adminFilterBtn) adminFilterBtn.style.display = 'none';
 
-    if (userJson && profileIdentity && avatarEl) {
-        const user = JSON.parse(userJson);
-        
+    const user = token ? parseJwt(token) : null;
+
+    if (user && profileIdentity && avatarEl) {
         // 如果是管理员，显示管理相关入口
         if (user.role === 'admin') {
             if (adminConsoleCard) adminConsoleCard.style.display = 'block';
@@ -368,8 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 绑定退出登录
         document.getElementById('logout-btn')?.addEventListener('click', () => {
-            localStorage.removeItem('user');
             localStorage.removeItem('token');
+            // 为了兼容旧版本，顺便清理一下 user
+            localStorage.removeItem('user');
             window.location.reload();
         });
     } else if (profileIdentity) {
