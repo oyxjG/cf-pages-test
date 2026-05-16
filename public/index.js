@@ -267,17 +267,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (shouldSync) syncTodos();
         };
 
+        let hideCompletedInView = false;
+
         const renderTodos = () => {
             todoList.innerHTML = '';
-            todos.forEach((todo, index) => {
+            
+            // 过滤掉已标记为“隐藏”的已完成任务（仅限当前点击清除后的效果）
+            const visibleTodos = hideCompletedInView 
+                ? todos.filter(t => !t.completed) 
+                : todos;
+
+            visibleTodos.forEach((todo) => {
+                // 在原始 todos 数组中找到索引，确保操作正确
+                const originalIndex = todos.indexOf(todo);
                 const item = document.createElement('div');
                 item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
                 item.innerHTML = `
-                    <div class="todo-checkbox" onclick="toggleTodo(${index})">
+                    <div class="todo-checkbox" onclick="toggleTodo(${originalIndex})">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
                     <span class="todo-text">${todo.text}</span>
-                    <button class="delete-todo" onclick="deleteTodo(${index})" title="删除">
+                    <button class="delete-todo" onclick="deleteTodo(${originalIndex})" title="删除">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 `;
@@ -286,6 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const remaining = todos.filter(t => !t.completed).length;
             todoStats.innerText = `${remaining} 个未完成 ${isLoggedIn ? '(已同步)' : '(本地模式)'}`;
+            
+            // 如果所有已完成都被隐藏了，且没有未完成的，可以给个提示或者保持原样
+            // 这里维持原样即可，用户可以在任务中心看到全部
+            
+            // 更新按钮文字
+            clearCompletedBtn.innerText = hideCompletedInView ? '显示已完成' : '隐藏已完成';
         };
 
         window.toggleTodo = (index) => {
@@ -313,6 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     createdAt: Date.now() // 增加时间戳
                 });
                 todoInput.value = '';
+                // 新增任务时，如果是处于隐藏已完成状态，可能需要重新考虑是否恢复显示
+                // 这里选择维持现状，新任务会显示在顶部
                 saveTodos();
                 renderTodos();
             }
@@ -324,8 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         clearCompletedBtn.addEventListener('click', () => {
-            todos = todos.filter(t => !t.completed);
-            saveTodos();
+            hideCompletedInView = !hideCompletedInView;
             renderTodos();
         });
 
