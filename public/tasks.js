@@ -45,6 +45,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             allTodos = allTodos.filter(t => !t.createdAt || t.createdAt > sevenDaysAgo);
         }
 
+        // --- 自动修复之前的时区 Bug 导致的时间偏移 (+8小时) ---
+        const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+        allTodos.forEach(t => {
+            if (t.createdAt >= 1778961600000 && t.createdAt <= 1778976000000) {
+                t.createdAt -= EIGHT_HOURS;
+                if (t.completedAt) t.completedAt -= EIGHT_HOURS;
+            }
+        });
+
         applyFilters();
     }
 
@@ -79,7 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime();
+        if (now.getHours() < 6) {
+            startOfToday -= 24 * 60 * 60 * 1000;
+        }
         
         if (filterTime === 'today') {
             filtered = filtered.filter(t => t.createdAt >= startOfToday);

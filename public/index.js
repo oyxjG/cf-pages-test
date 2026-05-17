@@ -293,7 +293,12 @@ document.addEventListener('DOMContentLoaded', () => {
             todoList.innerHTML = '';
             
             const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            // 以凌晨 6 点作为“新一天”的分界线（解决熬夜任务归属，以及过滤之前时区 Bug 导致偏移到凌晨 5 点的任务）
+            let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime();
+            if (now.getHours() < 6) {
+                // 如果当前时间还没到早上 6 点，则“今天”的起点算作昨天的早上 6 点
+                startOfToday -= 24 * 60 * 60 * 1000;
+            }
 
             // 数据清洗：确保所有任务的时间戳都是数字格式
             todos.forEach(t => {
@@ -301,6 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 如果是 ISO 字符串或其它格式，尝试转为毫秒数
                     const parsed = new Date(t.createdAt).getTime();
                     if (!isNaN(parsed)) t.createdAt = parsed;
+                }
+                
+                // --- 自动修复之前的时区 Bug 导致的时间偏移 (+8小时) ---
+                // 如果发现时间戳落在了 Bug 产生的错误时间段（比如 2026-05-17 凌晨 4点~8点）
+                // 且实际上是昨晚 8点~12点 创建的，我们可以平滑修复它。
+                // 这里的 1778961600000 对应 2026-05-17 04:00，1778976000000 对应 08:00
+                const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+                if (t.createdAt >= 1778961600000 && t.createdAt <= 1778976000000) {
+                    t.createdAt -= EIGHT_HOURS;
+                    if (t.completedAt) t.completedAt -= EIGHT_HOURS;
                 }
             });
 
