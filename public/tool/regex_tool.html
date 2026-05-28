@@ -7,6 +7,16 @@
   <link rel="stylesheet" href="../theme.css">
   <script src="../theme.js"></script>
   <style>
+    :root {
+      --accent-highlight: rgba(191, 91, 50, 0.18);
+      --teal-highlight: rgba(45, 120, 108, 0.22);
+    }
+
+    [data-theme="dark"] {
+      --accent-highlight: rgba(224, 122, 95, 0.45); /* 显著提升深色模式下的对比度 */
+      --teal-highlight: rgba(129, 178, 154, 0.42); /* 显著提升深色模式下的对比度 */
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -279,22 +289,23 @@
 
     /* 高亮层样式 */
     #highlightDiv mark {
-      background: rgba(191, 91, 50, 0.2);
+      background: var(--accent-highlight);
       color: transparent;
       border-radius: 2px;
-      box-shadow: 0 0 0 1px rgba(191, 91, 50, 0.1);
+      box-shadow: 0 0 0 1px var(--accent-highlight);
       transition: background 0.15s;
     }
 
     /* 悬停联动高亮样式 */
     #highlightDiv mark.active-inspect {
-      background: rgba(45, 120, 108, 0.5) !important;
+      background: rgba(45, 120, 108, 0.6) !important;
       box-shadow: 0 0 0 2px var(--teal) !important;
     }
 
     /* 交替高亮，方便区分相邻的匹配项 */
     #highlightDiv mark:nth-of-type(even) {
-      background: rgba(45, 120, 108, 0.25);
+      background: var(--teal-highlight);
+      box-shadow: 0 0 0 1px var(--teal-highlight);
     }
 
     /* 错误提示 */
@@ -840,7 +851,11 @@
             <span class="regex-slash">/</span>
             
             <!-- 修饰符勾选区 -->
-            <div class="regex-flags-container">
+            <div class="regex-flags-container" style="display: flex; align-items: center; gap: 6px;">
+              <a href="javascript:void(0)" onclick="switchTab('cheatsheet'); document.getElementById('tab-cheatsheet').scrollTop = 0;" style="font-size: 12px; color: var(--teal); text-decoration: none; display: inline-flex; align-items: center; gap: 2px; margin-right: 4px; font-weight: bold;" title="点击查看修饰符 g, i, m, s, y 详细解释说明">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                说明
+              </a>
               <label class="flag-checkbox" title="全局匹配 (g): 匹配所有符合的项，而非在找到第一个后停止">
                 <input type="checkbox" id="flagG" checked />
                 <span class="flag-label">g</span>
@@ -901,6 +916,33 @@
 
         <!-- Tab 2: 速查表 & 示例 -->
         <div id="tab-cheatsheet" class="tab-content">
+          <!-- 修饰符参考说明 -->
+          <div class="cheatsheet-section" id="flags-guide-section">
+            <div class="cheatsheet-title">🚩 匹配修饰符说明 (Flags)</div>
+            <div class="cheatsheet-grid" style="grid-template-columns: 1fr; gap: 8px;">
+              <div class="cheatsheet-item" style="justify-content: flex-start; gap: 8px; align-items: flex-start;">
+                <span class="cheatsheet-code" style="cursor: default; width: 20px; text-align: center; flex-shrink: 0;">g</span>
+                <span class="cheatsheet-desc" style="text-align: left;"><strong>全局匹配 (Global)</strong>：检索全部匹配项，而非仅在找到第一个后就停止。</span>
+              </div>
+              <div class="cheatsheet-item" style="justify-content: flex-start; gap: 8px; align-items: flex-start;">
+                <span class="cheatsheet-code" style="cursor: default; width: 20px; text-align: center; flex-shrink: 0;">i</span>
+                <span class="cheatsheet-desc" style="text-align: left;"><strong>忽略大小写 (Ignore Case)</strong>：匹配时不区分英文字母的大小写。</span>
+              </div>
+              <div class="cheatsheet-item" style="justify-content: flex-start; gap: 8px; align-items: flex-start;">
+                <span class="cheatsheet-code" style="cursor: default; width: 20px; text-align: center; flex-shrink: 0;">m</span>
+                <span class="cheatsheet-desc" style="text-align: left;"><strong>多行匹配 (Multiline)</strong>：使边界符 <code>^</code> 和 <code>$</code> 能够匹配每一行的开头和结尾。</span>
+              </div>
+              <div class="cheatsheet-item" style="justify-content: flex-start; gap: 8px; align-items: flex-start;">
+                <span class="cheatsheet-code" style="cursor: default; width: 20px; text-align: center; flex-shrink: 0;">s</span>
+                <span class="cheatsheet-desc" style="text-align: left;"><strong>单行匹配 (DotAll)</strong>：使句点 <code>.</code> 能够匹配包含换行符在内的任意字符。</span>
+              </div>
+              <div class="cheatsheet-item" style="justify-content: flex-start; gap: 8px; align-items: flex-start;">
+                <span class="cheatsheet-code" style="cursor: default; width: 20px; text-align: center; flex-shrink: 0;">y</span>
+                <span class="cheatsheet-desc" style="text-align: left;"><strong>粘性匹配 (Sticky)</strong>：仅从上一次匹配成功的下一个位置开始进行连续匹配。</span>
+              </div>
+            </div>
+          </div>
+
           <!-- 默认示例区 -->
           <div class="cheatsheet-section">
             <div class="cheatsheet-title">内置示范例</div>
@@ -909,9 +951,9 @@
                 <span>📧 匹配电子邮箱</span>
                 <span style="font-weight: normal; color: var(--muted); font-size: 11px;">Email</span>
               </div>
-              <div class="pattern-card-body">^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$</div>
+              <div class="pattern-card-body">[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}</div>
               <div class="pattern-card-actions">
-                <button class="pill-btn primary" onclick="loadPatternExample('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$', 'g', '用户列表：\n1. admin@domain.com (有效)\n2. test_user.123@sub.domain.cn (有效)\n3. invalid-email@outlook (无效 - 缺少后缀)\n4. hello@.com (无效 - 缺少域名)\n请发送申请邮件至 application-center@mit.edu 获取详细资料。')">加载此示例</button>
+                <button class="pill-btn primary" onclick="loadPatternExample('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', 'g', '用户列表：\n1. admin@domain.com (有效)\n2. test_user.123@sub.domain.cn (有效)\n3. invalid-email@outlook (无效 - 缺少后缀)\n4. hello@.com (无效 - 缺少域名)\n请发送申请邮件至 application-center@mit.edu 获取详细资料。')">加载此示例</button>
               </div>
             </div>
 
@@ -920,9 +962,9 @@
                 <span>📱 中国手机号码</span>
                 <span style="font-weight: normal; color: var(--muted); font-size: 11px;">Phone</span>
               </div>
-              <div class="pattern-card-body">^(?:\+?86)?1[3-9]\d{9}$</div>
+              <div class="pattern-card-body">(?:\+?86)?1[3-9]\d{9}</div>
               <div class="pattern-card-actions">
-                <button class="pill-btn primary" onclick="loadPatternExample('^(?:\\+?86)?1[3-9]\\d{9}$', 'gm', '中国境内手机号列表（支持+86前缀）：\n13912345678 (正确)\n+8618600001234 (正确)\n12812345678 (错误 - 2开头)\n1589876543 (错误 - 位数不足)\n服务热线：15599998888、+8613011112222。')">加载此示例</button>
+                <button class="pill-btn primary" onclick="loadPatternExample('(?:\\+?86)?1[3-9]\\d{9}', 'gm', '中国境内手机号列表（支持+86前缀）：\n13912345678 (正确)\n+8618600001234 (正确)\n12812345678 (错误 - 2开头)\n1589876543 (错误 - 位数不足)\n服务热线：15599998888、+8613011112222。')">加载此示例</button>
               </div>
             </div>
 
@@ -1139,7 +1181,7 @@
       if (!pattern) {
         highlightDiv.innerText = text;
         renderEmptyState();
-        runTestCases(null);
+        updateTestCaseIndicators(null);
         return;
       }
 
@@ -1163,8 +1205,8 @@
         // 渲染大白话词法解释器
         renderExplainer(pattern);
 
-        // 运行测试用例
-        runTestCases(regex);
+        // 运行测试用例（仅更新状态，不重绘 input 框）
+        updateTestCaseIndicators(regex);
 
       } catch (err) {
         showError(err.message);
@@ -1517,8 +1559,25 @@
       return tokens;
     }
 
-    // 运行测试用例管理器
-    function runTestCases(regex) {
+    // 获取当前合法的正则表达式对象
+    function getActiveRegexObj() {
+      const pattern = regexPattern.value;
+      if (!pattern) return null;
+      let flags = '';
+      if (flagG.checked) flags += 'g';
+      if (flagI.checked) flags += 'i';
+      if (flagM.checked) flags += 'm';
+      if (flagS.checked) flags += 's';
+      if (flagY.checked) flags += 'y';
+      try {
+        return new RegExp(pattern, flags);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 渲染整个测试用例管理器结构 (仅在用例个数发生变动或加载模板时调用)
+    function renderTestCaseList() {
       if (testCases.length === 0) {
         testCaseList.innerHTML = `<div class="empty-state"><p>暂无测试用例，点击下方按钮添加。</p></div>`;
         return;
@@ -1526,35 +1585,18 @@
 
       let html = '';
       testCases.forEach((tc, idx) => {
-        let isMatched = false;
-        let pass = false;
-        
-        if (regex) {
-          try {
-            // 测试单行文本匹配，重置 lastIndex，去掉全局 flag 仅测是否符合
-            const flagsClean = regex.flags.replace('g', '').replace('y', '');
-            const testRegexObj = new RegExp(regex.source, flagsClean);
-            isMatched = testRegexObj.test(tc.text);
-            pass = (isMatched === tc.expectMatch);
-          } catch(e) {}
-        }
-
-        const indicatorClass = regex ? (pass ? 'pass' : 'fail') : 'neutral';
-        const indicatorIcon = regex ? (pass ? '✔' : '✘') : '?';
         const expectBtnClass = tc.expectMatch ? 'match' : 'nomatch';
         const expectBtnText = tc.expectMatch ? '期望: 匹配' : '期望: 不匹配';
 
         html += `
           <div class="testcase-item">
-            <div class="testcase-status-indicator ${indicatorClass}" title="${regex ? (pass ? '测试通过' : '测试不一致') : '等待正则表达式输入'}">
-              ${indicatorIcon}
-            </div>
+            <div class="testcase-status-indicator neutral" id="tc-indicator-${idx}" title="等待正则表达式输入">?</div>
             <input type="text" 
                    class="testcase-text-input" 
                    value="${escapeHtml(tc.text)}" 
                    placeholder="输入测试用例字符串..." 
                    oninput="updateTestCaseText(${idx}, this.value)" />
-            <button class="testcase-expect-btn ${expectBtnClass}" onclick="toggleTestCaseExpect(${idx})">
+            <button class="testcase-expect-btn ${expectBtnClass}" id="tc-expect-btn-${idx}" onclick="toggleTestCaseExpect(${idx})">
               ${expectBtnText}
             </button>
             <button class="testcase-delete-btn" onclick="deleteTestCase(${idx})" title="删除此例">
@@ -1564,29 +1606,78 @@
       });
 
       testCaseList.innerHTML = html;
+
+      // 渲染后立即刷新一次指示灯状态
+      const regex = getActiveRegexObj();
+      updateTestCaseIndicators(regex);
+    }
+
+    // 仅更新测试用例的前端指示灯和期望按钮样式，决不重新渲染 input 框，以保全光标焦点
+    function updateTestCaseIndicators(regex) {
+      testCases.forEach((tc, idx) => {
+        const indicator = document.getElementById(`tc-indicator-${idx}`);
+        const expectBtn = document.getElementById(`tc-expect-btn-${idx}`);
+        if (!indicator) return;
+
+        let isMatched = false;
+        let pass = false;
+        
+        if (regex) {
+          try {
+            const flagsClean = regex.flags.replace('g', '').replace('y', '');
+            const testRegexObj = new RegExp(regex.source, flagsClean);
+            isMatched = testRegexObj.test(tc.text);
+            pass = (isMatched === tc.expectMatch);
+          } catch(e) {}
+        }
+
+        // 局部更新指示灯类名和图标
+        indicator.className = 'testcase-status-indicator';
+        if (!regex) {
+          indicator.classList.add('neutral');
+          indicator.textContent = '?';
+          indicator.title = '等待正则表达式输入';
+        } else if (pass) {
+          indicator.classList.add('pass');
+          indicator.textContent = '✔';
+          indicator.title = '测试通过';
+        } else {
+          indicator.classList.add('fail');
+          indicator.textContent = '✘';
+          indicator.title = '测试结果与期望不一致';
+        }
+
+        // 局部更新期望按钮样式和文字
+        if (expectBtn) {
+          expectBtn.className = `testcase-expect-btn ${tc.expectMatch ? 'match' : 'nomatch'}`;
+          expectBtn.textContent = tc.expectMatch ? '期望: 匹配' : '期望: 不匹配';
+        }
+      });
     }
 
     // 更新测试用例内容
     function updateTestCaseText(idx, val) {
       testCases[idx].text = val;
-      processRegex();
+      processRegex(); // 仅局部更新红绿灯状态，不会使 input 失去焦点
     }
 
     // 改变期望状态
     function toggleTestCaseExpect(idx) {
       testCases[idx].expectMatch = !testCases[idx].expectMatch;
-      processRegex();
+      processRegex(); // 仅局部更新红绿灯状态和按钮状态，体验丝滑
     }
 
     // 新增测试用例
     function addNewTestCase() {
       testCases.push({ text: '', expectMatch: true });
+      renderTestCaseList(); // 用例个数改变，需重绘 DOM
       processRegex();
     }
 
     // 删除测试用例
     function deleteTestCase(idx) {
       testCases.splice(idx, 1);
+      renderTestCaseList(); // 用例个数改变，需重绘 DOM
       processRegex();
     }
 
@@ -1668,6 +1759,7 @@
         ];
       }
 
+      renderTestCaseList(); // 结构改变，重绘用例列表
       updateLineNumbers();
       processRegex();
       switchTab('matches');
@@ -1679,6 +1771,7 @@
       regexPattern.value = '';
       testInput.value = '';
       testCases = [];
+      renderTestCaseList(); // 重绘为空结构
       
       flagG.checked = true;
       flagI.checked = false;
@@ -1728,7 +1821,7 @@
       if (!hash || !hash.startsWith('#state=')) {
         // 无 hash 时加载一个默认的“邮箱匹配”示例
         loadPatternExample(
-          '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$', 
+          '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', 
           'g', 
           '用户列表：\n1. admin@domain.com (有效)\n2. test_user.123@sub.domain.cn (有效)\n3. invalid-email@outlook (无效 - 缺少后缀)\n4. hello@.com (无效 - 缺少域名)\n请发送申请邮件至 application-center@mit.edu 获取详细资料。'
         );
@@ -1754,6 +1847,7 @@
         if (Array.isArray(state.c)) {
           testCases = state.c;
         }
+        renderTestCaseList(); // 还原分享状态，重绘用例
         
         showToast('已成功载入分享的配置状态！');
       } catch (err) {
