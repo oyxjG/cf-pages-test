@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diff 文本对比工具 - 个人聚合面板</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme.js"></script>
+  <style>
+    :root {
+      --diff-del-bg: color-mix(in srgb, var(--accent) 12%, transparent);
+      --diff-del-text: #b84a26;
+      --diff-del-char-bg: color-mix(in srgb, var(--accent) 24%, transparent);
+      
+      --diff-ins-bg: color-mix(in srgb, var(--teal) 12%, transparent);
+      --diff-ins-text: #1b5e53;
+      --diff-ins-char-bg: color-mix(in srgb, var(--teal) 24%, transparent);
+    }
+
+    [data-theme="dark"] {
+      --diff-del-bg: color-mix(in srgb, var(--accent) 15%, transparent);
+      --diff-del-text: #ff9e80;
+      --diff-del-char-bg: color-mix(in srgb, var(--accent) 30%, transparent);
+      
+      --diff-ins-bg: color-mix(in srgb, var(--teal) 15%, transparent);
+      --diff-ins-text: #a7ffeb;
+      --diff-ins-char-bg: color-mix(in srgb, var(--teal) 30%, transparent);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", sans-serif;
+      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .back-link {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+      z-index: 10;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--paper);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-sizing: border-box;
+      margin-top: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 20px;
+    }
+
+    .header-info h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-info p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* 主题按钮样式 */
+    .theme-btn {
+      background: var(--btn-secondary-bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .theme-btn:hover {
+      background: var(--line);
+      transform: scale(1.05);
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .editor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .text-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+      transition: opacity 0.2s;
+    }
+
+    .text-btn:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      background: var(--bg-deep);
+    }
+
+    /* 控制面板条 */
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background: var(--btn-secondary-bg);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .control-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* 选项组切换按钮 */
+    .toggle-group {
+      display: flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--input-bg);
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: var(--btn-text);
+    }
+
+    .toggle-btn:hover:not(.active) {
+      background: color-mix(in srgb, var(--text) 5%, transparent);
+    }
+
+    /* 复选框样式 */
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .checkbox-label input {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: 999px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn.primary { background: var(--accent); color: var(--btn-text); }
+    .btn.secondary { background: var(--btn-secondary-bg); color: var(--text); border: 1px solid var(--line); }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+    /* 对比结果显示区 */
+    .result-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .diff-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .legend-color.delete {
+      background-color: var(--diff-del-bg);
+      border: 1px solid var(--diff-del-text);
+    }
+
+    .legend-color.insert {
+      background-color: var(--diff-ins-bg);
+      border: 1px solid var(--diff-ins-text);
+    }
+
+    .diff-header-col {
+      background-color: color-mix(in srgb, var(--text) 4%, transparent);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--line);
+      letter-spacing: 0.05em;
+      user-select: none;
+    }
+
+    .diff-header-col.left {
+      border-right: 1px solid var(--line);
+    }
+
+    .empty-result {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 14px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-md);
+      background: var(--input-bg);
+    }
+
+    /* CSS Grid Diff 容器 */
+    .diff-container {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--paper-strong);
+    }
+
+    /* 双栏视图 Grid */
+    .diff-container.split {
+      display: grid;
+      grid-template-columns: 50px 1fr 50px 1fr;
+    }
+
+    /* 单栏视图 Grid */
+    .diff-container.inline {
+      display: grid;
+      grid-template-columns: 50px 50px 1fr;
+    }
+
+    .diff-gutter {
+      background-color: color-mix(in srgb, var(--text) 4%, transparent);
+      color: var(--muted);
+      text-align: right;
+      padding: 0 10px;
+      user-select: none;
+      border-right: 1px solid var(--line);
+      font-size: 11px;
+    }
+
+    .diff-code {
+      padding: 0 12px;
+      min-height: 1.6em;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .diff-code.left {
+      border-right: 1px solid var(--line);
+    }
+
+    /* 样式高亮 */
+    .diff-row-delete {
+      background-color: var(--diff-del-bg);
+      color: var(--diff-del-text);
+    }
+
+    .diff-row-insert {
+      background-color: var(--diff-ins-bg);
+      color: var(--diff-ins-text);
+    }
+
+    .diff-row-modify-left {
+      background-color: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+
+    .diff-row-modify-right {
+      background-color: color-mix(in srgb, var(--teal) 6%, transparent);
+    }
+
+    .char-delete {
+      background-color: var(--diff-del-char-bg);
+      color: var(--diff-del-text);
+      text-decoration: line-through;
+      font-weight: bold;
+      border-radius: 2px;
+      padding: 1px 0;
+    }
+
+    .char-insert {
+      background-color: var(--diff-ins-char-bg);
+      color: var(--diff-ins-text);
+      text-decoration: underline;
+      font-weight: bold;
+      border-radius: 2px;
+      padding: 1px 0;
+    }
+
+    .empty-line {
+      background-color: color-mix(in srgb, var(--text) 2%, transparent);
+    }
+
+    /* 逐词/逐字对比（非代码块视图） */
+    .diff-container.token-view {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+      .diff-container.token-view {
+        flex-direction: column;
+      }
+    }
+
+    .diff-container.token-view pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .diff-token-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .diff-token-pane.left {
+      border-right: 1px solid var(--line);
+      padding-right: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .diff-token-pane.left {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 20px;
+      }
+    }
+
+    .pane-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .inline-token {
+      width: 100%;
+      padding: 20px;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .copied-tip {
+      font-size: 12px;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    返回首页
+  </a>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-info">
+        <h1>Diff 文本对比</h1>
+        <p>支持逐行/逐词/逐字的比对分析，支持双栏与单栏视图，纯前端运行保障隐私。</p>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="editor-grid">
+      <div class="field">
+        <div class="field-label">
+          <label>原文本 (Original Text)</label>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <label class="text-btn" style="cursor: pointer; letter-spacing: normal;">
+              导入文件 <input type="file" id="fileImportOriginal" style="display: none;" onchange="importFile('originalText', this)" />
+            </label>
+            <button class="text-btn" onclick="clearEditor('originalText')">清空</button>
+          </div>
+        </div>
+        <textarea id="originalText" placeholder="在此输入、粘贴或拖入原版本文件..." oninput="debounceDiff()" spellcheck="false"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <label>修改后文本 (Modified Text)</label>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <label class="text-btn" style="cursor: pointer; letter-spacing: normal;">
+              导入文件 <input type="file" id="fileImportModified" style="display: none;" onchange="importFile('modifiedText', this)" />
+            </label>
+            <button class="text-btn" onclick="swapTexts()">交换</button>
+            <button class="text-btn" onclick="clearEditor('modifiedText')">清空</button>
+          </div>
+        </div>
+        <textarea id="modifiedText" placeholder="在此输入、粘贴或拖入新版本文件..." oninput="debounceDiff()" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+      <div class="control-group">
+        <span class="control-label">视图</span>
+        <div class="toggle-group" id="viewModeGroup">
+          <button class="toggle-btn active" data-value="split" onclick="setViewMode('split')">双栏对照</button>
+          <button class="toggle-btn" data-value="inline" onclick="setViewMode('inline')">单栏混排</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">模式</span>
+        <div class="toggle-group" id="diffTypeGroup">
+          <button class="toggle-btn active" data-value="line" onclick="setDiffType('line')">逐行比对</button>
+          <button class="toggle-btn" data-value="word" onclick="setDiffType('word')">逐词比对</button>
+          <button class="toggle-btn" data-value="char" onclick="setDiffType('char')">逐字比对</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">选项</span>
+        <label class="checkbox-label">
+          <input type="checkbox" id="ignoreWhitespace" onchange="performDiff()" checked /> 忽略空白
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="ignoreCase" onchange="performDiff()" /> 忽略大小写
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-left: auto;">
+        <span class="copied-tip" id="copy-tip">已复制到剪贴板</span>
+        <button class="btn secondary" onclick="copyResult()">复制结果</button>
+        <button class="btn primary" onclick="performDiff()">立即比对</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section">
+      <div class="result-header">
+        <label>比对分析结果</label>
+        <div class="diff-legend" id="diffLegend" style="display: none;">
+          <span class="legend-item"><span class="legend-color delete"></span> 红色代表已删除</span>
+          <span class="legend-item"><span class="legend-color insert"></span> 绿色代表已新增</span>
+        </div>
+      </div>
+      <div id="diffOutput">
+        <div class="empty-result">在上方输入原文本与修改后的文本，系统将实时进行差异比对。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load jsdiff from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.2.0/diff.min.js"></script>
+  <script>
+    let diffDebounceTimer;
+    let currentViewMode = 'split';
+    let currentDiffType = 'line';
+
+    function setViewMode(mode) {
+      document.querySelectorAll('#viewModeGroup .toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === mode);
+      });
+      currentViewMode = mode;
+      performDiff();
+    }
+
+    function setDiffType(type) {
+      document.querySelectorAll('#diffTypeGroup .toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === type);
+      });
+      currentDiffType = type;
+      performDiff();
+    }
+
+    function clearEditor(id) {
+      document.getElementById(id).value = '';
+      performDiff();
+    }
+
+    function swapTexts() {
+      const orig = document.getElementById('originalText');
+      const mod = document.getElementById('modifiedText');
+      const temp = orig.value;
+      orig.value = mod.value;
+      mod.value = temp;
+      performDiff();
+    }
+
+    function debounceDiff() {
+      clearTimeout(diffDebounceTimer);
+      // 获取文本长度保护性能，大于5万字符自动降低防抖响应，超过10万字强制手动点击
+      const origLen = document.getElementById('originalText').value.length;
+      const modLen = document.getElementById('modifiedText').value.length;
+      const totalLen = origLen + modLen;
+
+      if (totalLen > 100000) {
+        return; // 需要用户手动点击“立即比对”
+      }
+
+      const delay = totalLen > 30000 ? 600 : 150;
+      diffDebounceTimer = setTimeout(performDiff, delay);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function performDiff() {
+      const oldText = document.getElementById('originalText').value;
+      const newText = document.getElementById('modifiedText').value;
+      const diffOutput = document.getElementById('diffOutput');
+      const diffLegend = document.getElementById('diffLegend');
+
+      if (!oldText && !newText) {
+        diffOutput.innerHTML = '<div class="empty-result">在上方输入原文本与修改后的文本，系统将实时进行差异比对。</div>';
+        if (diffLegend) diffLegend.style.display = 'none';
+        return;
+      }
+
+      if (diffLegend) diffLegend.style.display = 'flex';
+
+      const options = {
+        ignoreCase: document.getElementById('ignoreCase').checked,
+        ignoreWhitespace: document.getElementById('ignoreWhitespace').checked
+      };
+
+      try {
+        if (currentDiffType === 'line') {
+          // 逐行比对
+          const diffResult = Diff.diffLines(oldText, newText, options);
+          renderLineDiff(diffResult, currentViewMode, options);
+        } else if (currentDiffType === 'word') {
+          // 逐词比对
+          const diffResult = Diff.diffWords(oldText, newText, options);
+          renderTokenDiff(diffResult, currentViewMode, 'word');
+        } else {
+          // 逐字比对
+          const diffResult = Diff.diffChars(oldText, newText, options);
+          renderTokenDiff(diffResult, currentViewMode, 'char');
+        }
+      } catch (e) {
+        diffOutput.innerHTML = `<div class="empty-result" style="color: var(--accent);">比对出错: ${e.message}</div>`;
+      }
+    }
+
+    function renderLineDiff(diffResult, viewMode, options) {
+      const diffOutput = document.getElementById('diffOutput');
+      
+      // 分组为不变行 (unchanged) 与变化块 (changed)
+      let blocks = [];
+      let currentChange = { removed: [], added: [] };
+
+      for (let part of diffResult) {
+        let lines = part.value.split(/\r?\n/);
+        // 如果最后一行是因为换行符切割出来的空字符串，则去掉它以对齐
+        if (lines.length > 1 && lines[lines.length - 1] === '') {
+          lines.pop();
+        }
+        if (part.removed) {
+          currentChange.removed.push(...lines);
+        } else if (part.added) {
+          currentChange.added.push(...lines);
+        } else {
+          if (currentChange.removed.length > 0 || currentChange.added.length > 0) {
+            blocks.push({
+              type: 'changed',
+              removed: [...currentChange.removed],
+              added: [...currentChange.added]
+            });
+            currentChange = { removed: [], added: [] };
+          }
+          blocks.push({ type: 'unchanged', lines: lines });
+        }
+      }
+      if (currentChange.removed.length > 0 || currentChange.added.length > 0) {
+        blocks.push({
+          type: 'changed',
+          removed: [...currentChange.removed],
+          added: [...currentChange.added]
+        });
+      }
+
+      if (viewMode === 'split') {
+        // 双栏渲染
+        let html = `
+          <div class="diff-container split">
+            <div class="diff-header-col left" style="grid-column: span 2;">原版本 (含删除)</div>
+            <div class="diff-header-col right" style="grid-column: span 2;">修改后 (含新增)</div>
+        `;
+        let leftLineNum = 1;
+        let rightLineNum = 1;
+
+        for (let block of blocks) {
+          if (block.type === 'unchanged') {
+            for (let line of block.lines) {
+              html += `
+                <div class="diff-gutter left">${leftLineNum++}</div>
+                <div class="diff-code left">${escapeHtml(line)}</div>
+                <div class="diff-gutter right">${rightLineNum++}</div>
+                <div class="diff-code right">${escapeHtml(line)}</div>
+              `;
+            }
+          } else {
+            // 对变化块进行两栏对齐渲染
+            let maxLen = Math.max(block.removed.length, block.added.length);
+            for (let i = 0; i < maxLen; i++) {
+              let leftLine = block.removed[i] !== undefined ? block.removed[i] : null;
+              let rightLine = block.added[i] !== undefined ? block.added[i] : null;
+
+              if (leftLine !== null && rightLine !== null) {
+                // 两边都存在：说明这一行被“修改”了，对其进行逐字差异分析展示
+                let charDiff = Diff.diffChars(leftLine, rightLine, options);
+                let leftHtml = '';
+                let rightHtml = '';
+                for (let cp of charDiff) {
+                  let esc = escapeHtml(cp.value);
+                  if (cp.removed) {
+                    leftHtml += `<span class="char-delete">${esc}</span>`;
+                  } else if (cp.added) {
+                    rightHtml += `<span class="char-insert">${esc}</span>`;
+                  } else {
+                    leftHtml += esc;
+                    rightHtml += esc;
+                  }
+                }
+                html += `
+                  <div class="diff-gutter left">${leftLineNum++}</div>
+                  <div class="diff-code left diff-row-modify-left">${leftHtml}</div>
+                  <div class="diff-gutter right">${rightLineNum++}</div>
+                  <div class="diff-code right diff-row-modify-right">${rightHtml}</div>
+                `;
+              } else if (leftLine !== null) {
+                // 仅左边有：原文本删除行
+                html += `
+                  <div class="diff-gutter left">${leftLineNum++}</div>
+                  <div class="diff-code left diff-row-delete">${escapeHtml(leftLine)}</div>
+                  <div class="diff-gutter right"></div>
+                  <div class="diff-code right empty-line"></div>
+                `;
+              } else if (rightLine !== null) {
+                // 仅右边有：新版本增加行
+                html += `
+                  <div class="diff-gutter left"></div>
+                  <div class="diff-code left empty-line"></div>
+                  <div class="diff-gutter right">${rightLineNum++}</div>
+                  <div class="diff-code right diff-row-insert">${escapeHtml(rightLine)}</div>
+                `;
+              }
+            }
+          }
+        }
+        html += '</div>';
+        diffOutput.innerHTML = html;
+      } else {
+        // 单栏渲染
+        let html = `
+          <div class="diff-container inline">
+            <div class="diff-header-col gutter-title">原行号</div>
+            <div class="diff-header-col gutter-title" style="border-right: 1px solid var(--line);">新行号</div>
+            <div class="diff-header-col content-title">内容 (单栏合并)</div>
+        `;
+        let leftLineNum = 1;
+        let rightLineNum = 1;
+
+        for (let block of blocks) {
+          if (block.type === 'unchanged') {
+            for (let line of block.lines) {
+              html += `
+                <div class="diff-gutter left">${leftLineNum++}</div>
+                <div class="diff-gutter right">${rightLineNum++}</div>
+                <div class="diff-code">${escapeHtml(line)}</div>
+              `;
+            }
+          } else {
+            // 先显示删除行
+            for (let line of block.removed) {
+              html += `
+                <div class="diff-gutter left">${leftLineNum++}</div>
+                <div class="diff-gutter right"></div>
+                <div class="diff-code diff-row-delete">${escapeHtml(line)}</div>
+              `;
+            }
+            // 再显示新增行
+            for (let line of block.added) {
+              html += `
+                <div class="diff-gutter left"></div>
+                <div class="diff-gutter right">${rightLineNum++}</div>
+                <div class="diff-code diff-row-insert">${escapeHtml(line)}</div>
+              `;
+            }
+          }
+        }
+        html += '</div>';
+        diffOutput.innerHTML = html;
+      }
+    }
+
+    function renderTokenDiff(diffResult, viewMode, tokenType) {
+      const diffOutput = document.getElementById('diffOutput');
+      let html = '<div class="diff-container token-view">';
+
+      if (viewMode === 'split') {
+        let leftHtml = '';
+        let rightHtml = '';
+
+        for (let part of diffResult) {
+          let esc = escapeHtml(part.value);
+          if (part.removed) {
+            leftHtml += `<span class="char-delete">${esc}</span>`;
+          } else if (part.added) {
+            rightHtml += `<span class="char-insert">${esc}</span>`;
+          } else {
+            leftHtml += esc;
+            rightHtml += esc;
+          }
+        }
+        html += `
+          <div class="diff-token-pane left">
+            <div class="pane-title">原文本（高亮删除部分）</div>
+            <pre>${leftHtml}</pre>
+          </div>
+          <div class="diff-token-pane right">
+            <div class="pane-title">修改后文本（高亮新增部分）</div>
+            <pre>${rightHtml}</pre>
+          </div>
+        `;
+      } else {
+        let inlineHtml = '';
+        for (let part of diffResult) {
+          let esc = escapeHtml(part.value);
+          if (part.removed) {
+            inlineHtml += `<span class="char-delete">${esc}</span>`;
+          } else if (part.added) {
+            inlineHtml += `<span class="char-insert">${esc}</span>`;
+          } else {
+            inlineHtml += esc;
+          }
+        }
+        html += `
+          <div class="diff-token-pane">
+            <div class="pane-title">比对内容 (单栏混排)</div>
+            <pre class="inline-token">${inlineHtml}</pre>
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      diffOutput.innerHTML = html;
+    }
+
+    function copyResult() {
+      // 复制已修改完的最新文本（即右侧文本）
+      const newText = document.getElementById('modifiedText').value;
+      if (!newText) return;
+
+      const copyTip = document.getElementById('copy-tip');
+      navigator.clipboard.writeText(newText).then(() => {
+        copyTip.style.opacity = 1;
+        setTimeout(() => {
+          copyTip.style.opacity = 0;
+        }, 1500);
+      });
+    }
+
+    function importFile(targetId, input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById(targetId).value = e.target.result;
+        performDiff();
+        input.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function setupDragAndDrop(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        el.style.borderColor = 'var(--accent)';
+        el.style.background = 'color-mix(in srgb, var(--accent) 5%, transparent)';
+      });
+      el.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        el.style.borderColor = '';
+        el.style.background = '';
+      });
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        el.style.borderColor = '';
+        el.style.background = '';
+        const file = e.dataTransfer.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            el.value = event.target.result;
+            performDiff();
+          };
+          reader.readAsText(file);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupDragAndDrop('originalText');
+      setupDragAndDrop('modifiedText');
+    });
+  </script>
+</body>
+</html>
