@@ -93,51 +93,119 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 2. 工具过滤与搜索逻辑 (不依赖外部库)
-    const toolSearch = document.getElementById('toolSearch');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const toolCards = document.querySelectorAll('#toolsGrid .link-card');
-    const noResults = document.getElementById('noResults');
+    // 2. Launchpad 全屏启动器逻辑
+    const launchpadOverlay = document.getElementById('launchpadOverlay');
+    const launchpadTriggerBtn = document.getElementById('launchpadTriggerBtn');
+    const launchpadCloseBtn = document.getElementById('launchpadCloseBtn');
+    const launchpadSearch = document.getElementById('launchpadSearch');
+    const lpFilterBtns = document.querySelectorAll('.lp-filter-btn');
+    const lpAppCards = document.querySelectorAll('#launchpadGrid .launchpad-app-card');
+    const lpNoResults = document.getElementById('lpNoResults');
 
-    if (toolSearch && toolCards.length > 0) {
-        let currentFilter = 'all';
-        let searchQuery = '';
+    // 打开 Launchpad
+    function openLaunchpad() {
+        if (!launchpadOverlay) return;
+        launchpadOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // 禁用主页面滚动
+        setTimeout(() => {
+            if (launchpadSearch) launchpadSearch.focus();
+        }, 100);
+    }
 
-        const applyFilter = () => {
-            let visibleCount = 0;
-            toolCards.forEach(card => {
-                const category = card.getAttribute('data-category');
-                const title = (card.querySelector('strong')?.innerText || '').toLowerCase();
-                const desc = (card.querySelector('span')?.innerText || '').toLowerCase();
-                
-                const matchesFilter = (currentFilter === 'all' || category === currentFilter);
-                const matchesSearch = (title.includes(searchQuery) || desc.includes(searchQuery));
+    // 关闭 Launchpad
+    function closeLaunchpad() {
+        if (!launchpadOverlay) return;
+        launchpadOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // 恢复主页面滚动
+        if (launchpadSearch) {
+            launchpadSearch.value = '';
+            // 清理搜索状态，显示所有卡片
+            applyLpFilter();
+        }
+    }
 
-                if (matchesFilter && matchesSearch) {
-                    card.classList.remove('hidden');
-                    visibleCount++;
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
+    if (launchpadTriggerBtn) {
+        launchpadTriggerBtn.addEventListener('click', openLaunchpad);
+    }
+    if (launchpadCloseBtn) {
+        launchpadCloseBtn.addEventListener('click', closeLaunchpad);
+    }
 
-            if (noResults) {
-                noResults.classList.toggle('visible', visibleCount === 0);
+    // 点击空白背板处关闭 Launchpad
+    if (launchpadOverlay) {
+        launchpadOverlay.addEventListener('click', (e) => {
+            if (e.target === launchpadOverlay || e.target.classList.contains('launchpad-content')) {
+                closeLaunchpad();
             }
-        };
+        });
+    }
 
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.getAttribute('data-filter');
-                applyFilter();
-            });
+    // 全局快捷键监听 (Ctrl+K 打开，Esc 关闭)
+    window.addEventListener('keydown', (e) => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+        if (isCmdOrCtrl && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            if (launchpadOverlay.classList.contains('active')) {
+                closeLaunchpad();
+            } else {
+                openLaunchpad();
+            }
+        }
+
+        if (e.key === 'Escape' && launchpadOverlay.classList.contains('active')) {
+            closeLaunchpad();
+        }
+    });
+
+    // 搜索与分类联动逻辑
+    let currentLpFilter = 'all';
+    let lpSearchQuery = '';
+
+    const applyLpFilter = () => {
+        let visibleCount = 0;
+        lpAppCards.forEach(card => {
+            const category = card.getAttribute('data-category');
+            const title = (card.querySelector('.app-title')?.innerText || '').toLowerCase();
+            const desc = (card.querySelector('.app-desc')?.innerText || '').toLowerCase();
+            
+            // 如果是管理员入口，且用户不是 admin，保持隐藏
+            const isUserAdmin = user && user.role === 'admin';
+            if (category === 'admin' && !isUserAdmin) {
+                card.classList.add('lp-hidden');
+                return;
+            }
+
+            const matchesFilter = (currentLpFilter === 'all' || category === currentLpFilter);
+            const matchesSearch = (title.includes(lpSearchQuery) || desc.includes(lpSearchQuery));
+
+            if (matchesFilter && matchesSearch) {
+                card.classList.remove('lp-hidden');
+                visibleCount++;
+            } else {
+                card.classList.add('lp-hidden');
+            }
         });
 
-        toolSearch.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
-            applyFilter();
+        if (lpNoResults) {
+            lpNoResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    };
+
+    lpFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            lpFilterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentLpFilter = btn.getAttribute('data-filter');
+            applyLpFilter();
+        });
+    });
+
+    if (launchpadSearch) {
+        launchpadSearch.addEventListener('input', (e) => {
+            lpSearchQuery = e.target.value.toLowerCase();
+            applyLpFilter();
         });
     }
     // 3. 实时时钟逻辑
@@ -424,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileIdentity = document.querySelector('.profile-content .identity');
     const avatarEl = document.querySelector('.profile-content .avatar');
     const adminConsoleCard = document.querySelector('a[data-category="admin"]');
-    const adminFilterBtn = document.getElementById('admin-filter-btn');
+    const adminFilterBtn = document.getElementById('lp-admin-filter-btn');
     
     // 解析 JWT Payload 的工具函数
     function parseJwt(token) {

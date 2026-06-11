@@ -1214,3 +1214,334 @@ body::after {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================
+   全屏 Launchpad 启动器重构样式 
+   ========================================== */
+
+/* 1. 首页 Launchpad 触发卡片 */
+.launchpad-trigger-card {
+    grid-column: span 2; /* 跨两列，显得更大气 */
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(191, 91, 50, 0.15) 0%, rgba(45, 120, 108, 0.1) 100%) !important;
+    border: 1px solid rgba(191, 91, 50, 0.3) !important;
+}
+
+@media (max-width: 1080px) {
+    .launchpad-trigger-card {
+        grid-column: span 1;
+    }
+}
+
+.launchpad-trigger-card kbd {
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--accent);
+    box-shadow: 0 2px 0 var(--line);
+    margin: 0 4px;
+}
+
+/* 流光溢彩动效 */
+.launchpad-trigger-card::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 20%,
+        rgba(191, 91, 50, 0.2) 40%,
+        rgba(45, 120, 108, 0.2) 60%,
+        transparent 80%
+    );
+    animation: rotateGlow 6s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.launchpad-trigger-card strong,
+.launchpad-trigger-card span {
+    position: relative;
+    z-index: 1;
+}
+
+/* 2. 全屏 Launchpad 覆盖层 */
+.launchpad-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    overflow-y: auto;
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+    background: rgba(13, 13, 21, 0.82); /* 默认深色，下面通过主题自适应 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .launchpad-overlay {
+    background: rgba(247, 245, 240, 0.88);
+}
+
+.launchpad-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 动画转场控制 */
+.launchpad-content {
+    width: 100%;
+    max-width: 1100px;
+    padding: 60px 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.launchpad-overlay.active .launchpad-content {
+    transform: scale(1);
+}
+
+/* 关闭按钮 */
+.launchpad-close-btn {
+    position: fixed;
+    top: 30px;
+    right: 40px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 10000;
+}
+
+[data-theme="light"] .launchpad-close-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #333;
+}
+
+.launchpad-close-btn:hover {
+    background: #ff4d4d;
+    color: white;
+    border-color: #ff4d4d;
+    transform: rotate(90deg);
+}
+
+/* 3. 搜索框区域 */
+.launchpad-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 24px;
+}
+
+.launchpad-search-wrapper .search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+    transition: color 0.3s;
+}
+
+#launchpadSearch {
+    width: 100%;
+    padding: 16px 20px 16px 56px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 18px;
+    color: var(--text);
+    outline: none;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] #launchpadSearch {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+#launchpadSearch:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(191, 91, 50, 0.2), 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] #launchpadSearch:focus {
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(191, 91, 50, 0.15), 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+#launchpadSearch:focus + .search-icon {
+    color: var(--accent);
+}
+
+/* 4. 分类 Filter Tabs */
+.launchpad-filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .launchpad-filter-tabs {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.lp-filter-btn {
+    background: none;
+    border: none;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 999px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.lp-filter-btn:hover {
+    color: var(--text);
+}
+
+.lp-filter-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(191, 91, 50, 0.3);
+}
+
+/* 5. App 风格网格排版 */
+.launchpad-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 32px 20px;
+    justify-content: center;
+}
+
+/* 6. App 卡片样式 (macOS App-style) */
+.launchpad-app-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    padding: 16px 12px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+}
+
+.launchpad-app-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: translateY(-5px);
+}
+
+[data-theme="light"] .launchpad-app-card:hover {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(0, 0, 0, 0.03);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.launchpad-app-card .app-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    font-size: 36px;
+    margin-bottom: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.launchpad-app-card:hover .app-icon {
+    transform: scale(1.08);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .launchpad-app-card .app-icon {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .launchpad-app-card:hover .app-icon {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+}
+
+.launchpad-app-card .app-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: block;
+    color: var(--text);
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.launchpad-app-card .app-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 32px;
+}
+
+/* 7. 未找到结果提示 */
+.lp-no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 15px;
+}
+
+/* 隐藏动画控制 */
+.launchpad-app-card.lp-hidden {
+    display: none !important;
+}

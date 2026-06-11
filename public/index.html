@@ -250,113 +250,41 @@
                             <div class="badge">Efficiency</div>
                             <h3>生产力工具</h3>
                         </div>
-                        <p class="muted">精选高频使用的生产力工具，旨在消除繁琐，提升效率。工欲善其事，必先利其器。</p>
+                        <p class="muted">精选高频使用的生产力工具，旨在消除繁琐，提升效率。点击常用推荐直达，或打开全屏工具箱检索全部小工具。</p>
                     </div>
 
                     <div class="full-width">
                         <article class="feature">
                             <div class="eyebrow">Workflow</div>
-                            <h4>快速入口</h4>
-                            <p class="muted">集成开发、日常、安全等各类实用小工具，一键直达，响应迅速。</p>
+                            <h4>常用推荐</h4>
+                            <p class="muted">最高频使用的小组件，一键即开。</p>
 
-                            <div class="tools-header">
-                                <div class="tools-filter">
-                                    <button class="filter-btn active" data-filter="all">全部</button>
-                                    <button class="filter-btn" data-filter="dev">开发</button>
-                                    <button class="filter-btn" data-filter="daily">生活</button>
-                                    <button class="filter-btn" data-filter="security">安全</button>
-                                    <button class="filter-btn" data-filter="security">安全</button>
-                                    <button class="filter-btn" id="admin-filter-btn" data-filter="admin" style="display: none;">管理</button>
-                                </div>
-                                <div class="tools-search">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8"></circle>
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                    </svg>
-                                    <input type="text" id="toolSearch" placeholder="搜索工具...">
-                                </div>
-                            </div>
-
-                            <div class="link-grid tools-grid" id="toolsGrid">
-                                <a class="link-card" href="/admin/index.html" data-category="admin">
-                                    <strong>👤 管理控制台</strong>
-                                    <span>集中管理用户与系统设置，高效维护平台运行。</span>
-                                </a>
-                                <a class="link-card" href="/tool/holiday_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="daily">
-                                    <strong>📅 节假日计算器</strong>
-                                    <span>精准掌握工作日与调休安排，轻松规划您的休假时光。</span>
-                                </a>
-                                <a class="link-card" href="/tool/timestamp_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>🕒 时间戳转换</strong>
-                                    <span>实时时间戳展示与双向格式转换，开发者必备的效率利器。</span>
-                                </a>
-                                <a class="link-card" href="/tool/password_generator.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="security">
-                                    <strong>🔐 高强度密码生成</strong>
-                                    <span>保障账号安全，自定义规则生成极难破解的复杂密码。</span>
-                                </a>
-                                <a class="link-card" href="/tool/qrcode_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="daily">
-                                    <strong>📷 二维码生成与识别</strong>
-                                    <span>快速创建与解析二维码，满足日常各种交互需求。</span>
-                                </a>
-                                <a class="link-card" href="/tool/base64_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>🔗 Base64 处理</strong>
-                                    <span>文本与 Base64 编码的即时转换，支持多种字符集。</span>
-                                </a>
-                                <a class="link-card" href="/tool/json_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>📦 JSON 格式化工具</strong>
-                                    <span>一键美化与校验 JSON 数据，清晰展示层级结构。</span>
-                                </a>
-                                <a class="link-card" href="/tool/diff_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>📋 Diff 文本对比</strong>
-                                    <span>纯前端文本差异比对工具，支持双栏与单栏视图，行级与字符级细粒度高亮。</span>
-                                </a>
-                                <a class="link-card" href="/tool/markdown_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
+                            <div class="link-grid tools-grid home-recommend-grid" id="toolsGrid">
+                                <a class="link-card" href="/tool/markdown_tool.html" target="_blank" rel="noopener noreferrer">
                                     <strong>📝 Markdown 编辑预览</strong>
-                                    <span>支持实时渲染预览，支持 GFM 规范、数学公式、Mermaid 图表，可高清导出图片与 PDF。</span>
+                                    <span>支持标准 GFM、LaTeX 数学公式与 Mermaid 流程图，可高清导出图片及分页 PDF。</span>
                                 </a>
-                                <a class="link-card" href="/tool/regex_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>🔍 正则表达式测试器</strong>
-                                    <span>支持高亮匹配、捕获组分析、可视化词法解释器与常用速查表。</span>
+                                <a class="link-card" href="/tool/diff_tool.html" target="_blank" rel="noopener noreferrer">
+                                    <strong>📋 Diff 文本对比</strong>
+                                    <span>纯前端文本差异比对，行/字级细粒度高亮，支持双栏与单栏视图。</span>
                                 </a>
-                                <a class="link-card" href="/tool/regex_generator_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>🧩 正则表达式生成器</strong>
-                                    <span>可视化配置规则，实时预览并生成正则表达式，支持一键导入测试器。</span>
+                                <a class="link-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer">
+                                    <strong>🛡️ 国密安全解密</strong>
+                                    <span>本地高性能 SM2 密钥对解析，提供安全的明文加解密与签名验证。</span>
                                 </a>
-                                <a class="link-card" href="/tool/language_detector.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>🌐 语种智能检测</strong>
-                                    <span>通过 AI 算法识别文本语种，支持多种自然语言与代码。</span>
+                                <a class="link-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer">
+                                    <strong>📦 JSON 格式化工具</strong>
+                                    <span>一键美化、折叠层级与校验 JSON 数据。</span>
                                 </a>
-                                <a class="link-card" href="/tool/color_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="dev">
-                                    <strong>🎨 全能颜色转换</strong>
-                                    <span>HEX、RGB 等多格式互转，内置专业调色工具。</span>
-                                </a>
-                                <a class="link-card" href="/tool/sm2_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="security">
-                                    <strong>🛡️ 国密解密工具</strong>
-                                    <span>安全处理 SM2 加密数据，提供高性能的解析与预览。</span>
-                                </a>
-                                <a class="link-card" href="/tool/shelf_life_tool.html" target="_blank"
-                                    rel="noopener noreferrer" data-category="daily">
-                                    <strong>⏳ 保质期计算工具</strong>
-                                    <span>快速计算商品到期日与剩余天数，轻松管理库存与消费。</span>
-                                </a>
-                                <div class="no-results" id="noResults">
-                                    <p>未匹配到相关工具，请尝试其他关键词。</p>
+                                <div class="link-card launchpad-trigger-card" id="launchpadTriggerBtn">
+                                    <div class="glow-layer"></div>
+                                    <strong>🚀 启动效率工具箱 (Launchpad)</strong>
+                                    <span>点击此处或按 <kbd>Ctrl + K</kbd> 唤出全屏毛玻璃工具启动面板</span>
                                 </div>
                             </div>
+                        </article>
+                    </div>
+                </section>
                         </article>
                     </div>
                 </section>
@@ -518,6 +446,126 @@
         </div>
 
     </main>
+
+    <!-- Launchpad 全屏启动器遮罩层 -->
+    <div class="launchpad-overlay" id="launchpadOverlay">
+        <button class="launchpad-close-btn" id="launchpadCloseBtn" title="关闭 Launchpad (Esc)">✕</button>
+        
+        <div class="launchpad-content">
+            <div class="launchpad-search-wrapper">
+                <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="launchpadSearch" placeholder="输入工具名称、拼音或分类检索..." autocomplete="off">
+            </div>
+
+            <div class="launchpad-filter-tabs">
+                <button class="lp-filter-btn active" data-filter="all">全部工具</button>
+                <button class="lp-filter-btn" data-filter="dev">💻 开发者</button>
+                <button class="lp-filter-btn" data-filter="daily">🏡 生活效率</button>
+                <button class="lp-filter-btn" data-filter="security">🔐 安全加密</button>
+                <button class="lp-filter-btn" id="lp-admin-filter-btn" data-filter="admin" style="display: none;">👤 系统管理</button>
+            </div>
+
+            <div class="launchpad-grid" id="launchpadGrid">
+                <!-- App 1: 管理控制台 -->
+                <a class="launchpad-app-card" href="/admin/index.html" data-category="admin">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #708090 0%, #4f4f4f 100%);">👤</div>
+                    <strong class="app-title">管理控制台</strong>
+                    <span class="app-desc">系统设置与用户状态控制</span>
+                </a>
+                <!-- App 2: 节假日计算器 -->
+                <a class="launchpad-app-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">📅</div>
+                    <strong class="app-title">节假日计算</strong>
+                    <span class="app-desc">调休安排与假期规划助手</span>
+                </a>
+                <!-- App 3: 时间戳转换 -->
+                <a class="launchpad-app-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🕒</div>
+                    <strong class="app-title">时间戳转换</strong>
+                    <span class="app-desc">实时展示与双向格式化</span>
+                </a>
+                <!-- App 4: 密码生成 -->
+                <a class="launchpad-app-card" href="/tool/password_generator.html" target="_blank" rel="noopener noreferrer" data-category="security">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">🔐</div>
+                    <strong class="app-title">高强度密码</strong>
+                    <span class="app-desc">自定义规则防破解生成</span>
+                </a>
+                <!-- App 5: 二维码生成 -->
+                <a class="launchpad-app-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">📷</div>
+                    <strong class="app-title">二维码工具</strong>
+                    <span class="app-desc">快速编码生成与拖拽识别</span>
+                </a>
+                <!-- App 6: Base64 处理 -->
+                <a class="launchpad-app-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">🔗</div>
+                    <strong class="app-title">Base64处理</strong>
+                    <span class="app-desc">字符串即时编解码转换</span>
+                </a>
+                <!-- App 7: JSON 格式化 -->
+                <a class="launchpad-app-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">📦</div>
+                    <strong class="app-title">JSON格式化</strong>
+                    <span class="app-desc">高亮校验美化与折叠层级</span>
+                </a>
+                <!-- App 8: Diff 文本对比 -->
+                <a class="launchpad-app-card" href="/tool/diff_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #a8b2bd 0%, #576574 100%);">📋</div>
+                    <strong class="app-title">Diff文本对比</strong>
+                    <span class="app-desc">行级/字级差异比对高亮</span>
+                </a>
+                <!-- App 9: Markdown 工具 -->
+                <a class="launchpad-app-card" href="/tool/markdown_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #2af598 0%, #009efd 100%);">📝</div>
+                    <strong class="app-title">Markdown编辑</strong>
+                    <span class="app-desc">实时预览、公式图表与导出</span>
+                </a>
+                <!-- App 10: 正则测试 -->
+                <a class="launchpad-app-card" href="/tool/regex_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #13547a 0%, #80d0c7 100%);">🔍</div>
+                    <strong class="app-title">正则测试器</strong>
+                    <span class="app-desc">可视化捕获组测试与速查</span>
+                </a>
+                <!-- App 11: 正则生成 -->
+                <a class="launchpad-app-card" href="/tool/regex_generator_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%);">🧩</div>
+                    <strong class="app-title">正则生成器</strong>
+                    <span class="app-desc">引导式规则配置快速拼装</span>
+                </a>
+                <!-- App 12: 语种检测 -->
+                <a class="launchpad-app-card" href="/tool/language_detector.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);">🌐</div>
+                    <strong class="app-title">智能语种检测</strong>
+                    <span class="app-desc">AI 算法辨识多国语言/代码</span>
+                </a>
+                <!-- App 13: 颜色转换 -->
+                <a class="launchpad-app-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🎨</div>
+                    <strong class="app-title">颜色转换器</strong>
+                    <span class="app-desc">HEX/RGB多格式互转调色</span>
+                </a>
+                <!-- App 14: 国密解密 -->
+                <a class="launchpad-app-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer" data-category="security">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);">🛡️</div>
+                    <strong class="app-title">国密安全解密</strong>
+                    <span class="app-desc">本地高性能SM2秘钥对解析</span>
+                </a>
+                <!-- App 15: 保质期计算 -->
+                <a class="launchpad-app-card" href="/tool/shelf_life_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #e6b980 0%, #eacda3 100%);">⏳</div>
+                    <strong class="app-title">保质期计算</strong>
+                    <span class="app-desc">临期提醒与库存管理助手</span>
+                </a>
+                
+                <div class="lp-no-results" id="lpNoResults" style="display: none;">
+                    <p>没有匹配的工具，请换个词搜搜看 🔍</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
     <script src="index.js"></script>
