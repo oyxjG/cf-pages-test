@@ -1759,16 +1759,65 @@ body::after {
 }
 
 /* ==========================================
-   番茄专注钟 (Pomodoro) 样式
+   番茄专注钟 (Pomodoro) 样式与 3D 翻转扩展
    ========================================== */
 .pomodoro-card {
+    position: relative;
+    padding: 0;
+    overflow: visible; /* 为了 3D 翻转的阴影不被裁剪 */
+    perspective: 1000px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-height: 258px; /* 确保设置面板完全容纳 */
+}
+
+.pomo-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pomodoro-card.is-flipped .pomo-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* 前后两个面板的共有基础样式，保持原有的 Panel 外观 */
+.pomo-front,
+.pomo-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
+    padding: 16px 20px;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-sizing: border-box;
+}
+
+[data-theme="dark"] .pomo-front,
+[data-theme="dark"] .pomo-back {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.pomo-front {
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+.pomo-back {
+    transform: rotateY(180deg);
+    z-index: 1;
 }
 
 .pomo-header {
@@ -1776,6 +1825,12 @@ body::after {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.pomo-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .pomo-title {
@@ -1811,6 +1866,12 @@ body::after {
     animation: pulseSoft 2s infinite;
 }
 
+.pomo-badge.status-longbreak {
+    background: rgba(54, 209, 220, 0.15);
+    color: #36d1dc;
+    animation: pulseSoft 2s infinite;
+}
+
 @keyframes pulseSoft {
     0% { opacity: 0.8; }
     50% { opacity: 1; }
@@ -1821,13 +1882,13 @@ body::after {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 8px 0;
+    margin: 4px 0;
 }
 
 .pomo-ring-wrapper {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1865,12 +1926,44 @@ body::after {
     stroke: var(--teal);
 }
 
+/* 长休期间圆环改为蓝色 */
+#pomodoro-widget:has(.status-longbreak) .pomo-ring {
+    stroke: #36d1dc;
+}
+
 .pomo-time {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--text);
     font-family: monospace; /* 避免数字走字抖动 */
     z-index: 1;
+}
+
+/* 循环指示器 Session Dots */
+.pomo-sessions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.pomo-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: all 0.3s ease;
+}
+
+.pomo-dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+}
+
+.pomo-dot.completed {
+    background: var(--teal);
+    box-shadow: 0 0 6px var(--teal);
 }
 
 .pomo-footer {
@@ -1878,14 +1971,33 @@ body::after {
     gap: 16px;
     justify-content: center;
     width: 100%;
+    margin-top: auto;
+}
+
+.pomo-icon-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.pomo-icon-btn:hover {
+    color: var(--accent);
+    background: var(--paper-strong);
 }
 
 .pomo-btn {
     border: 1px solid var(--line);
     background: var(--paper-strong);
     color: var(--text);
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     border-radius: 12px;
     display: grid;
     place-items: center;
@@ -1925,6 +2037,128 @@ body::after {
     to {
         box-shadow: 0 0 24px rgba(191, 91, 50, 0.6), inset 0 0 0 2px var(--accent);
     }
+}
+
+/* 背面配置面板样式 */
+.pomo-settings-body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.settings-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.settings-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.settings-group select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--paper-strong);
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    flex-grow: 1;
+    max-width: 120px;
+    text-align: right;
+}
+
+.settings-group select:focus {
+    border-color: var(--accent);
+}
+
+.settings-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-grow: 1;
+    max-width: 120px;
+}
+
+.settings-controls select {
+    flex-grow: 1;
+    max-width: none;
+}
+
+.sound-test-btn {
+    border: 1px solid var(--line);
+    background: var(--paper-strong);
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sound-test-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.checkbox-group {
+    justify-content: flex-start;
+    margin-top: 2px;
+}
+
+.switch-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.switch-label input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.switch-label span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.pomo-settings-footer {
+    width: 100%;
+    margin-top: 4px;
+}
+
+.pomo-save-btn {
+    width: 100%;
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pomo-save-btn:hover {
+    background: var(--mustard);
+    box-shadow: 0 4px 12px rgba(191, 91, 50, 0.2);
 }
 
 /* ==========================================

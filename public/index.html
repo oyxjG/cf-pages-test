@@ -54,31 +54,110 @@
 
                 <!-- Pomodoro Card -->
                 <section class="panel pomodoro-card" id="pomodoro-widget">
-                    <div class="pomo-header">
-                        <span class="pomo-title" id="pomodoro-label">专注时间</span>
-                        <span class="pomo-badge status-idle" id="pomodoro-state">已准备 🎯</span>
-                    </div>
-                    <div class="pomo-body">
-                        <!-- SVG 环形进度条 -->
-                        <div class="pomo-ring-wrapper">
-                            <svg class="pomo-svg" viewBox="0 0 100 100">
-                                <circle class="pomo-track" cx="50" cy="50" r="40"></circle>
-                                <circle class="pomo-ring" id="pomodoro-ring" cx="50" cy="50" r="40"></circle>
-                            </svg>
-                            <div class="pomo-time" id="pomodoro-display">25:00</div>
+                    <div class="pomo-card-inner">
+                        <!-- 正面 -->
+                        <div class="pomo-front">
+                            <div class="pomo-header">
+                                <span class="pomo-title" id="pomodoro-label">专注时间</span>
+                                <div class="pomo-header-right">
+                                    <span class="pomo-badge status-idle" id="pomodoro-state">已准备 🎯</span>
+                                    <button class="pomo-icon-btn" id="pomodoro-settings-btn" title="设置">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="pomo-body">
+                                <div class="pomo-ring-wrapper">
+                                    <svg class="pomo-svg" viewBox="0 0 100 100">
+                                        <circle class="pomo-track" cx="50" cy="50" r="40"></circle>
+                                        <circle class="pomo-ring" id="pomodoro-ring" cx="50" cy="50" r="40"></circle>
+                                    </svg>
+                                    <div class="pomo-time" id="pomodoro-display">25:00</div>
+                                </div>
+                            </div>
+
+                            <!-- 循环进度指示器 (Session Dots) -->
+                            <div class="pomo-sessions" id="pomodoro-sessions" title="当前循环进度，每4轮专注可享受长休">
+                                <span class="pomo-dot" data-index="1"></span>
+                                <span class="pomo-dot" data-index="2"></span>
+                                <span class="pomo-dot" data-index="3"></span>
+                                <span class="pomo-dot" data-index="4"></span>
+                            </div>
+
+                            <div class="pomo-footer">
+                                <button class="pomo-btn play" id="pomodoro-start" title="开始/暂停">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </button>
+                                <button class="pomo-btn reset" id="pomodoro-reset" title="重置">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="pomo-footer">
-                        <button class="pomo-btn play" id="pomodoro-start" title="开始/暂停">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                            </svg>
-                        </button>
-                        <button class="pomo-btn reset" id="pomodoro-reset" title="重置">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                            </svg>
-                        </button>
+
+                        <!-- 背面 -->
+                        <div class="pomo-back">
+                            <div class="pomo-header">
+                                <span class="pomo-title">定时器设置</span>
+                                <button class="pomo-icon-btn" id="pomodoro-settings-close" title="返回">✕</button>
+                            </div>
+                            <div class="pomo-settings-body">
+                                <div class="settings-group">
+                                    <label for="pomo-work-duration">专注时长</label>
+                                    <select id="pomo-work-duration">
+                                        <option value="15">15 分钟</option>
+                                        <option value="25" selected>25 分钟</option>
+                                        <option value="30">30 分钟</option>
+                                        <option value="45">45 分钟</option>
+                                        <option value="60">60 分钟</option>
+                                    </select>
+                                </div>
+                                <div class="settings-group">
+                                    <label for="pomo-break-duration">短休时长</label>
+                                    <select id="pomo-break-duration">
+                                        <option value="3">3 分钟</option>
+                                        <option value="5" selected>5 分钟</option>
+                                        <option value="10">10 分钟</option>
+                                        <option value="15">15 分钟</option>
+                                    </select>
+                                </div>
+                                <div class="settings-group">
+                                    <label for="pomo-long-break-duration">长休时长</label>
+                                    <select id="pomo-long-break-duration">
+                                        <option value="10">10 分钟</option>
+                                        <option value="15" selected>15 分钟</option>
+                                        <option value="20">20 分钟</option>
+                                        <option value="30">30 分钟</option>
+                                    </select>
+                                </div>
+                                <div class="settings-group">
+                                    <label for="pomo-sound-select">提醒音效</label>
+                                    <div class="settings-controls">
+                                        <select id="pomo-sound-select">
+                                            <option value="chime">禅意铜钟</option>
+                                            <option value="chord" selected>清脆和弦</option>
+                                            <option value="beep">科技嘀嘀</option>
+                                        </select>
+                                        <button class="sound-test-btn" id="pomo-sound-test" title="试听">🔊</button>
+                                    </div>
+                                </div>
+                                <div class="settings-group checkbox-group">
+                                    <label class="switch-label">
+                                        <input type="checkbox" id="pomo-notify-toggle">
+                                        <span>启用桌面系统通知</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="pomo-settings-footer">
+                                <button class="pomo-save-btn" id="pomodoro-save-settings">保存并应用</button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
