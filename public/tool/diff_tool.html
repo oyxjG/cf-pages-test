@@ -40,21 +40,33 @@
     }
 
     .back-link {
-      position: absolute;
-      top: 24px;
-      left: 24px;
       text-decoration: none;
       color: var(--muted);
       font-size: 14px;
-      font-weight: 600;
-      display: flex;
+      font-weight: 500;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: color 0.2s;
+      transition: all 0.2s ease;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      margin-left: -8px;
       z-index: 10;
     }
 
-    .back-link:hover { color: var(--accent); }
+    .back-link:hover {
+      color: var(--accent);
+      background: var(--paper-strong);
+    }
+
+    .back-link svg {
+      transition: transform 0.2s ease;
+    }
+
+    .back-link:hover svg {
+      transform: translateX(-4px);
+    }
 
     .container {
       width: 100%;
@@ -73,11 +85,13 @@
     }
 
     .header {
+      margin-bottom: 24px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: flex-start;
+      gap: 16px;
       border-bottom: 1px solid var(--line);
-      padding-bottom: 20px;
+      padding-bottom: 16px;
     }
 
     .header-info h1 {
@@ -496,14 +510,13 @@
   </style>
 </head>
 <body>
-  <a href="../index.html" class="back-link">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-    返回首页
-  </a>
-
   <div class="container">
     <!-- Header -->
     <div class="header">
+      <a href="../index.html" class="back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        返回首页
+      </a>
       <div class="header-info">
         <h1>Diff 文本对比</h1>
         <p>支持逐行/逐词/逐字的比对分析，支持双栏与单栏视图，纯前端运行保障隐私。</p>

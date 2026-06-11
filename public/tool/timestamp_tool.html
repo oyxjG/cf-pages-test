@@ -62,29 +62,39 @@
 
     .header {
       display: flex;
-      align-items: center;
-      gap: 16px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
       margin-bottom: 32px;
     }
 
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: var(--paper-strong);
-      color: var(--text);
+    .back-link {
       text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transition: all 0.2s;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      margin-left: -8px;
+      z-index: 10;
     }
 
-    .back-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    .back-link:hover {
       color: var(--accent);
+      background: var(--paper-strong);
+    }
+
+    .back-link svg {
+      transition: transform 0.2s ease;
+    }
+
+    .back-link:hover svg {
+      transform: translateX(-4px);
     }
 
     h1 {

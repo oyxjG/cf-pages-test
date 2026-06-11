@@ -35,22 +35,41 @@
     }
 
     .back-link {
-      position: absolute;
-      top: 24px;
-      left: 24px;
       text-decoration: none;
       color: var(--muted);
       font-size: 14px;
-      font-weight: 600;
-      display: flex;
+      font-weight: 500;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: color 0.2s;
+      transition: all 0.2s ease;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      margin-left: -8px;
+      z-index: 10;
     }
 
-    .back-link:hover { color: var(--accent); }
+    .back-link:hover {
+      color: var(--accent);
+      background: var(--paper-strong);
+    }
 
-    .header { margin-bottom: 32px; }
+    .back-link svg {
+      transition: transform 0.2s ease;
+    }
+
+    .back-link:hover svg {
+      transform: translateX(-4px);
+    }
+
+    .header {
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
     .header h1 { margin: 0; font-size: 32px; letter-spacing: -0.02em; }
     .header p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
 
@@ -136,13 +155,12 @@
   </style>
 </head>
 <body>
-  <a href="../index.html" class="back-link">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-    返回首页
-  </a>
-
   <div class="container">
     <div class="header">
+      <a href="../index.html" class="back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        返回首页
+      </a>
       <h1>颜色代码转换器</h1>
       <p>在 HEX、RGB、CMYK、HSL 和 HSV 格式之间实时转换颜色代码。</p>
     </div>
