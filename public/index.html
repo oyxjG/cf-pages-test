@@ -52,6 +52,13 @@
                     <div class="clock-status" id="clock-status">加载中...</div>
                 </section>
 
+                <!-- Weather Card -->
+                <section class="panel weather-card" id="weather-widget">
+                    <div style="font-size: 13px; color: var(--muted); text-align: center; padding: 16px;">
+                        🌦️ 正在定位并同步当前天气...
+                    </div>
+                </section>
+
                 <!-- Navigation Card -->
                 <section class="panel nav-panel">
                     <div class="badge">Navigation</div>
@@ -571,6 +578,7 @@
     </div>
 
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+    <script src="lib/weather_service.js?v=1.0.1"></script>
     <script src="index.js"></script>
 </body>
 

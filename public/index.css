@@ -216,6 +216,218 @@ body::after {
     font-weight: 500;
 }
 
+/* Weather Card Styles */
+.weather-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--paper);
+}
+
+.weather-card.weather-sunny {
+    background: 
+        radial-gradient(circle at top right, rgba(202, 157, 58, 0.15), transparent 60%),
+        var(--paper);
+}
+.weather-card.weather-cloudy, .weather-card.weather-overcast {
+    background: 
+        radial-gradient(circle at top right, rgba(142, 130, 117, 0.12), transparent 60%),
+        var(--paper);
+}
+.weather-card.weather-rainy {
+    background: 
+        radial-gradient(circle at top right, rgba(45, 120, 108, 0.15), transparent 60%),
+        var(--paper);
+}
+.weather-card.weather-snowy {
+    background: 
+        radial-gradient(circle at top right, rgba(129, 178, 154, 0.15), transparent 60%),
+        var(--paper);
+}
+.weather-card.weather-stormy {
+    background: 
+        radial-gradient(circle at top right, rgba(140, 73, 100, 0.15), transparent 60%),
+        var(--paper);
+}
+
+.weather-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.weather-info-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.weather-city-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--input-bg);
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.weather-temp-row {
+    display: flex;
+    align-items: baseline;
+}
+
+.weather-temp {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--text);
+    font-family: "JetBrains Mono", monospace;
+}
+
+.weather-unit {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-left: 2px;
+}
+
+.weather-status {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.weather-icon-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+}
+
+.weather-forecast {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.weather-card:hover .weather-forecast {
+    max-height: 160px;
+    opacity: 1;
+    margin-top: 16px;
+    border-top: 1px dashed var(--line);
+    padding-top: 16px;
+}
+
+.forecast-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+
+.forecast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.forecast-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.forecast-day {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    width: 40px;
+}
+
+.forecast-icon-sm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forecast-icon-sm svg {
+    width: 24px;
+    height: 24px;
+}
+
+.forecast-temp {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--muted);
+    text-align: right;
+    width: 70px;
+}
+
+.sun-body {
+    transform-origin: center;
+    animation: sun-pulse 4s infinite ease-in-out;
+}
+
+.sun-rays {
+    transform-origin: center;
+    animation: sun-rotate 24s infinite linear;
+}
+
+@keyframes sun-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+@keyframes sun-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.cloud-drift {
+    animation: cloud-drift 8s infinite ease-in-out;
+}
+
+@keyframes cloud-drift {
+    0%, 100% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-2px) translateX(2px); }
+}
+
+.rain-drops line {
+    stroke-dasharray: 4;
+    animation: rain-fall 1.5s infinite linear;
+}
+
+.rain-drops-heavy line {
+    stroke-dasharray: 4;
+    animation: rain-fall 1s infinite linear;
+}
+
+@keyframes rain-fall {
+    0% { stroke-dashoffset: 8; }
+    100% { stroke-dashoffset: 0; }
+}
+
+.lightning-bolt {
+    animation: lightning-flash 3s infinite ease-in-out;
+}
+
+@keyframes lightning-flash {
+    0%, 90%, 100% { opacity: 1; }
+    92%, 96% { opacity: 0.2; }
+    94% { opacity: 0.9; }
+}
+
 .nav-list {
     display: grid;
     gap: 12px;

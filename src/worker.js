@@ -13,7 +13,8 @@ const PUBLIC_PATHS = [
   "/",
   "/api/login",
   "/api/register",
-  "/api/test"
+  "/api/test",
+  "/api/weather_loc"
 ];
 
 async function getAuthUser(request, env) {
@@ -66,6 +67,47 @@ export default {
       
       if (pathname === "/api/test") {
         return json({ ok: true, msg: "backend is working" });
+      }
+
+      if (pathname === "/api/weather_loc") {
+        const cfLat = request.cf ? request.cf.latitude : null;
+        const cfLng = request.cf ? request.cf.longitude : null;
+        const cfCity = request.cf ? request.cf.city : "未知城市";
+        const region = request.cf ? request.cf.region : "";
+
+        // 优先用 query 参数（便于前端降级 IP 定位传入），其次用 CF 地理定位，最后兜底北京
+        const latitude = url.searchParams.get("latitude") || cfLat || "39.9042";
+        const longitude = url.searchParams.get("longitude") || cfLng || "116.4074";
+        const city = url.searchParams.get("city") || cfCity || "北京市";
+
+        const weatherApi = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        
+        let weatherData = null;
+        let isLiveWeather = false;
+
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5秒超时
+          const weatherRes = await fetch(weatherApi, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (weatherRes.ok) {
+            weatherData = await weatherRes.json();
+            isLiveWeather = true;
+          }
+        } catch (err) {
+          console.error("Worker fetch weather error:", err.message);
+        }
+
+        return json({
+          ok: true,
+          latitude,
+          longitude,
+          city: city ? decodeURIComponent(city) : "未知城市",
+          region,
+          weatherData,
+          isLiveWeather
+        });
       }
 
       if (pathname === "/api/login") {
