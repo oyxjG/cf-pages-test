@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (futureHolidays.length > 0) {
             const next = futureHolidays[0];
             const targetDate = new Date(next.getTarget() + 'T00:00:00'); // 确保从假期当天的 0 点开始算
-            
+
             // 计算时间差：由于假期通常从 0 点开始，这里向上取整可以得到包含“今天剩余部分”的天数
             // 例如：如果是 29 号下午，目标是 5 月 1 号 0 点，差值是 1.25 天左右，ceil 之后是 2 天（即：还有今天剩余+明天一整天）
             const diffMs = targetDate - now;
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = card.getAttribute('data-category');
             const title = (card.querySelector('.app-title')?.innerText || '').toLowerCase();
             const desc = (card.querySelector('.app-desc')?.innerText || '').toLowerCase();
-            
+
             // 如果是管理员入口，且用户不是 admin，保持隐藏
             const isUserAdmin = user && user.role === 'admin';
             if (category === 'admin' && !isUserAdmin) {
@@ -214,19 +214,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const hours = now.getHours().toString().padStart(2, '0');
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
-        
+
         const clockEl = document.getElementById('main-clock');
         const statusEl = document.getElementById('clock-status');
-        
+
         if (clockEl) {
             clockEl.innerText = `${hours}:${minutes}`;
         }
-        
+
         if (statusEl) {
             const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
             const dayName = days[now.getDay()];
             const solarDateStr = `${now.getMonth() + 1}月${now.getDate()}日 ${dayName}`;
-            
+
             let dateStr = solarDateStr;
             if (typeof Lunar !== 'undefined') {
                 const lunar = Lunar.fromDate(now);
@@ -246,13 +246,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const year = now.getFullYear();
         const month = now.getMonth();
         const day = now.getDate();
-        
+
         // 1. 本月进度
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const monthPercent = Math.min(100, (day / daysInMonth) * 100);
         const monthBar = document.getElementById('month-progress');
         if (monthBar) monthBar.style.width = `${monthPercent}%`;
-        
+
         // 2. 本年进度
         const startOfYear = new Date(year, 0, 1);
         const daysInYear = ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 366 : 365;
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearPercent = Math.min(100, (diffDays / daysInYear) * 100);
         const yearBar = document.getElementById('year-progress');
         if (yearBar) yearBar.style.width = `${yearPercent}%`;
-        
+
         // 3. 假期进度 (以30天为一个周期进行模拟展示)
         const holidayBar = document.getElementById('holiday-progress');
         if (holidayBar) {
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (todoInput && todoList) {
         const token = localStorage.getItem('token');
         const isLoggedIn = !!token;
-        
+
         // 解析用户 ID 以实现存储隔离
         let userId = null;
         if (isLoggedIn) {
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (result.data.length > 0) {
                         // 云端有数据，以云端为准
                         todos = result.data;
-                        saveTodos(false); 
+                        saveTodos(false);
                         renderTodos();
                     } else if (todos.length > 0) {
                         // 云端没数据但本地有，说明是初次登录，自动推送到云端
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const renderTodos = () => {
             todoList.innerHTML = '';
-            
+
             const now = new Date();
             // 以凌晨 6 点作为“新一天”的分界线（解决熬夜任务归属，以及过滤之前时区 Bug 导致偏移到凌晨 5 点的任务）
             let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0).getTime();
@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const parsed = new Date(t.createdAt).getTime();
                     if (!isNaN(parsed)) t.createdAt = parsed;
                 }
-                
+
                 // --- 自动修复之前的时区 Bug 导致的时间偏移 (+8小时) ---
                 // 如果发现时间戳落在了 Bug 产生的错误时间段（比如 2026-05-17 凌晨 4点~8点）
                 // 且实际上是昨晚 8点~12点 创建的，我们可以平滑修复它。
@@ -396,8 +396,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // 过滤掉已标记为“隐藏”的已完成任务（仅限当前点击隐藏后的效果）
-            const visibleTodos = hideCompletedInView 
-                ? relevantTodos.filter(t => !t.completed) 
+            const visibleTodos = hideCompletedInView
+                ? relevantTodos.filter(t => !t.completed)
                 : relevantTodos;
 
             visibleTodos.forEach((todo) => {
@@ -426,16 +426,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const createdAtNum = Number(t.createdAt) || 0;
                 return createdAtNum < startOfToday && !t.completed;
             }).length;
-            
+
             let statsText = `${remaining} 个未完成`;
             if (historyPending > 0) {
                 statsText += ` (含 ${historyPending} 个积压)`;
             }
             todoStats.innerText = `${statsText} ${isLoggedIn ? '☁️' : '📍'}`;
-            
+
             // 如果所有已完成都被隐藏了，且没有未完成的，可以给个提示或者保持原样
             // 这里维持原样即可，用户可以在任务中心看到全部
-            
+
             // 更新按钮文字
             clearCompletedBtn.innerText = hideCompletedInView ? '显示已完成' : '隐藏已完成';
         };
@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
             todos[index].completed = isNowCompleted;
             // 记录完成时间：如果切换为完成则打戳，否则清空
             todos[index].completedAt = isNowCompleted ? Date.now() : null;
-            
+
             saveTodos();
             renderTodos();
         };
@@ -459,8 +459,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const addNewTodo = () => {
             const text = todoInput.value.trim();
             if (text) {
-                todos.unshift({ 
-                    text, 
+                todos.unshift({
+                    text,
                     completed: false,
                     createdAt: Date.now() // 增加时间戳
                 });
@@ -493,13 +493,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarEl = document.querySelector('.profile-content .avatar');
     const adminConsoleCard = document.querySelector('a[data-category="admin"]');
     const adminFilterBtn = document.getElementById('lp-admin-filter-btn');
-    
+
     // 解析 JWT Payload 的工具函数
     function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonPayload);
@@ -520,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (adminConsoleCard) adminConsoleCard.style.display = 'block';
             if (adminFilterBtn) adminFilterBtn.style.display = 'inline-block';
         }
-        
+
         // 更新昵称和角色
         profileIdentity.innerHTML = `
             <strong>${user.nick_name || user.username}</strong>

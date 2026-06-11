@@ -1,7 +1,7 @@
 /**
  * 主题管理脚本 - 负责跨页面的主题初始化与同步
  */
-(function() {
+(function () {
     // 1. 立即初始化主题（防止闪烁）
     const applyTheme = () => {
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -42,7 +42,7 @@
                 localStorage.setItem('theme', newTheme);
                 updateIcons(newTheme);
             });
-            
+
             // 监听跨页面的主题变化以同步图标
             window.addEventListener('theme-changed', (e) => {
                 updateIcons(e.detail);
