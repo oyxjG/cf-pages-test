@@ -1757,3 +1757,275 @@ body::after {
 .launchpad-app-card.lp-hidden {
     display: none !important;
 }
+
+/* ==========================================
+   番茄专注钟 (Pomodoro) 样式
+   ========================================== */
+.pomodoro-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pomo-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pomo-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pomo-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.pomo-badge.status-idle {
+    background: var(--paper-strong);
+    color: var(--muted);
+}
+
+.pomo-badge.status-work {
+    background: rgba(191, 91, 50, 0.15);
+    color: var(--accent);
+    animation: pulseSoft 2s infinite;
+}
+
+.pomo-badge.status-break {
+    background: rgba(45, 120, 108, 0.15);
+    color: var(--teal);
+    animation: pulseSoft 2s infinite;
+}
+
+@keyframes pulseSoft {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+.pomo-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.pomo-ring-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pomo-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); /* 从顶部正中开始 */
+}
+
+.pomo-track {
+    stroke: var(--line);
+    fill: none;
+    stroke-width: 6px;
+}
+
+.pomo-ring {
+    fill: none;
+    stroke-width: 6px;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+}
+
+/* 专注期间圆环的颜色 */
+#pomodoro-widget .pomo-ring {
+    stroke: var(--accent);
+}
+
+/* 休息期间圆环改为绿色 */
+#pomodoro-widget:has(.status-break) .pomo-ring {
+    stroke: var(--teal);
+}
+
+.pomo-time {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: monospace; /* 避免数字走字抖动 */
+    z-index: 1;
+}
+
+.pomo-footer {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    width: 100%;
+}
+
+.pomo-btn {
+    border: 1px solid var(--line);
+    background: var(--paper-strong);
+    color: var(--text);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pomo-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 4px 12px rgba(191, 91, 50, 0.15);
+}
+
+.pomo-btn.play {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.pomo-btn.play:hover {
+    background: var(--mustard);
+    border-color: var(--mustard);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(253, 160, 133, 0.3);
+}
+
+/* 专注结束时的金色呼吸脉冲动效 */
+.pulse-highlight {
+    animation: goldPulse 1s ease infinite alternate;
+}
+
+@keyframes goldPulse {
+    from {
+        box-shadow: 0 0 8px rgba(191, 91, 50, 0.2), inset 0 0 0 1px var(--line);
+    }
+    to {
+        box-shadow: 0 0 24px rgba(191, 91, 50, 0.6), inset 0 0 0 2px var(--accent);
+    }
+}
+
+/* ==========================================
+   每日一言 (Daily Quote) 样式
+   ========================================== */
+.hero-quote-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 20px;
+    border-radius: var(--radius-xl);
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    margin-top: 24px;
+    width: 100%;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    perspective: 1000px;
+}
+
+[data-theme="dark"] .hero-quote-card {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hero-quote-card:hover {
+    border-color: rgba(191, 91, 50, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+    transform: translateY(-2px);
+}
+
+.quote-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    flex: 1;
+}
+
+.quote-icon {
+    font-size: 28px;
+    font-family: Georgia, serif;
+    color: var(--accent);
+    line-height: 1;
+    margin-top: 8px;
+    opacity: 0.8;
+}
+
+.quote-text {
+    font-size: 14px;
+    color: var(--text);
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+}
+
+.quote-author {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.quote-btn {
+    border: 1px solid var(--line);
+    background: var(--paper-strong);
+    color: var(--muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.quote-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: rotate(45deg);
+}
+
+/* 3D 旋转翻牌切换动画 */
+.hero-quote-card.flipping {
+    animation: quoteFlip 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes quoteFlip {
+    0% {
+        transform: rotateX(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: rotateX(90deg);
+        opacity: 0.3;
+    }
+    100% {
+        transform: rotateX(0deg);
+        opacity: 1;
+    }
+}

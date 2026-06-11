@@ -52,10 +52,33 @@
                     <div class="clock-status" id="clock-status">加载中...</div>
                 </section>
 
-                <!-- Weather Card -->
-                <section class="panel weather-card" id="weather-widget">
-                    <div style="font-size: 13px; color: var(--muted); text-align: center; padding: 16px;">
-                        🌦️ 正在定位并同步当前天气...
+                <!-- Pomodoro Card -->
+                <section class="panel pomodoro-card" id="pomodoro-widget">
+                    <div class="pomo-header">
+                        <span class="pomo-title" id="pomodoro-label">专注时间</span>
+                        <span class="pomo-badge status-idle" id="pomodoro-state">已准备 🎯</span>
+                    </div>
+                    <div class="pomo-body">
+                        <!-- SVG 环形进度条 -->
+                        <div class="pomo-ring-wrapper">
+                            <svg class="pomo-svg" viewBox="0 0 100 100">
+                                <circle class="pomo-track" cx="50" cy="50" r="40"></circle>
+                                <circle class="pomo-ring" id="pomodoro-ring" cx="50" cy="50" r="40"></circle>
+                            </svg>
+                            <div class="pomo-time" id="pomodoro-display">25:00</div>
+                        </div>
+                    </div>
+                    <div class="pomo-footer">
+                        <button class="pomo-btn play" id="pomodoro-start" title="开始/暂停">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                        </button>
+                        <button class="pomo-btn reset" id="pomodoro-reset" title="重置">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                            </svg>
+                        </button>
                     </div>
                 </section>
 
@@ -144,6 +167,20 @@
                         <div class="toolbar">
                             <a class="button primary" href="#tools">开启生产力</a>
                             <a class="button secondary" href="#projects">探索新项目</a>
+                        </div>
+
+                        <!-- Daily Quote Card -->
+                        <div class="hero-quote-card" id="quote-widget">
+                            <div class="quote-content">
+                                <span class="quote-icon">“</span>
+                                <p class="quote-text" id="quote-text">加载灵感中...</p>
+                                <span class="quote-author" id="quote-author">—— 个人聚合面板</span>
+                            </div>
+                            <button class="quote-btn" id="quote-refresh-btn" title="点击换一句灵感">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
@@ -578,7 +615,7 @@
     </div>
 
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
-    <script src="lib/weather_service.js?v=1.0.1"></script>
+    <script src="lib/sidebar_widgets.js?v=1.0.0"></script>
     <script src="index.js"></script>
 </body>
 

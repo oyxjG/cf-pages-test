@@ -13,14 +13,13 @@ const PUBLIC_PATHS = [
   "/",
   "/api/login",
   "/api/register",
-  "/api/test",
-  "/api/weather_loc"
+  "/api/test"
 ];
 
 async function getAuthUser(request, env) {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
-  
+
   const token = authHeader.split(" ")[1];
   const payload = await verify(token, env.JWT_SECRET || JWT_SECRET);
   if (!payload || !payload.userId || !payload.uuid) return null;
@@ -31,7 +30,7 @@ async function getAuthUser(request, env) {
     const kvToken = await kv.get(`login_tokens:${payload.userId}:${payload.uuid}`);
     if (!kvToken) return null; // Token 已失效（被踢出）
   }
-  
+
   return payload;
 }
 
@@ -52,7 +51,7 @@ export default {
     // 2. API 鉴权拦截器
     if (pathname.startsWith("/api/")) {
       const isPublic = PUBLIC_PATHS.includes(pathname);
-      
+
       let authUser = null;
       if (!isPublic) {
         authUser = await getAuthUser(request, env);
@@ -64,51 +63,12 @@ export default {
       }
 
       // --- 具体 API 路由处理 ---
-      
+
       if (pathname === "/api/test") {
         return json({ ok: true, msg: "backend is working" });
       }
 
-      if (pathname === "/api/weather_loc") {
-        const cfLat = request.cf ? request.cf.latitude : null;
-        const cfLng = request.cf ? request.cf.longitude : null;
-        const cfCity = request.cf ? request.cf.city : "未知城市";
-        const region = request.cf ? request.cf.region : "";
 
-        // 优先用 query 参数（便于前端降级 IP 定位传入），其次用 CF 地理定位，最后兜底北京
-        const latitude = url.searchParams.get("latitude") || cfLat || "39.9042";
-        const longitude = url.searchParams.get("longitude") || cfLng || "116.4074";
-        const city = url.searchParams.get("city") || cfCity || "北京市";
-
-        const weatherApi = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
-        
-        let weatherData = null;
-        let isLiveWeather = false;
-
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5秒超时
-          const weatherRes = await fetch(weatherApi, { signal: controller.signal });
-          clearTimeout(timeoutId);
-
-          if (weatherRes.ok) {
-            weatherData = await weatherRes.json();
-            isLiveWeather = true;
-          }
-        } catch (err) {
-          console.error("Worker fetch weather error:", err.message);
-        }
-
-        return json({
-          ok: true,
-          latitude,
-          longitude,
-          city: city ? decodeURIComponent(city) : "未知城市",
-          region,
-          weatherData,
-          isLiveWeather
-        });
-      }
 
       if (pathname === "/api/login") {
         if (request.method !== "POST") return methodNotAllowed();
@@ -142,16 +102,16 @@ export default {
             await kv.put(`login_tokens:${user.id}:${uuid}`, token, { expirationTtl: 86400 });
           }
 
-          return json({ 
-            ok: true, 
-            msg: "登录成功", 
-            token, 
-            user: { 
-              id: user.id, 
-              username: user.username, 
-              nick_name: user.nick_name, 
-              role: user.role 
-            } 
+          return json({
+            ok: true,
+            msg: "登录成功",
+            token,
+            user: {
+              id: user.id,
+              username: user.username,
+              nick_name: user.nick_name,
+              role: user.role
+            }
           });
         } catch (err) {
           return json({ ok: false, msg: err.message }, 403);
@@ -171,27 +131,27 @@ export default {
       if (pathname === "/api/todos") {
         const db = env.apitest_bind;
         if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
-        
+
         const userId = authUser.userId;
 
         if (request.method === "GET") {
           const { results } = await db.prepare(
             "SELECT text, completed, created_at AS createdAt, completed_at AS completedAt FROM todos WHERE user_id = ? ORDER BY id DESC"
           ).bind(userId).all();
-          
-          return json({ 
-            ok: true, 
+
+          return json({
+            ok: true,
             data: results.map(r => {
-                // 读取时：如果是字符串则转为毫秒数
-                const cAt = typeof r.createdAt === 'string' ? new Date(r.createdAt).getTime() : r.createdAt;
-                const compAt = typeof r.completedAt === 'string' ? new Date(r.completedAt).getTime() : r.completedAt;
-                return {
-                    text: r.text, 
-                    completed: !!r.completed,
-                    createdAt: cAt,
-                    completedAt: compAt
-                };
-            }) 
+              // 读取时：如果是字符串则转为毫秒数
+              const cAt = typeof r.createdAt === 'string' ? new Date(r.createdAt).getTime() : r.createdAt;
+              const compAt = typeof r.completedAt === 'string' ? new Date(r.completedAt).getTime() : r.completedAt;
+              return {
+                text: r.text,
+                completed: !!r.completed,
+                createdAt: cAt,
+                completedAt: compAt
+              };
+            })
           });
         }
 
@@ -210,7 +170,7 @@ export default {
               // 存储时：将数字毫秒数转为 ISO 字符串，以确保兼容 D1 的 DATETIME 类型
               const cAtStr = todo.createdAt ? new Date(todo.createdAt).toISOString() : new Date().toISOString();
               const compAtStr = todo.completedAt ? new Date(todo.completedAt).toISOString() : null;
-              
+
               statements.push(
                 db.prepare("INSERT INTO todos (user_id, text, completed, created_at, completed_at) VALUES (?, ?, ?, ?, ?)")
                   .bind(userId, todo.text, todo.completed ? 1 : 0, cAtStr, compAtStr)
@@ -233,7 +193,7 @@ export default {
         if (authUser.role !== 'admin') {
           return json({ ok: false, msg: "无权访问管理接口" }, 403);
         }
-        
+
         if (pathname === "/api/admin/users") {
           const { users, stats } = await import("./services/user-service.js").then(m => m.getUserSummary(env.apitest_bind));
           return json({ ok: true, data: users, stats });
@@ -243,7 +203,7 @@ export default {
           if (request.method !== "POST") return methodNotAllowed();
           const { userId, status } = await parseJsonSafe(request);
           const result = await import("./services/user-service.js").then(m => m.setUserStatus(env.apitest_bind, userId, status));
-          
+
           if (status === 1) {
             const kv = env.CF_TEST;
             if (kv) {
@@ -261,7 +221,7 @@ export default {
           if (request.method !== "POST") return methodNotAllowed();
           const { userId } = await parseJsonSafe(request);
           const result = await import("./services/user-service.js").then(m => m.deleteUser(env.apitest_bind, userId));
-          
+
           const kv = env.CF_TEST;
           if (kv) {
             const prefix = `login_tokens:${userId}:`;
