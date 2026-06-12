@@ -40,59 +40,445 @@
     { text: "创造力就是把各种事物关联起来的能力。", from: "创意工程" }
   ];
 
-  async function fetchQuote() {
+  const QUOTE_STATE_KEY = 'daily_quote_state_v1';
+
+  let quoteState = {
+    source: 'api', // api, local, favorite, custom
+    categories: ['a', 'b', 'c', 'd', 'i'],
+    favorites: [],
+    customs: [],
+    history: [],
+    historyIndex: -1
+  };
+
+  let currentShownQuote = { text: '', from: '' };
+
+  // Toast 弹出提醒
+  function showToast(message, icon = '✨') {
+    const container = document.getElementById('quote-toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'quote-toast';
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 2200);
+  }
+
+  // 加载本地持久化配置
+  function loadConfigs() {
+    const saved = localStorage.getItem(QUOTE_STATE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.source) quoteState.source = parsed.source;
+        if (parsed.categories) quoteState.categories = parsed.categories;
+        
+        // 强制数组类型校验，防止旧有或外置的单对象形式产生崩坏
+        if (parsed.favorites && Array.isArray(parsed.favorites)) {
+          quoteState.favorites = parsed.favorites;
+        } else {
+          quoteState.favorites = [];
+        }
+        if (parsed.customs && Array.isArray(parsed.customs)) {
+          quoteState.customs = parsed.customs;
+        } else {
+          quoteState.customs = [];
+        }
+      } catch (e) {
+        console.warn("读取一言配置数据损坏，自动重置默认值:", e);
+      }
+    }
+
+    // 联动表单 UI 状态
+    const sourceSelect = document.getElementById('quote-source-select');
+    if (sourceSelect) sourceSelect.value = quoteState.source;
+
+    const checkboxes = document.querySelectorAll('input[name="quote-cat"]');
+    checkboxes.forEach(cb => {
+      cb.checked = quoteState.categories.includes(cb.value);
+    });
+
+    updateSettingRowVisibility(quoteState.source);
+  }
+
+  // 保存本地持久化配置
+  function saveConfigs() {
+    const toSave = {
+      source: quoteState.source,
+      categories: quoteState.categories,
+      favorites: quoteState.favorites,
+      customs: quoteState.customs
+    };
+    localStorage.setItem(QUOTE_STATE_KEY, JSON.stringify(toSave));
+  }
+
+  // 控制表单字段显隐
+  function updateSettingRowVisibility(source) {
+    const catRow = document.getElementById('quote-categories-row');
+    const customRow = document.getElementById('quote-custom-row');
+    if (catRow) catRow.style.display = (source === 'api') ? 'flex' : 'none';
+    if (customRow) customRow.style.display = (source === 'custom') ? 'flex' : 'none';
+  }
+
+  // 渲染已收藏名言列表并绑定列表内直接取消收藏交互
+  function renderFavList() {
+    const favListEl = document.getElementById('quote-fav-list');
+    if (!favListEl) return;
+
+    favListEl.innerHTML = '';
+
+    if (quoteState.favorites.length === 0) {
+      favListEl.innerHTML = `<div class="quote-fav-empty">暂无收藏的灵感。<br>在正面点击 ❤️ 按钮，收藏你喜欢的金句吧 ✨</div>`;
+      return;
+    }
+
+    quoteState.favorites.forEach((fav, index) => {
+      const item = document.createElement('div');
+      item.className = 'quote-fav-item';
+      item.innerHTML = `
+        <div class="quote-fav-item-content">
+          <span class="quote-fav-item-text">“${fav.text}”</span>
+          <span class="quote-fav-item-author">—— ${fav.from}</span>
+        </div>
+        <button class="quote-fav-item-delete" title="取消收藏">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
+      `;
+
+      // 绑定单行删除事件 (含渐隐收缩过渡动画)
+      const deleteBtn = item.querySelector('.quote-fav-item-delete');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+          item.classList.add('removing');
+          setTimeout(() => {
+            quoteState.favorites.splice(index, 1);
+            saveConfigs();
+            renderFavList();
+            updateQuoteWidgetUI();
+            showToast("已取消收藏", "💔");
+          }, 300);
+        });
+      }
+
+      favListEl.appendChild(item);
+    });
+  }
+
+  // 更新正面图标的激活状态
+  function updateQuoteWidgetUI() {
+    const favBtn = document.getElementById('quote-favorite-btn');
+    const prevBtn = document.getElementById('quote-history-btn');
+    if (!favBtn || !prevBtn) return;
+
+    // 清洗字符（去除首尾空格以及全部换行符），防止 API 返回隐式空格字符集导致比对断裂
+    const cleanCurrent = (currentShownQuote.text || "").trim().replace(/\s+/g, '');
+    const isFav = quoteState.favorites.some(q => (q.text || "").trim().replace(/\s+/g, '') === cleanCurrent);
+
+    if (isFav) {
+      favBtn.classList.add('active-fav');
+      favBtn.title = "取消收藏";
+      favBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="heart-icon">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      `;
+    } else {
+      favBtn.classList.remove('active-fav');
+      favBtn.title = "收藏一言";
+      favBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="heart-icon">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      `;
+    }
+
+    // 历史回溯按钮是否可用
+    prevBtn.disabled = (quoteState.historyIndex <= 0);
+  }
+
+  // 核心加载格言函数
+  async function fetchQuote(isBackwards = false) {
     const textEl = document.getElementById('quote-text');
     const authorEl = document.getElementById('quote-author');
     if (!textEl || !authorEl) return;
 
-    try {
-      // 尝试拉取一言 API (限时 1.5 秒以保证平滑切换体验)
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 1500);
-      const res = await fetch('https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=i', { signal: controller.signal });
-      clearTimeout(id);
+    let nextQuote = null;
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.hitokoto) {
-          textEl.innerText = data.hitokoto;
-          authorEl.innerText = `—— ${data.from_who || data.from || "未知"}`;
-          return;
+    if (isBackwards) {
+      // 历史回退
+      if (quoteState.historyIndex > 0) {
+        quoteState.historyIndex--;
+        nextQuote = quoteState.history[quoteState.historyIndex];
+      }
+    } else {
+      // 获取新句子
+      if (quoteState.source === 'api') {
+        try {
+          // 限制 1.5s 超时
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), 1500);
+          
+          const catQuery = quoteState.categories.map(c => `c=${c}`).join('&');
+          const res = await fetch(`https://v1.hitokoto.cn/?${catQuery || 'c=a'}`, { signal: controller.signal });
+          clearTimeout(id);
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.hitokoto) {
+              nextQuote = {
+                text: data.hitokoto,
+                from: data.from_who || data.from || "未知"
+              };
+            }
+          }
+        } catch (e) {
+          console.warn("网络 API 异常，自动兜底本地名言库:", e.message);
+        }
+
+        if (!nextQuote) {
+          const randomIndex = Math.floor(Math.random() * LOCAL_QUOTES.length);
+          const q = LOCAL_QUOTES[randomIndex];
+          nextQuote = { text: q.text, from: q.from };
+        }
+      } else if (quoteState.source === 'local') {
+        const randomIndex = Math.floor(Math.random() * LOCAL_QUOTES.length);
+        const q = LOCAL_QUOTES[randomIndex];
+        nextQuote = { text: q.text, from: q.from };
+      } else if (quoteState.source === 'favorite') {
+        if (quoteState.favorites.length > 0) {
+          const randomIndex = Math.floor(Math.random() * quoteState.favorites.length);
+          nextQuote = quoteState.favorites[randomIndex];
+        } else {
+          nextQuote = { text: "暂无收藏的灵感。点击 ❤️ 按钮收藏正面金句吧！", from: "温馨提示" };
+        }
+      } else if (quoteState.source === 'custom') {
+        if (quoteState.customs.length > 0) {
+          const randomIndex = Math.floor(Math.random() * quoteState.customs.length);
+          nextQuote = quoteState.customs[randomIndex];
+        } else {
+          nextQuote = { text: "暂无自定义录入。请在设置背面输入并添加哦！", from: "温馨提示" };
         }
       }
-    } catch (e) {
-      console.warn("一言 API 获取受阻，自动回退本地兜底格言库:", e.message);
+
+      if (nextQuote) {
+        // 如果是从中途历史点开始刷新，切断之后的历史链条
+        if (quoteState.historyIndex < quoteState.history.length - 1) {
+          quoteState.history = quoteState.history.slice(0, quoteState.historyIndex + 1);
+        }
+        quoteState.history.push(nextQuote);
+        if (quoteState.history.length > 10) {
+          quoteState.history.shift();
+        }
+        quoteState.historyIndex = quoteState.history.length - 1;
+      }
     }
 
-    // 降级使用本地随机格言
-    const randomIndex = Math.floor(Math.random() * LOCAL_QUOTES.length);
-    const quote = LOCAL_QUOTES[randomIndex];
-    textEl.innerText = quote.text;
-    authorEl.innerText = `—— ${quote.from}`;
+    if (nextQuote) {
+      currentShownQuote = nextQuote;
+      textEl.innerText = nextQuote.text;
+      authorEl.innerText = `—— ${nextQuote.from}`;
+      updateQuoteWidgetUI();
+    }
   }
 
   function initQuoteWidget() {
-    const refreshBtn = document.getElementById('quote-refresh-btn');
     const card = document.getElementById('quote-widget');
+    const refreshBtn = document.getElementById('quote-refresh-btn');
+    const prevBtn = document.getElementById('quote-history-btn');
+    const favBtn = document.getElementById('quote-favorite-btn');
+    const copyBtn = document.getElementById('quote-copy-btn');
+    
+    const settingsBtn = document.getElementById('quote-settings-btn');
+    const settingsCloseBtn = document.getElementById('quote-settings-close');
+    const sourceSelect = document.getElementById('quote-source-select');
+    const categoryCheckboxes = document.querySelectorAll('input[name="quote-cat"]');
+    
+    const customAddBtn = document.getElementById('quote-custom-add-btn');
+    const customTextIn = document.getElementById('quote-custom-text');
+    const customAuthorIn = document.getElementById('quote-custom-author');
+
     if (!card) return;
 
-    // 初次加载
+    // 1. 初始化读取配置
+    loadConfigs();
+
+    // 2. 首次拉取
     fetchQuote();
 
+    // 3. 事件绑定
+    // A. 刷新名言 (带翻牌动画)
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => {
-        // 触发 3D 旋转翻牌交互特效
-        card.classList.add('flipping');
-        
-        // 在旋转至中间夹角时（约 250ms）平滑更新文字
-        setTimeout(fetchQuote, 250);
-
-        // 动画结束后移除翻转类以备下次点击
-        setTimeout(() => {
-          card.classList.remove('flipping');
-        }, 500);
+        const frontEl = card.querySelector('.quote-front');
+        if (frontEl) {
+          frontEl.classList.add('flipping');
+          setTimeout(() => { fetchQuote(false); }, 250);
+          setTimeout(() => { frontEl.classList.remove('flipping'); }, 500);
+        } else {
+          fetchQuote(false);
+        }
       });
     }
+
+    // B. 历史上一句
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        fetchQuote(true);
+      });
+    }
+
+    // C. 复制一言
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        if (!currentShownQuote.text) return;
+        const textToCopy = `“${currentShownQuote.text}” —— ${currentShownQuote.from}`;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showToast("已复制灵感到剪贴板 ✨", "📋");
+        }).catch(err => {
+          console.error("复制失败:", err);
+          showToast("复制失败，请手动选择复制", "❌");
+        });
+      });
+    }
+
+    // D. 收藏控制
+    if (favBtn) {
+      favBtn.addEventListener('click', () => {
+        if (currentShownQuote.from === "温馨提示") {
+          showToast("此提示信息无需收藏哦", "💡");
+          return;
+        }
+
+        const cleanCurrent = (currentShownQuote.text || "").trim().replace(/\s+/g, '');
+        const favIndex = quoteState.favorites.findIndex(q => (q.text || "").trim().replace(/\s+/g, '') === cleanCurrent);
+        
+        if (favIndex > -1) {
+          // 取消收藏
+          quoteState.favorites.splice(favIndex, 1);
+          saveConfigs();
+          updateQuoteWidgetUI();
+          showToast("已取消收藏", "💔");
+        } else {
+          // 收藏
+          quoteState.favorites.push({
+            text: currentShownQuote.text,
+            from: currentShownQuote.from
+          });
+          saveConfigs();
+          updateQuoteWidgetUI();
+          showToast("灵感已收录至收藏夹！", "❤️");
+        }
+      });
+    }
+
+    // E. 翻面交互
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        card.classList.add('is-flipped');
+      });
+    }
+
+    if (settingsCloseBtn) {
+      settingsCloseBtn.addEventListener('click', () => {
+        card.classList.remove('is-flipped');
+        // 返回正面时根据选定的配置自动刷新一发
+        fetchQuote(false);
+      });
+    }
+
+    // F. 设置表单响应
+    if (sourceSelect) {
+      sourceSelect.addEventListener('change', (e) => {
+        quoteState.source = e.target.value;
+        updateSettingRowVisibility(quoteState.source);
+        saveConfigs();
+      });
+    }
+
+    categoryCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        quoteState.categories = Array.from(categoryCheckboxes)
+          .filter(c => c.checked)
+          .map(c => c.value);
+        saveConfigs();
+      });
+    });
+
+    // G. 自定义添加
+    if (customAddBtn && customTextIn && customAuthorIn) {
+      customAddBtn.addEventListener('click', () => {
+        const textVal = customTextIn.value.trim();
+        const authorVal = customAuthorIn.value.trim() || "个人原创";
+
+        if (!textVal) {
+          showToast("录入格言不能为空哦", "⚠️");
+          return;
+        }
+
+        quoteState.customs.push({
+          text: textVal,
+          from: authorVal
+        });
+        saveConfigs();
+
+        customTextIn.value = '';
+        customAuthorIn.value = '';
+        showToast("成功添加自定义名言 ✨", "✍️");
+      });
+    }
+
+    // H. 收藏夹 Modal 弹窗控制
+    const libraryBtn = document.getElementById('quote-library-btn');
+    const libraryModal = document.getElementById('quote-library-modal');
+    const libraryCloseBtn = document.getElementById('quote-library-close');
+
+    if (libraryBtn && libraryModal) {
+      libraryBtn.addEventListener('click', () => {
+        renderFavList();
+        libraryModal.style.display = 'flex';
+        libraryModal.offsetHeight; // 触发重绘以执行 CSS 过渡
+        libraryModal.classList.add('active');
+      });
+    }
+
+    const closeLibraryModal = () => {
+      if (libraryModal && libraryModal.classList.contains('active')) {
+        libraryModal.classList.remove('active');
+        setTimeout(() => {
+          libraryModal.style.display = 'none';
+        }, 350);
+      }
+    };
+
+    if (libraryCloseBtn) {
+      libraryCloseBtn.addEventListener('click', closeLibraryModal);
+    }
+
+    if (libraryModal) {
+      libraryModal.addEventListener('click', (e) => {
+        if (e.target === libraryModal) {
+          closeLibraryModal();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLibraryModal();
+      }
+    });
   }
 
   // ==========================================

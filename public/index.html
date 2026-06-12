@@ -250,16 +250,101 @@
 
                         <!-- Daily Quote Card -->
                         <div class="hero-quote-card" id="quote-widget">
-                            <div class="quote-content">
-                                <span class="quote-icon">“</span>
-                                <p class="quote-text" id="quote-text">加载灵感中...</p>
-                                <span class="quote-author" id="quote-author">—— 个人聚合面板</span>
+                            <div class="quote-card-inner">
+                                <!-- 正面 -->
+                                <div class="quote-front">
+                                    <div class="quote-content">
+                                        <span class="quote-icon">“</span>
+                                        <p class="quote-text" id="quote-text">加载灵感中...</p>
+                                        <span class="quote-author" id="quote-author">—— 个人聚合面板</span>
+                                    </div>
+                                    <div class="quote-actions">
+                                        <button class="quote-action-btn" id="quote-history-btn" title="上一句" disabled>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                                <polyline points="12 19 5 12 12 5"></polyline>
+                                            </svg>
+                                        </button>
+                                        <button class="quote-action-btn" id="quote-favorite-btn" title="收藏一言">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="heart-icon">
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="quote-action-btn" id="quote-copy-btn" title="复制一言">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="quote-action-btn" id="quote-library-btn" title="查看收藏夹">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="quote-action-btn" id="quote-settings-btn" title="一言设置">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="quote-btn" id="quote-refresh-btn" title="点击换一句灵感">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- 背面 (设置) -->
+                                <div class="quote-back">
+                                    <div class="quote-back-header">
+                                        <span class="quote-back-title">一言设置</span>
+                                        <button class="quote-back-close" id="quote-settings-close" title="返回正面">✕</button>
+                                    </div>
+                                    <div class="quote-settings-content">
+                                        <div class="quote-setting-row">
+                                            <label for="quote-source-select">数据源</label>
+                                            <select id="quote-source-select">
+                                                <option value="api" selected>网络 API (Hitokoto)</option>
+                                                <option value="local">本地兜底库</option>
+                                                <option value="favorite">我的收藏</option>
+                                                <option value="custom">自定义录入</option>
+                                            </select>
+                                        </div>
+                                        <div class="quote-setting-row" id="quote-categories-row">
+                                            <label>API 分类</label>
+                                            <div class="quote-category-list">
+                                                <label class="quote-checkbox-label">
+                                                    <input type="checkbox" value="a" name="quote-cat" checked><span>动漫</span>
+                                                </label>
+                                                <label class="quote-checkbox-label">
+                                                    <input type="checkbox" value="b" name="quote-cat" checked><span>漫画</span>
+                                                </label>
+                                                <label class="quote-checkbox-label">
+                                                    <input type="checkbox" value="c" name="quote-cat" checked><span>游戏</span>
+                                                </label>
+                                                <label class="quote-checkbox-label">
+                                                    <input type="checkbox" value="d" name="quote-cat" checked><span>小说</span>
+                                                </label>
+                                                <label class="quote-checkbox-label">
+                                                    <input type="checkbox" value="i" name="quote-cat" checked><span>诗词</span>
+                                                </label>
+                                                <label class="quote-checkbox-label">
+                                                    <input type="checkbox" value="k" name="quote-cat"><span>哲学</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="quote-setting-row" id="quote-custom-row" style="display: none;">
+                                            <label>录入格言</label>
+                                            <div class="quote-custom-form">
+                                                <input type="text" id="quote-custom-text" placeholder="输入格言内容..." maxlength="100">
+                                                <input type="text" id="quote-custom-author" placeholder="作者/出处" maxlength="20">
+                                                <button id="quote-custom-add-btn">添加</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <button class="quote-btn" id="quote-refresh-btn" title="点击换一句灵感">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                                </svg>
-                            </button>
                         </div>
                     </div>
 
@@ -688,6 +773,24 @@
                 
                 <div class="lp-no-results" id="lpNoResults" style="display: none;">
                     <p>没有匹配的工具，请换个词搜搜看 🔍</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="quote-toast-container" class="quote-toast-container"></div>
+
+    <!-- 收藏夹 Modal 弹窗 -->
+    <div class="quote-modal-overlay" id="quote-library-modal" style="display: none;">
+        <div class="quote-modal-card">
+            <div class="quote-modal-header">
+                <h3>❤️ 我的灵感收藏</h3>
+                <button class="quote-modal-close" id="quote-library-close" title="关闭 (Esc)">✕</button>
+            </div>
+            <div class="quote-modal-body">
+                <div class="quote-fav-list" id="quote-fav-list">
+                    <!-- 由 JS 动态渲染收藏列表 -->
                 </div>
             </div>
         </div>
