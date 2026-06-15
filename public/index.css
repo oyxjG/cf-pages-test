@@ -2836,3 +2836,153 @@ body::after {
     line-height: 1.6;
 }
 
+/* ==========================================
+   全屏 Launchpad 移动端响应式适配 
+   ========================================== */
+@media (max-width: 768px) {
+    /* 1. 弹窗内边距与关闭按钮 */
+    .launchpad-content {
+        padding: 40px 16px;
+    }
+    
+    .launchpad-close-btn {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 10001; /* 保证在所有元素之上 */
+    }
+
+    [data-theme="light"] .launchpad-close-btn {
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        color: #333;
+    }
+
+    /* 2. 搜索框精简 */
+    .launchpad-search-wrapper {
+        margin-bottom: 16px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #launchpadSearch {
+        padding: 12px 16px 12px 44px;
+        font-size: 15px;
+        border-radius: 12px; /* 扁平一点，手机端更好看 */
+    }
+
+    .launchpad-search-wrapper .search-icon {
+        left: 16px;
+        width: 18px;
+        height: 18px;
+    }
+
+    /* 3. 分类滚动 Tab 栏 */
+    .launchpad-filter-tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: flex-start;
+        padding: 4px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .launchpad-filter-tabs::-webkit-scrollbar {
+        display: none; /* Safari & Chrome */
+    }
+
+    .lp-filter-btn {
+        flex-shrink: 0;
+        padding: 6px 14px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+
+    /* 4. 网格与卡片缩放 */
+    .launchpad-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 16px 12px;
+    }
+
+    .launchpad-app-card {
+        padding: 12px 8px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.03);
+    }
+
+    [data-theme="light"] .launchpad-app-card {
+        background: rgba(0, 0, 0, 0.01);
+        border-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .launchpad-app-card .app-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        font-size: 28px;
+        margin-bottom: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .launchpad-app-card .app-title {
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .launchpad-app-card .app-desc {
+        font-size: 10px;
+        line-height: 1.3;
+        max-height: 26px;
+    }
+
+    /* 5. 适合 PC 端的卡片降噪提示 */
+    .launchpad-app-card[data-mobile-friendly="false"] {
+        opacity: 0.65;
+    }
+
+    /* 触控反馈 */
+    .launchpad-app-card:active {
+        transform: scale(0.96);
+        background: rgba(255, 255, 255, 0.08);
+        opacity: 1 !important;
+    }
+
+    [data-theme="light"] .launchpad-app-card:active {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .launchpad-app-card[data-mobile-friendly="false"]::after {
+        content: "💻 PC 推荐";
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 8px;
+        transform: scale(0.85);
+        transform-origin: top right;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        padding: 1px 4px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        pointer-events: none;
+    }
+
+    [data-theme="light"] .launchpad-app-card[data-mobile-friendly="false"]::after {
+        background: rgba(0, 0, 0, 0.04);
+        border-color: rgba(0, 0, 0, 0.03);
+        color: #666;
+    }
+}
+

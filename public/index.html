@@ -667,6 +667,7 @@
 
             <div class="launchpad-filter-tabs">
                 <button class="lp-filter-btn active" data-filter="all">全部工具</button>
+                <button class="lp-filter-btn" data-filter="mobile">📱 手机推荐</button>
                 <button class="lp-filter-btn" data-filter="dev">💻 开发者</button>
                 <button class="lp-filter-btn" data-filter="daily">🏡 生活效率</button>
                 <button class="lp-filter-btn" data-filter="security">🔐 安全加密</button>
@@ -675,103 +676,103 @@
 
             <div class="launchpad-grid" id="launchpadGrid">
                 <!-- App 1: 管理控制台 -->
-                <a class="launchpad-app-card" href="/admin/index.html" data-category="admin">
+                <a class="launchpad-app-card" href="/admin/index.html" data-category="admin" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #708090 0%, #4f4f4f 100%);">👤</div>
                     <strong class="app-title">管理控制台</strong>
                     <span class="app-desc">系统设置与用户状态控制</span>
                 </a>
                 <!-- App 2: 节假日计算器 -->
-                <a class="launchpad-app-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                <a class="launchpad-app-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">📅</div>
                     <strong class="app-title">节假日计算</strong>
                     <span class="app-desc">调休安排与假期规划助手</span>
                 </a>
                 <!-- App 3: 时间戳转换 -->
-                <a class="launchpad-app-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🕒</div>
                     <strong class="app-title">时间戳转换</strong>
                     <span class="app-desc">实时展示与双向格式化</span>
                 </a>
                 <!-- App 4: 密码生成 -->
-                <a class="launchpad-app-card" href="/tool/password_generator.html" target="_blank" rel="noopener noreferrer" data-category="security">
+                <a class="launchpad-app-card" href="/tool/password_generator.html" target="_blank" rel="noopener noreferrer" data-category="security" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">🔐</div>
                     <strong class="app-title">高强度密码</strong>
                     <span class="app-desc">自定义规则防破解生成</span>
                 </a>
                 <!-- App 5: 二维码生成 -->
-                <a class="launchpad-app-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                <a class="launchpad-app-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">📷</div>
                     <strong class="app-title">二维码工具</strong>
                     <span class="app-desc">快速编码生成与拖拽识别</span>
                 </a>
                 <!-- App 6: Base64 处理 -->
-                <a class="launchpad-app-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">🔗</div>
                     <strong class="app-title">Base64处理</strong>
                     <span class="app-desc">字符串即时编解码转换</span>
                 </a>
                 <!-- App 7: JSON 格式化 -->
-                <a class="launchpad-app-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">📦</div>
                     <strong class="app-title">JSON格式化</strong>
                     <span class="app-desc">高亮校验美化与折叠层级</span>
                 </a>
                 <!-- App 8: Diff 文本对比 -->
-                <a class="launchpad-app-card" href="/tool/diff_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/diff_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #a8b2bd 0%, #576574 100%);">📋</div>
                     <strong class="app-title">Diff文本对比</strong>
                     <span class="app-desc">行级/字级差异比对高亮</span>
                 </a>
                 <!-- App 9: Markdown 工具 -->
-                <a class="launchpad-app-card" href="/tool/markdown_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/markdown_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #2af598 0%, #009efd 100%);">📝</div>
                     <strong class="app-title">Markdown编辑</strong>
                     <span class="app-desc">实时预览、公式图表与导出</span>
                 </a>
                 <!-- App 10: 正则测试 -->
-                <a class="launchpad-app-card" href="/tool/regex_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/regex_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #13547a 0%, #80d0c7 100%);">🔍</div>
                     <strong class="app-title">正则测试器</strong>
                     <span class="app-desc">可视化捕获组测试与速查</span>
                 </a>
                 <!-- App 11: 正则生成 -->
-                <a class="launchpad-app-card" href="/tool/regex_generator_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/regex_generator_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%);">🧩</div>
                     <strong class="app-title">正则生成器</strong>
                     <span class="app-desc">引导式规则配置快速拼装</span>
                 </a>
                 <!-- App 12: 语种检测 -->
-                <a class="launchpad-app-card" href="/tool/language_detector.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/language_detector.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);">🌐</div>
                     <strong class="app-title">智能语种检测</strong>
                     <span class="app-desc">AI 算法辨识多国语言/代码</span>
                 </a>
                 <!-- App 13: 颜色转换 -->
-                <a class="launchpad-app-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev">
+                <a class="launchpad-app-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🎨</div>
                     <strong class="app-title">颜色转换器</strong>
                     <span class="app-desc">HEX/RGB多格式互转调色</span>
                 </a>
                 <!-- App 14: 国密解密 -->
-                <a class="launchpad-app-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer" data-category="security">
+                <a class="launchpad-app-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer" data-category="security" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);">🛡️</div>
                     <strong class="app-title">国密安全解密</strong>
                     <span class="app-desc">本地高性能SM2秘钥对解析</span>
                 </a>
                 <!-- App 15: 保质期计算 -->
-                <a class="launchpad-app-card" href="/tool/shelf_life_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                <a class="launchpad-app-card" href="/tool/shelf_life_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #e6b980 0%, #eacda3 100%);">⏳</div>
                     <strong class="app-title">保质期计算</strong>
                     <span class="app-desc">临期提醒与库存管理助手</span>
                 </a>
                 <!-- App 16: 单位换算 -->
-                <a class="launchpad-app-card" href="/tool/unit_converter.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                <a class="launchpad-app-card" href="/tool/unit_converter.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
                     <div class="app-icon" style="background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);">📏</div>
                     <strong class="app-title">单位换算器</strong>
                     <span class="app-desc">长度、面积、进制、汇率及数据联动换算</span>
                 </a>
                 <!-- App 17: 图片处理工坊 -->
-                <a class="launchpad-app-card" href="/tool/image_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily">
+                <a class="launchpad-app-card" href="/tool/image_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="false">
                     <div class="app-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🖼️</div>
                     <strong class="app-title">图片处理工坊</strong>
                     <span class="app-desc">本地安全处理，保障隐私安全，支持图片压缩、格式转换与 Base64</span>

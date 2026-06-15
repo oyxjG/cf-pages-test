@@ -160,8 +160,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 搜索与分类联动逻辑
-    let currentLpFilter = 'all';
+    const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    let currentLpFilter = isMobileDevice ? 'mobile' : 'all';
     let lpSearchQuery = '';
+
+    // 初始化过滤器激活状态样式
+    if (isMobileDevice) {
+        lpFilterBtns.forEach(btn => {
+            if (btn.getAttribute('data-filter') === 'mobile') {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
 
     const applyLpFilter = () => {
         let visibleCount = 0;
@@ -177,7 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const matchesFilter = (currentLpFilter === 'all' || category === currentLpFilter);
+            const isMobileFriendly = card.getAttribute('data-mobile-friendly') === 'true';
+            const matchesFilter = (currentLpFilter === 'all') || 
+                                  (currentLpFilter === 'mobile' && isMobileFriendly) ||
+                                  (category === currentLpFilter);
             const matchesSearch = (title.includes(lpSearchQuery) || desc.includes(lpSearchQuery));
 
             if (matchesFilter && matchesSearch) {
@@ -546,4 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <a href="/login.html" style="color: #818cf8; font-size: 0.8125rem; text-decoration: none; margin-top: 8px; display: block;">👉 点击登录</a>
         `;
     }
+
+    // 初始化时触发一次应用过滤逻辑，确保移动端等初始筛选生效
+    applyLpFilter();
 });
