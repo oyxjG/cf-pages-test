@@ -749,6 +749,10 @@
                 <input type="radio" name="target-format" id="target-ico" value="ico" />
                 <label for="target-ico" class="format-label">ICO 图标</label>
               </div>
+              <div class="format-option">
+                <input type="radio" name="target-format" id="target-svg" value="svg" />
+                <label for="target-svg" class="format-label">SVG 容器</label>
+              </div>
             </div>
           </div>
 
@@ -1243,6 +1247,15 @@
           const previewUrl = URL.createObjectURL(blob);
           convertPreview.src = previewUrl;
         });
+      } else if (fmt === 'svg') {
+        buildSvgBlob(loadedImage, (blob) => {
+          if (!blob) return;
+          convertedBlob = blob;
+          convertedFormatExt = 'svg';
+          
+          const previewUrl = URL.createObjectURL(blob);
+          convertPreview.src = previewUrl;
+        });
       } else {
         hiddenCanvas.width = loadedImage.naturalWidth;
         hiddenCanvas.height = loadedImage.naturalHeight;
@@ -1313,6 +1326,23 @@
         };
         reader.readAsArrayBuffer(pngBlob);
       }, 'image/png');
+    }
+
+    // 纯 JS 生成 SVG 容器 Blob
+    function buildSvgBlob(imgElement, callback) {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = imgElement.naturalWidth;
+      tempCanvas.height = imgElement.naturalHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(imgElement, 0, 0);
+      
+      const mime = globalFile.type || 'image/png';
+      const dataUrl = tempCanvas.toDataURL(mime);
+      
+      const svgString = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${imgElement.naturalWidth}" height="${imgElement.naturalHeight}" viewBox="0 0 ${imgElement.naturalWidth} ${imgElement.naturalHeight}">\n  <image width="${imgElement.naturalWidth}" height="${imgElement.naturalHeight}" xlink:href="${dataUrl}"/>\n</svg>`;
+      
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      callback(blob);
     }
 
     btnDownloadConverted.addEventListener('click', () => {
