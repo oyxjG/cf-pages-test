@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图片处理工坊 - 效率工坊</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme.js"></script>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background: var(--paper);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      transition: all 0.3s ease;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      padding: 6px 12px;
+      border-radius: 12px;
+      background: transparent;
+      margin-left: -12px;
+      margin-bottom: 16px;
+    }
+
+    .back-link:hover {
+      color: var(--accent);
+      background: var(--paper-strong);
+    }
+
+    .back-link svg {
+      transition: transform 0.2s ease;
+    }
+
+    .back-link:hover svg {
+      transform: translateX(-4px);
+    }
+
+    .header {
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-info h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header-info p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* 选项卡样式 */
+    .tabs-nav {
+      display: flex;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      padding: 4px;
+      border-radius: 16px;
+      margin-bottom: 28px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background: var(--paper);
+      color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 上传拖拽区域 */
+    .upload-zone {
+      border: 2px dashed var(--line);
+      background: var(--paper-strong);
+      border-radius: 20px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(191, 91, 50, 0.03);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(191, 91, 50, 0.05);
+    }
+
+    .upload-icon {
+      color: var(--accent);
+      opacity: 0.8;
+      transition: transform 0.3s ease;
+    }
+
+    .upload-zone:hover .upload-icon {
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .upload-zone h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .upload-zone p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    /* 主工作台布局 */
+    .workspace {
+      display: none; /* 默认隐藏，有文件时展示 */
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 已加载图片头部栏 */
+    .file-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      padding: 12px 20px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .file-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-thumbnail {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #ccc;
+      border: 1px solid var(--line);
+    }
+
+    .file-info strong {
+      display: block;
+      font-size: 14px;
+      color: var(--text);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-info span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .btn-reset {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover {
+      color: #ff4d4d;
+      border-color: rgba(255, 77, 77, 0.3);
+      background: rgba(255, 77, 77, 0.05);
+    }
+
+    /* 选项卡内容区域 */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+    }
+
+    @media (max-width: 820px) {
+      .tab-content.active {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 控制面板 */
+    .control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      padding: 24px;
+      border-radius: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-header label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .val-display {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(191, 91, 50, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    /* 滑块美化 */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--line);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* 格式单选框 */
+    .format-selector {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .format-option {
+      position: relative;
+    }
+
+    .format-option input {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+
+    .format-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .format-option input:checked + .format-label {
+      border-color: var(--accent);
+      background: rgba(191, 91, 50, 0.06);
+      color: var(--accent);
+    }
+
+    /* ICO 尺寸面板 */
+    .ico-size-panel {
+      display: none; /* 默认隐藏，选择 ICO 时展示 */
+      animation: fadeIn 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .size-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    /* 预览对比面板 */
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      padding: 24px;
+      border-radius: 20px;
+      background: var(--paper-strong);
+      min-height: 300px;
+    }
+
+    .preview-container {
+      width: 100%;
+      height: 220px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: #efefef;
+      background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), 
+                        linear-gradient(-45deg, #ddd 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #ddd 75%), 
+                        linear-gradient(-45deg, transparent 75%, #ddd 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .stats-card {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 16px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .stat-box strong {
+      display: block;
+      font-size: 16px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .stat-box span {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .stat-divider {
+      width: 1px;
+      background: var(--line);
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(191, 91, 50, 0.15);
+    }
+
+    .btn-action:hover {
+      background: var(--mustard);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(191, 91, 50, 0.25);
+    }
+
+    /* Base64 面板特别样式 */
+    .base64-content {
+      grid-template-columns: 1fr 1fr !important;
+    }
+
+    @media (max-width: 720px) {
+      .base64-content {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    .base64-editor {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .base64-editor label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    textarea.base64-area {
+      width: 100%;
+      height: 220px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    textarea.base64-area:focus {
+      border-color: var(--accent);
+    }
+
+    .base64-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--paper-strong);
+      border-color: var(--accent-soft);
+    }
+
+    .copied-tip {
+      font-size: 12px;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Canvas 隐藏 */
+    #hidden-canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      返回首页
+    </a>
+
+    <div class="header">
+      <div class="header-info">
+        <h1>图片处理工坊</h1>
+        <p>纯前端实现图片高保真压缩、多格式互转（含 ICO 图标制作）与 Base64 快速互转。</p>
+      </div>
+    </div>
+
+    <!-- 功能卡选项卡导航 -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-tab="compress-tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="4 14 10 14 10 20"></polyline>
+          <polyline points="20 10 14 10 14 4"></polyline>
+          <line x1="14" y1="10" x2="21" y2="3"></line>
+          <line x1="10" y1="14" x2="3" y2="21"></line>
+        </svg>
+        图片压缩
+      </button>
+      <button class="tab-btn" data-tab="convert-tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="17 1 21 5 17 9"></polyline>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+          <polyline points="7 23 3 19 7 15"></polyline>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        </svg>
+        格式转换
+      </button>
+      <button class="tab-btn" data-tab="base64-tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="16 16 20 20 16 24"></polyline>
+          <polyline points="8 8 4 4 8 0"></polyline>
+          <line x1="4" y1="4" x2="20" y2="20"></line>
+        </svg>
+        Base64 互转
+      </button>
+    </div>
+
+    <!-- 拖拽上传区 (未选择图片时显示) -->
+    <div class="upload-zone" id="upload-zone">
+      <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      <h3>拖入图片 或 点击上传</h3>
+      <p>支持 PNG, JPG, JPEG, WebP 格式图片，亦可直接粘贴剪贴板图片</p>
+      <input type="file" id="file-input" class="file-input" accept="image/png, image/jpeg, image/jpg, image/webp" />
+    </div>
+
+    <!-- 主工作台 (加载图片后显示) -->
+    <div class="workspace" id="workspace">
+      <!-- 顶部已选图片元数据栏 -->
+      <div class="file-bar">
+        <div class="file-meta">
+          <img id="meta-thumb" class="file-thumbnail" src="" alt="Thumbnail" />
+          <div class="file-info">
+            <strong id="meta-name">image.png</strong>
+            <span id="meta-detail">1920x1080 · 1.2 MB</span>
+          </div>
+        </div>
+        <button class="btn-reset" id="btn-reset-image">
+          更换图片
+        </button>
+      </div>
+
+      <!-- 图片压缩 Tab -->
+      <div class="tab-content active" id="compress-tab">
+        <div class="control-panel">
+          <div class="control-group">
+            <div class="control-header">
+              <label for="compress-quality">压缩画质 (Quality)</label>
+              <span class="val-display" id="quality-val">80%</span>
+            </div>
+            <input type="range" id="compress-quality" min="10" max="100" value="80" />
+            <p style="margin: 0; font-size: 11px; color: var(--muted);">降低画质数值可大幅减小文件体积，通常 80% 能保持极高清晰度。</p>
+          </div>
+
+          <div class="control-group">
+            <div class="control-header">
+              <label for="compress-scale">尺寸缩放 (Scale)</label>
+              <span class="val-display" id="scale-val">100%</span>
+            </div>
+            <input type="range" id="compress-scale" min="10" max="100" value="100" />
+            <p style="margin: 0; font-size: 11px; color: var(--muted);">等比例缩放图片的分辨率，也是减小图片大小的重要手段。</p>
+          </div>
+
+          <div class="control-group">
+            <div class="control-header">
+              <label>输出格式</label>
+            </div>
+            <div class="format-selector">
+              <div class="format-option">
+                <input type="radio" name="compress-format" id="fmt-auto" value="auto" checked />
+                <label for="fmt-auto" class="format-label">自动</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="compress-format" id="fmt-webp" value="webp" />
+                <label for="fmt-webp" class="format-label">WebP</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="compress-format" id="fmt-jpeg" value="jpeg" />
+                <label for="fmt-jpeg" class="format-label">JPEG</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="compress-format" id="fmt-png" value="png" />
+                <label for="fmt-png" class="format-label">PNG</label>
+              </div>
+            </div>
+            <p id="png-warn-tip" style="margin: 0; font-size: 11px; color: var(--accent); display: none;">提示：PNG 格式为无损格式，画质滑块对其无效，如需极限体积优化，建议输出为 WebP 或 JPEG。</p>
+          </div>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-container">
+            <img id="compress-preview" class="preview-img" src="" alt="Compressed Preview" />
+          </div>
+          <div class="stats-card">
+            <div class="stat-box">
+              <strong id="stat-orig-size">--</strong>
+              <span>原文件大小</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-box">
+              <strong id="stat-comp-size">--</strong>
+              <span>压缩后大小</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-box">
+              <strong id="stat-ratio-percent" style="color: var(--accent);">--</strong>
+              <span>体积减小</span>
+            </div>
+          </div>
+          <button class="btn-action" id="btn-download-compressed">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            下载压缩后的图片
+          </button>
+        </div>
+      </div>
+
+      <!-- 格式转换 Tab -->
+      <div class="tab-content" id="convert-tab">
+        <div class="control-panel">
+          <div class="control-group">
+            <div class="control-header">
+              <label>目标格式 (Output Format)</label>
+            </div>
+            <div class="format-selector">
+              <div class="format-option">
+                <input type="radio" name="target-format" id="target-webp" value="webp" checked />
+                <label for="target-webp" class="format-label">WebP</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="target-format" id="target-png" value="png" />
+                <label for="target-png" class="format-label">PNG</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="target-format" id="target-jpg" value="jpeg" />
+                <label for="target-jpg" class="format-label">JPG</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="target-format" id="target-ico" value="ico" />
+                <label for="target-ico" class="format-label">ICO 图标</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- ICO 专属选项 -->
+          <div class="control-group ico-size-panel" id="ico-options">
+            <div class="control-header">
+              <label>图标规格 (Favicon Size)</label>
+            </div>
+            <div class="size-selector">
+              <div class="format-option">
+                <input type="radio" name="ico-size" id="size-16" value="16" />
+                <label for="size-16" class="format-label">16 × 16</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="ico-size" id="size-32" value="32" checked />
+                <label for="size-32" class="format-label">32 × 32 (常用)</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="ico-size" id="size-64" value="64" />
+                <label for="size-64" class="format-label">64 × 64</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="ico-size" id="size-128" value="128" />
+                <label for="size-128" class="format-label">128 × 128</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="ico-size" id="size-256" value="256" />
+                <label for="size-256" class="format-label">256 × 256</label>
+              </div>
+            </div>
+            <p style="margin: 0; font-size: 11px; color: var(--muted); line-height: 1.4;">ICO 格式采用标准目录指针打包。我们使用纯 JS 进行无损的二方封装，安全环保。</p>
+          </div>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-container">
+            <img id="convert-preview" class="preview-img" src="" alt="Format Convert Preview" />
+          </div>
+          <div class="stats-card">
+            <div class="stat-box">
+              <strong id="convert-orig-fmt">PNG</strong>
+              <span>原始格式</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-box">
+              <strong id="convert-dest-fmt" style="color: var(--accent);">WEBP</strong>
+              <span>目标格式</span>
+            </div>
+          </div>
+          <button class="btn-action" id="btn-download-converted">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="8 17 12 21 16 17"></polyline>
+              <line x1="12" y1="12" x2="12" y2="21"></line>
+              <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
+            </svg>
+            开始转换并下载
+          </button>
+        </div>
+      </div>
+
+      <!-- Base64 互转 Tab -->
+      <div class="tab-content base64-content" id="base64-tab">
+        <div class="base64-editor">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="base64-output">Base64 编码结果</label>
+            <span class="copied-tip" id="base64-copy-tip">已复制</span>
+          </div>
+          <textarea id="base64-output" class="base64-area" readonly placeholder="载入图片后自动生成 Base64 编码..."></textarea>
+          <div class="base64-btns">
+            <button class="btn-secondary" id="btn-copy-base64">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              复制 Base64
+            </button>
+          </div>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-container">
+            <img id="base64-preview" class="preview-img" src="" alt="Base64 Preview" />
+          </div>
+          <div style="width: 100%; font-size: 12px; color: var(--muted); text-align: center;">
+            Base64 编码适合在 CSS 或 HTML 中直接内嵌微型图片资源。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Base64 手动粘贴模块 (未载入图片且在 Base64 Tab 下时，提供手动贴入解码能力) -->
+    <div id="base64-manual-zone" style="display: none; margin-top: 20px; animation: fadeIn 0.3s ease;">
+      <div class="tab-content base64-content" style="display: grid;">
+        <div class="base64-editor">
+          <label for="base64-input-val">在此贴入 Base64 编码</label>
+          <textarea id="base64-input-val" class="base64-area" placeholder="支持带 data:image/... 头部的 DataURL，或者纯 Base64 原始数据..."></textarea>
+          <div class="base64-btns">
+            <button class="btn-secondary" id="btn-decode-base64">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+              解析并载入
+            </button>
+            <button class="btn-secondary" id="btn-clear-manual" style="max-width: 100px;">清空</button>
+          </div>
+        </div>
+        <div class="preview-panel">
+          <div class="preview-container">
+            <img id="manual-base64-preview" class="preview-img" src="" alt="Manual Base64 Preview" />
+          </div>
+          <button class="btn-action" id="btn-download-manual" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            下载解码后的图片
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast-notify">操作成功</div>
+
+  <!-- 离屏 Canvas，用于图像渲染处理 -->
+  <canvas id="hidden-canvas"></canvas>
+
+  <script>
+    // 全局状态
+    let globalFile = null;
+    let globalImageSrc = null;
+    let loadedImage = new Image(); // 用来保存加载的图片对象以获取尺寸信息
+
+    // DOM 元素缓存
+    const uploadZone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('file-input');
+    const workspace = document.getElementById('workspace');
+    const base64ManualZone = document.getElementById('base64-manual-zone');
+
+    const metaThumb = document.getElementById('meta-thumb');
+    const metaName = document.getElementById('meta-name');
+    const metaDetail = document.getElementById('meta-detail');
+    const btnResetImage = document.getElementById('btn-reset-image');
+
+    const compressQualityInput = document.getElementById('compress-quality');
+    const qualityValDisplay = document.getElementById('quality-val');
+    const compressScaleInput = document.getElementById('compress-scale');
+    const scaleValDisplay = document.getElementById('scale-val');
+    const pngWarnTip = document.getElementById('png-warn-tip');
+
+    const compressPreview = document.getElementById('compress-preview');
+    const statOrigSize = document.getElementById('stat-orig-size');
+    const statCompSize = document.getElementById('stat-comp-size');
+    const statRatioPercent = document.getElementById('stat-ratio-percent');
+    const btnDownloadCompressed = document.getElementById('btn-download-compressed');
+
+    const convertPreview = document.getElementById('convert-preview');
+    const convertOrigFmt = document.getElementById('convert-orig-fmt');
+    const convertDestFmt = document.getElementById('convert-dest-fmt');
+    const btnDownloadConverted = document.getElementById('btn-download-converted');
+    const icoOptions = document.getElementById('ico-options');
+
+    const base64Output = document.getElementById('base64-output');
+    const base64Preview = document.getElementById('base64-preview');
+    const btnCopyBase64 = document.getElementById('btn-copy-base64');
+    const base64CopyTip = document.getElementById('base64-copy-tip');
+
+    const base64InputVal = document.getElementById('base64-input-val');
+    const btnDecodeBase64 = document.getElementById('btn-decode-base64');
+    const btnClearManual = document.getElementById('btn-clear-manual');
+    const manualBase64Preview = document.getElementById('manual-base64-preview');
+    const btnDownloadManual = document.getElementById('btn-download-manual');
+
+    const hiddenCanvas = document.getElementById('hidden-canvas');
+    const ctx = hiddenCanvas.getContext('2d');
+
+    // 格式化文件大小
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // 消息通知
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notify');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // 初始化 Tab 切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        const activeTabId = btn.getAttribute('data-tab');
+        
+        // 特殊处理：如果是 Base64 且当前未加载文件，则展示手动解码区域
+        if (activeTabId === 'base64-tab' && !globalFile) {
+          base64ManualZone.style.display = 'block';
+          uploadZone.style.display = 'none';
+        } else {
+          base64ManualZone.style.display = 'none';
+          if (!globalFile) {
+            uploadZone.style.display = 'flex';
+          } else {
+            const activeTab = document.getElementById(activeTabId);
+            if (activeTab) activeTab.classList.add('active');
+          }
+        }
+
+        // 切换 Tab 时触发即时渲染（如果已加载图片）
+        if (globalFile) {
+          const activeTab = document.getElementById(activeTabId);
+          if (activeTab) activeTab.classList.add('active');
+          if (activeTabId === 'compress-tab') {
+            runCompression();
+          } else if (activeTabId === 'convert-tab') {
+            runConversionPreview();
+          } else if (activeTabId === 'base64-tab') {
+            runBase64Encoding();
+          }
+        }
+      });
+    });
+
+    // 监听拖拽上传
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        handleFile(files[0]);
+      } else {
+        showToast('请上传有效的图片文件');
+      }
+    });
+
+    uploadZone.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    // 支持剪贴板图片粘贴
+    window.addEventListener('paste', (e) => {
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          const file = new File([blob], "paste_image_" + Date.now() + ".png", { type: blob.type });
+          handleFile(file);
+          break;
+        }
+      }
+    });
+
+    // 图片重置/更换
+    btnResetImage.addEventListener('click', () => {
+      globalFile = null;
+      globalImageSrc = null;
+      fileInput.value = '';
+      
+      workspace.style.display = 'none';
+      
+      // 判断当前是否在 Base64 Tab
+      const activeTabBtn = document.querySelector('.tab-btn.active');
+      if (activeTabBtn && activeTabBtn.getAttribute('data-tab') === 'base64-tab') {
+        base64ManualZone.style.display = 'block';
+        uploadZone.style.display = 'none';
+      } else {
+        uploadZone.style.display = 'flex';
+        base64ManualZone.style.display = 'none';
+      }
+      
+      // 清理相关预览
+      compressPreview.src = '';
+      convertPreview.src = '';
+      base64Preview.src = '';
+      base64Output.value = '';
+    });
+
+    // 文件处理核心入口
+    function handleFile(file) {
+      globalFile = file;
+      globalImageSrc = URL.createObjectURL(file);
+
+      // 加载基本信息
+      metaThumb.src = globalImageSrc;
+      metaName.textContent = file.name;
+      statOrigSize.textContent = formatBytes(file.size);
+
+      // 加载 Image 获取原始尺寸
+      loadedImage = new Image();
+      loadedImage.src = globalImageSrc;
+      loadedImage.onload = () => {
+        metaDetail.textContent = `${loadedImage.naturalWidth} × ${loadedImage.naturalHeight} · ${formatBytes(file.size)}`;
+        
+        // 激活工作台，隐藏上传和手动Base64
+        uploadZone.style.display = 'none';
+        base64ManualZone.style.display = 'none';
+        workspace.style.display = 'block';
+
+        // 识别当前选中的 Tab 并触发对应逻辑
+        const activeTabBtn = document.querySelector('.tab-btn.active');
+        const activeTabId = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'compress-tab';
+
+        // 激活当前 Tab 的渲染
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        const activeContent = document.getElementById(activeTabId);
+        if (activeContent) activeContent.classList.add('active');
+
+        // 初始化滑块默认值
+        compressQualityInput.value = 80;
+        qualityValDisplay.textContent = '80%';
+        compressScaleInput.value = 100;
+        scaleValDisplay.textContent = '100%';
+
+        if (activeTabId === 'compress-tab') {
+          runCompression();
+        } else if (activeTabId === 'convert-tab') {
+          runConversionPreview();
+        } else if (activeTabId === 'base64-tab') {
+          runBase64Encoding();
+        }
+      };
+    }
+
+    /* ====================================================
+     * 模块一：图片压缩 (Compression Module)
+     * ==================================================== */
+    let compressedBlob = null;
+
+    compressQualityInput.addEventListener('input', () => {
+      qualityValDisplay.textContent = compressQualityInput.value + '%';
+      runCompression();
+    });
+
+    compressScaleInput.addEventListener('input', () => {
+      scaleValDisplay.textContent = compressScaleInput.value + '%';
+      runCompression();
+    });
+
+    document.querySelectorAll('input[name="compress-format"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const val = radio.value;
+        if (val === 'png' || (val === 'auto' && globalFile && globalFile.type === 'image/png')) {
+          pngWarnTip.style.display = 'block';
+        } else {
+          pngWarnTip.style.display = 'none';
+        }
+        runCompression();
+      });
+    });
+
+    function runCompression() {
+      if (!globalFile) return;
+
+      const quality = parseFloat(compressQualityInput.value) / 100;
+      const scale = parseFloat(compressScaleInput.value) / 100;
+
+      // 确定输出格式
+      let mimeType = globalFile.type;
+      const formatSelection = document.querySelector('input[name="compress-format"]:checked').value;
+      if (formatSelection !== 'auto') {
+        mimeType = 'image/' + formatSelection;
+      }
+
+      // 开始 Canvas 绘制压缩
+      const w = Math.round(loadedImage.naturalWidth * scale);
+      const h = Math.round(loadedImage.naturalHeight * scale);
+
+      hiddenCanvas.width = w;
+      hiddenCanvas.height = h;
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(loadedImage, 0, 0, w, h);
+
+      hiddenCanvas.toBlob((blob) => {
+        if (!blob) return;
+        compressedBlob = blob;
+        
+        // 更新预览与大小数据
+        const compUrl = URL.createObjectURL(blob);
+        compressPreview.src = compUrl;
+        
+        statCompSize.textContent = formatBytes(blob.size);
+        
+        // 计算压缩率
+        const saved = globalFile.size - blob.size;
+        if (saved > 0) {
+          const pct = Math.round((saved / globalFile.size) * 100);
+          statRatioPercent.textContent = pct + '%';
+          statRatioPercent.style.color = 'var(--accent)';
+        } else {
+          // 体积变大了（可能发生在 PNG 强制转高画质 JPEG，或者极小图压缩）
+          const increasePct = Math.round((Math.abs(saved) / globalFile.size) * 100);
+          statRatioPercent.textContent = '+' + increasePct + '%';
+          statRatioPercent.style.color = '#ff4d4d';
+        }
+      }, mimeType, quality);
+    }
+
+    btnDownloadCompressed.addEventListener('click', () => {
+      if (!compressedBlob) return;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(compressedBlob);
+      
+      // 决定后缀名
+      let ext = globalFile.name.split('.').pop();
+      const formatSelection = document.querySelector('input[name="compress-format"]:checked').value;
+      if (formatSelection !== 'auto') {
+        ext = formatSelection;
+      }
+      
+      // 组装新文件名，例如 myimage_compressed.webp
+      const origNameNoExt = globalFile.name.substring(0, globalFile.name.lastIndexOf('.'));
+      link.download = `${origNameNoExt}_compressed.${ext}`;
+      link.click();
+      showToast('压缩图片已开始下载');
+    });
+
+
+    /* ====================================================
+     * 模块二：格式转换 (Format Convert Module)
+     * ==================================================== */
+    let convertedBlob = null;
+    let convertedFormatExt = 'webp';
+
+    // 格式单选框切换监听
+    document.querySelectorAll('input[name="target-format"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const fmt = radio.value;
+        convertDestFmt.textContent = fmt.toUpperCase();
+        
+        if (fmt === 'ico') {
+          icoOptions.style.display = 'block';
+        } else {
+          icoOptions.style.display = 'none';
+        }
+        runConversionPreview();
+      });
+    });
+
+    // ICO 规格更改监听
+    document.querySelectorAll('input[name="ico-size"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        runConversionPreview();
+      });
+    });
+
+    function runConversionPreview() {
+      if (!globalFile) return;
+
+      const fmt = document.querySelector('input[name="target-format"]:checked').value;
+      
+      // 写入源格式
+      const origExt = globalFile.name.split('.').pop().toUpperCase();
+      convertOrigFmt.textContent = origExt;
+      
+      if (fmt === 'ico') {
+        const icoSize = parseInt(document.querySelector('input[name="ico-size"]:checked').value);
+        buildIcoBlob(loadedImage, icoSize, (blob) => {
+          if (!blob) return;
+          convertedBlob = blob;
+          convertedFormatExt = 'ico';
+          
+          // ICO 预览可采用原始画布生成的 blob
+          const previewUrl = URL.createObjectURL(blob);
+          convertPreview.src = previewUrl;
+        });
+      } else {
+        hiddenCanvas.width = loadedImage.naturalWidth;
+        hiddenCanvas.height = loadedImage.naturalHeight;
+        ctx.clearRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+        ctx.drawImage(loadedImage, 0, 0);
+        
+        hiddenCanvas.toBlob((blob) => {
+          if (!blob) return;
+          convertedBlob = blob;
+          convertedFormatExt = fmt;
+          
+          const previewUrl = URL.createObjectURL(blob);
+          convertPreview.src = previewUrl;
+        }, 'image/' + fmt);
+      }
+    }
+
+    // 纯 JS 二进制封装 ICO
+    function buildIcoBlob(imgElement, size, callback) {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = size;
+      tempCanvas.height = size;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(imgElement, 0, 0, size, size);
+      
+      tempCanvas.toBlob((pngBlob) => {
+        if (!pngBlob) {
+          callback(null);
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const pngBytes = new Uint8Array(e.target.result);
+          
+          // ICO 头 (6 字节) + 一个目录项 (16 字节) + 真实的 PNG 字节大小
+          const headerSize = 6;
+          const entrySize = 16;
+          const totalIcoSize = headerSize + entrySize + pngBytes.length;
+          
+          const buffer = new ArrayBuffer(totalIcoSize);
+          const view = new DataView(buffer);
+          const bytes = new Uint8Array(buffer);
+          
+          // 1. 写 Header
+          view.setUint16(0, 0, true); // idReserved = 0
+          view.setUint16(2, 1, true); // idType = 1 (ICO)
+          view.setUint16(4, 1, true); // idCount = 1 (包含一个尺寸)
+          
+          // 2. 写 Directory Entry
+          const w = size >= 256 ? 0 : size;
+          const h = size >= 256 ? 0 : size;
+          
+          view.setUint8(6, w); // 宽度
+          view.setUint8(7, h); // 高度
+          view.setUint8(8, 0); // 调色板颜色 (0 表示深彩色)
+          view.setUint8(9, 0); // 保留字 (0)
+          view.setUint16(10, 1, true); // 色彩平面数
+          view.setUint16(12, 32, true); // 32位色深 (支持透明度通道)
+          view.setUint32(14, pngBytes.length, true); // 图像大小
+          view.setUint32(18, headerSize + entrySize, true); // 图像数据在该 ICO 文件中的字节偏移量 (即 22)
+          
+          // 3. 将 PNG 二进制数据拷贝到相应偏移位置
+          bytes.set(pngBytes, headerSize + entrySize);
+          
+          const icoBlob = new Blob([buffer], { type: 'image/x-icon' });
+          callback(icoBlob);
+        };
+        reader.readAsArrayBuffer(pngBlob);
+      }, 'image/png');
+    }
+
+    btnDownloadConverted.addEventListener('click', () => {
+      if (!convertedBlob) return;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(convertedBlob);
+      
+      const origNameNoExt = globalFile.name.substring(0, globalFile.name.lastIndexOf('.'));
+      link.download = `${origNameNoExt}.${convertedFormatExt}`;
+      link.click();
+      showToast('转换后图片已开始下载');
+    });
+
+
+    /* ====================================================
+     * 模块三：Base64 编码 (Base64 Encoding Module)
+     * ==================================================== */
+    function runBase64Encoding() {
+      if (!globalFile) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Str = e.target.result;
+        base64Output.value = base64Str;
+        base64Preview.src = base64Str;
+      };
+      reader.readAsDataURL(globalFile);
+    }
+
+    btnCopyBase64.addEventListener('click', () => {
+      if (!base64Output.value) return;
+      navigator.clipboard.writeText(base64Output.value).then(() => {
+        base64CopyTip.style.opacity = 1;
+        setTimeout(() => base64CopyTip.style.opacity = 0, 1500);
+        showToast('Base64 编码已复制到剪贴板');
+      });
+    });
+
+
+    /* ====================================================
+     * 模块四：Base64 手动粘贴解码 (Manual Decoding Module)
+     * ==================================================== */
+    let manualDecodedBlob = null;
+
+    btnDecodeBase64.addEventListener('click', () => {
+      let rawVal = base64InputVal.value.trim();
+      if (!rawVal) {
+        showToast('请输入 Base64 数据');
+        return;
+      }
+
+      // 如果不是合法的 DataURL 头，我们做自动修正识别
+      if (!rawVal.startsWith('data:image/')) {
+        // 尝试检测是否为纯 Base64，如果是，我们默认套上 PNG 头部
+        rawVal = 'data:image/png;base64,' + rawVal;
+      }
+
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        manualBase64Preview.src = rawVal;
+        btnDownloadManual.removeAttribute('disabled');
+        
+        // 通过 fetch DataURL 将其转换为真正的 Blob 以便下载
+        fetch(rawVal)
+          .then(res => res.blob())
+          .then(blob => {
+            manualDecodedBlob = blob;
+            showToast('Base64 解析成功！');
+          })
+          .catch(err => {
+            showToast('解析失败，请检查 Base64 内容是否完整');
+            btnDownloadManual.setAttribute('disabled', 'true');
+          });
+      };
+
+      tempImg.onerror = () => {
+        showToast('解析失败，图片格式无效，请确保 Base64 编码正确');
+        btnDownloadManual.setAttribute('disabled', 'true');
+        manualBase64Preview.src = '';
+      };
+
+      tempImg.src = rawVal;
+    });
+
+    btnClearManual.addEventListener('click', () => {
+      base64InputVal.value = '';
+      manualBase64Preview.src = '';
+      btnDownloadManual.setAttribute('disabled', 'true');
+      manualDecodedBlob = null;
+    });
+
+    btnDownloadManual.addEventListener('click', () => {
+      if (!manualDecodedBlob) return;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(manualDecodedBlob);
+      
+      // 解析文件后缀
+      let ext = 'png';
+      if (manualDecodedBlob.type) {
+        ext = manualDecodedBlob.type.split('/')[1] || 'png';
+      }
+      
+      link.download = `decoded_image_${Date.now()}.${ext}`;
+      link.click();
+      showToast('解析出的图片已开始下载');
+    });
+
+  </script>
+</body>
+</html>
