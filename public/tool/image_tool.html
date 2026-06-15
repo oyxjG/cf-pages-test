@@ -785,6 +785,35 @@
             </div>
             <p style="margin: 0; font-size: 11px; color: var(--muted); line-height: 1.4;">ICO 格式采用标准目录指针打包。我们使用纯 JS 进行无损的二方封装，安全环保。</p>
           </div>
+
+          <!-- SVG 专属选项 -->
+          <div class="control-group ico-size-panel" id="svg-options" style="display: none;">
+            <div class="control-header">
+              <label>转换模式 (SVG Mode)</label>
+            </div>
+            <div class="size-selector" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="format-option">
+                <input type="radio" name="svg-mode" id="svg-mode-embed" value="embed" checked />
+                <label for="svg-mode-embed" class="format-label">容器内嵌 (保真)</label>
+              </div>
+              <div class="format-option">
+                <input type="radio" name="svg-mode" id="svg-mode-trace" value="trace" />
+                <label for="svg-mode-trace" class="format-label">矢量轮廓 (黑白/线图)</label>
+              </div>
+            </div>
+            
+            <!-- 阈值调整滑块 -->
+            <div id="svg-trace-params" style="display: none; margin-top: 16px; animation: fadeIn 0.2s;">
+              <div class="control-header">
+                <label for="svg-threshold">轮廓阈值 (Threshold)</label>
+                <span class="val-display" id="svg-threshold-val">128</span>
+              </div>
+              <input type="range" id="svg-threshold" min="10" max="240" value="128" />
+              <p style="margin: 0; font-size: 11px; color: var(--muted); line-height: 1.4; margin-top: 8px;">
+                调节阈值以捕获更多边缘细节。预览窗口将实时呈现矢量化后的效果。
+              </p>
+            </div>
+          </div>
         </div>
 
         <div class="preview-panel">
@@ -918,6 +947,9 @@
     const convertDestFmt = document.getElementById('convert-dest-fmt');
     const btnDownloadConverted = document.getElementById('btn-download-converted');
     const icoOptions = document.getElementById('ico-options');
+    const svgOptions = document.getElementById('svg-options');
+    const svgThresholdInput = document.getElementById('svg-threshold');
+    const svgThresholdVal = document.getElementById('svg-threshold-val');
 
     const base64Output = document.getElementById('base64-output');
     const base64Preview = document.getElementById('base64-preview');
@@ -1213,8 +1245,14 @@
         
         if (fmt === 'ico') {
           icoOptions.style.display = 'block';
+          svgOptions.style.display = 'none';
+        } else if (fmt === 'svg') {
+          icoOptions.style.display = 'none';
+          svgOptions.style.display = 'block';
+          toggleSvgParams();
         } else {
           icoOptions.style.display = 'none';
+          svgOptions.style.display = 'none';
         }
         runConversionPreview();
       });
@@ -1226,6 +1264,30 @@
         runConversionPreview();
       });
     });
+
+    // SVG 模式切换监听
+    document.querySelectorAll('input[name="svg-mode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        toggleSvgParams();
+        runConversionPreview();
+      });
+    });
+
+    // SVG 阈值更改监听
+    svgThresholdInput.addEventListener('input', () => {
+      svgThresholdVal.textContent = svgThresholdInput.value;
+      runConversionPreview();
+    });
+
+    function toggleSvgParams() {
+      const mode = document.querySelector('input[name="svg-mode"]:checked').value;
+      const traceParams = document.getElementById('svg-trace-params');
+      if (mode === 'trace') {
+        traceParams.style.display = 'block';
+      } else {
+        traceParams.style.display = 'none';
+      }
+    }
 
     function runConversionPreview() {
       if (!globalFile) return;
@@ -1248,14 +1310,27 @@
           convertPreview.src = previewUrl;
         });
       } else if (fmt === 'svg') {
-        buildSvgBlob(loadedImage, (blob) => {
-          if (!blob) return;
-          convertedBlob = blob;
-          convertedFormatExt = 'svg';
-          
-          const previewUrl = URL.createObjectURL(blob);
-          convertPreview.src = previewUrl;
-        });
+        const mode = document.querySelector('input[name="svg-mode"]:checked').value;
+        if (mode === 'trace') {
+          const threshold = parseInt(svgThresholdInput.value);
+          runMarchingSquares(loadedImage, threshold, (blob) => {
+            if (!blob) return;
+            convertedBlob = blob;
+            convertedFormatExt = 'svg';
+            
+            const previewUrl = URL.createObjectURL(blob);
+            convertPreview.src = previewUrl;
+          });
+        } else {
+          buildSvgBlob(loadedImage, (blob) => {
+            if (!blob) return;
+            convertedBlob = blob;
+            convertedFormatExt = 'svg';
+            
+            const previewUrl = URL.createObjectURL(blob);
+            convertPreview.src = previewUrl;
+          });
+        }
       } else {
         hiddenCanvas.width = loadedImage.naturalWidth;
         hiddenCanvas.height = loadedImage.naturalHeight;
@@ -1343,6 +1418,161 @@
       
       const blob = new Blob([svgString], { type: 'image/svg+xml' });
       callback(blob);
+    }
+
+    // 纯 JS Marching Squares 矢量轮廓描摹算法
+    function runMarchingSquares(imgElement, threshold, callback) {
+      const w = imgElement.naturalWidth;
+      const h = imgElement.naturalHeight;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const tempCtx = canvas.getContext('2d');
+      tempCtx.drawImage(imgElement, 0, 0);
+      
+      const imgData = tempCtx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+      
+      // 1. 构建带 1 像素 padding 的二值网格（0代表背景白，1代表前景黑）
+      const gridWidth = w + 2;
+      const gridHeight = h + 2;
+      const binaryGrid = new Uint8Array(gridWidth * gridHeight);
+      
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          const r = data[idx];
+          const g = data[idx+1];
+          const b = data[idx+2];
+          const a = data[idx+3];
+          
+          let isBlack = 0;
+          if (a < 10) {
+            isBlack = 0; // 透明背景视为白色
+          } else {
+            // 计算灰度值
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            isBlack = gray < threshold ? 1 : 0;
+          }
+          binaryGrid[(y + 1) * gridWidth + (x + 1)] = isBlack;
+        }
+      }
+      
+      // 2. 扫描网格节点，利用 Marching Squares 规则生成线段端点
+      const segments = [];
+      for (let y = 0; y < gridHeight - 1; y++) {
+        for (let x = 0; x < gridWidth - 1; x++) {
+          const a = binaryGrid[y * gridWidth + x];
+          const b = binaryGrid[y * gridWidth + (x + 1)];
+          const c = binaryGrid[(y + 1) * gridWidth + x];
+          const d = binaryGrid[(y + 1) * gridWidth + (x + 1)];
+          
+          const state = (a << 3) | (b << 2) | (d << 1) | c;
+          
+          // 减去 padding 1 的真实坐标
+          const px = x - 1;
+          const py = y - 1;
+          
+          const t = [px + 0.5, py];
+          const r_pt = [px + 1, py + 0.5];
+          const b_pt = [px + 0.5, py + 1];
+          const l = [px, py + 0.5];
+          
+          switch (state) {
+            case 1:  segments.push([l, b_pt]); break;
+            case 2:  segments.push([b_pt, r_pt]); break;
+            case 3:  segments.push([l, r_pt]); break;
+            case 4:  segments.push([t, r_pt]); break;
+            case 5:  segments.push([l, t]); segments.push([b_pt, r_pt]); break;
+            case 6:  segments.push([t, b_pt]); break;
+            case 7:  segments.push([l, t]); break;
+            case 8:  segments.push([l, t]); break;
+            case 9:  segments.push([t, b_pt]); break;
+            case 10: segments.push([l, b_pt]); segments.push([t, r_pt]); break;
+            case 11: segments.push([t, r_pt]); break;
+            case 12: segments.push([l, r_pt]); break;
+            case 13: segments.push([b_pt, r_pt]); break;
+            case 14: segments.push([l, b_pt]); break;
+            default: break;
+          }
+        }
+      }
+      
+      // 3. 将离散的无向线段拼接成闭合的 SVG 折线路径 (DFS/BFS)
+      const adj = {};
+      const addEdge = (p1, p2) => {
+        const k1 = `${Math.round(p1[0]*2)},${Math.round(p1[1]*2)}`;
+        const k2 = `${Math.round(p2[0]*2)},${Math.round(p2[1]*2)}`;
+        if (!adj[k1]) adj[k1] = [];
+        if (!adj[k2]) adj[k2] = [];
+        adj[k1].push({ to: k2, pt: p2 });
+        adj[k2].push({ to: k1, pt: p1 });
+      };
+      
+      for (const seg of segments) {
+        addEdge(seg[0], seg[1]);
+      }
+      
+      const visited = new Set();
+      const paths = [];
+      
+      for (const startKey in adj) {
+        if (visited.has(startKey)) continue;
+        
+        const path = [];
+        let curr = startKey;
+        const startPt = startKey.split(',').map(Number).map(v => v / 2);
+        path.push(startPt);
+        
+        let prev = null;
+        let closed = false;
+        
+        while (true) {
+          visited.add(curr);
+          const neighbors = adj[curr] || [];
+          let nextNode = null;
+          
+          for (const n of neighbors) {
+            if (n.to !== prev && !visited.has(n.to)) {
+              nextNode = n;
+              break;
+            }
+          }
+          
+          if (!nextNode) {
+            for (const n of neighbors) {
+              if (n.to === startKey && path.length > 2) {
+                closed = true;
+                break;
+              }
+            }
+            break;
+          }
+          
+          path.push(nextNode.pt);
+          prev = curr;
+          curr = nextNode.to;
+        }
+        
+        if (path.length > 2) {
+          paths.push({ pts: path, closed: closed });
+        }
+      }
+      
+      // 4. 生成 SVG 路径指令 d 字符串
+      let dStr = '';
+      for (const p of paths) {
+        dStr += `M ${p.pts[0][0].toFixed(1)} ${p.pts[0][1].toFixed(1)} `;
+        for (let i = 1; i < p.pts.length; i++) {
+          dStr += `L ${p.pts[i][0].toFixed(1)} ${p.pts[i][1].toFixed(1)} `;
+        }
+        if (p.closed) dStr += 'Z ';
+      }
+      
+      // 导出 SVG 格式 (使用 evenodd 奇偶填充规则，以完美显示镂空孔洞效果)
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n  <path d="${dStr}" fill="currentColor" fill-rule="evenodd" />\n</svg>`;
+      const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+      callback(svgBlob);
     }
 
     btnDownloadConverted.addEventListener('click', () => {
