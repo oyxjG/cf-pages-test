@@ -657,21 +657,23 @@
         <button class="launchpad-close-btn" id="launchpadCloseBtn" title="关闭 Launchpad (Esc)">✕</button>
         
         <div class="launchpad-content">
-            <div class="launchpad-search-wrapper">
-                <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="launchpadSearch" placeholder="输入工具名称、拼音或分类检索..." autocomplete="off">
-            </div>
+            <div class="launchpad-header">
+                <div class="launchpad-search-wrapper">
+                    <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="launchpadSearch" placeholder="输入工具名称、拼音或分类检索..." autocomplete="off">
+                </div>
 
-            <div class="launchpad-filter-tabs">
-                <button class="lp-filter-btn active" data-filter="all">全部工具</button>
-                <button class="lp-filter-btn" data-filter="mobile">📱 手机推荐</button>
-                <button class="lp-filter-btn" data-filter="dev">💻 开发者</button>
-                <button class="lp-filter-btn" data-filter="daily">🏡 生活效率</button>
-                <button class="lp-filter-btn" data-filter="security">🔐 安全加密</button>
-                <button class="lp-filter-btn" id="lp-admin-filter-btn" data-filter="admin" style="display: none;">👤 系统管理</button>
+                <div class="launchpad-filter-tabs">
+                    <button class="lp-filter-btn active" data-filter="all">全部工具</button>
+                    <button class="lp-filter-btn" data-filter="mobile">📱 手机推荐</button>
+                    <button class="lp-filter-btn" data-filter="dev">💻 开发者</button>
+                    <button class="lp-filter-btn" data-filter="daily">🏡 生活效率</button>
+                    <button class="lp-filter-btn" data-filter="security">🔐 安全加密</button>
+                    <button class="lp-filter-btn" id="lp-admin-filter-btn" data-filter="admin" style="display: none;">👤 系统管理</button>
+                </div>
             </div>
 
             <div class="launchpad-grid" id="launchpadGrid">

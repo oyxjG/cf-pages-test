@@ -1523,13 +1523,33 @@ body::after {
 .launchpad-content {
     width: 100%;
     max-width: 1100px;
-    padding: 60px 40px;
+    padding: 0 40px 60px 40px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
     transform: scale(0.95);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 7. 吸顶 Header（解决滚动时分类遮挡或移出视口问题） */
+.launchpad-header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding-top: 60px;
+    padding-bottom: 20px;
+    background: rgba(13, 13, 21, 0.82);
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+[data-theme="light"] .launchpad-header {
+    background: rgba(247, 245, 240, 0.88);
 }
 
 .launchpad-overlay.active .launchpad-content {
@@ -2842,7 +2862,12 @@ body::after {
 @media (max-width: 768px) {
     /* 1. 弹窗内边距与关闭按钮 */
     .launchpad-content {
-        padding: 40px 16px;
+        padding: 0 16px 40px 16px;
+    }
+
+    .launchpad-header {
+        padding-top: 40px;
+        padding-bottom: 12px;
     }
     
     .launchpad-close-btn {
@@ -2886,6 +2911,7 @@ body::after {
     /* 3. 分类滚动 Tab 栏 */
     .launchpad-filter-tabs {
         display: flex;
+        flex-wrap: nowrap; /* 强制不换行，实现横向滚动 */
         gap: 8px;
         overflow-x: auto;
         width: 100%;
