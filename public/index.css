@@ -719,6 +719,7 @@ body::after {
     margin: 0;
     font-size: 28px;
     letter-spacing: -0.04em;
+    white-space: nowrap;
 }
 
 .card-grid {
