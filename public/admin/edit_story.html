@@ -206,6 +206,8 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
             border-radius: 12px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
             padding: 18px;
             color: var(--text-main);
             font-family: "Fira Code", monospace, Consolas, Monaco, sans-serif;
@@ -213,7 +215,68 @@
             line-height: 1.6;
             outline: none;
             resize: none;
+            overflow-y: auto;
             transition: all 0.2s;
+        }
+
+        /* 工具栏按钮 */
+        .tool-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            min-width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        [data-theme="light"] .tool-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 99px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 99px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            transition: background 0.2s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .markdown-textarea:focus {
@@ -346,6 +409,15 @@
             </div>
         </div>
 
+        <!-- 字数及预计阅读时间统计胶囊 -->
+        <div class="stats-counter" id="stats-counter" style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 20px; font-size: 0.8125rem; color: var(--text-muted); display: flex; gap: 8px; align-items: center; font-weight: 500; font-family: system-ui, sans-serif; backdrop-filter: blur(4px); transition: all 0.2s;">
+            <span>字数: <span id="word-count" style="color: var(--text-main); font-weight: 700;">0</span></span>
+            <span style="opacity: 0.25;">|</span>
+            <span>字符数: <span id="char-count" style="color: var(--text-main); font-weight: 700;">0</span></span>
+            <span style="opacity: 0.25;">|</span>
+            <span>预计阅读: <span id="read-time" style="color: var(--text-main); font-weight: 700;">0</span> 分钟</span>
+        </div>
+
         <div class="right-actions">
             <button id="btn-save-draft" class="btn btn-secondary">💾 保存草稿</button>
             <button id="btn-publish" class="btn btn-primary">🚀 直接发布</button>
@@ -371,6 +443,22 @@
                     <div class="dropzone-text">松开鼠标导入 Markdown 文件</div>
                 </div>
                 <label style="font-size: 0.8125rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">故事正文 (Markdown 源码)</label>
+                <div class="editor-toolbar" style="display: flex; align-items: center; gap: 4px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); border-bottom: none; border-top-left-radius: 12px; border-top-right-radius: 12px; padding: 6px 12px; margin-top: 4px;">
+                    <button class="tool-btn" data-syntax="bold" title="加粗 (Ctrl+B)"><b>B</b></button>
+                    <button class="tool-btn" data-syntax="italic" title="斜体 (Ctrl+I)"><i>I</i></button>
+                    <button class="tool-btn" data-syntax="h1" title="一级标题 (Ctrl+1)">H1</button>
+                    <button class="tool-btn" data-syntax="h2" title="二级标题 (Ctrl+2)">H2</button>
+                    <button class="tool-btn" data-syntax="h3" title="三级标题 (Ctrl+3)">H3</button>
+                    <div class="tool-divider" style="width: 1px; height: 16px; background: var(--border-color); margin: 0 4px;"></div>
+                    <button class="tool-btn" data-syntax="quote" title="引用">“ ”</button>
+                    <button class="tool-btn" data-syntax="code" title="行内代码 (Ctrl+/)">`code`</button>
+                    <button class="tool-btn" data-syntax="codeblock" title="代码块 (Ctrl+Alt+C)">```</button>
+                    <div class="tool-divider" style="width: 1px; height: 16px; background: var(--border-color); margin: 0 4px;"></div>
+                    <button class="tool-btn" data-syntax="link" title="超链接 (Ctrl+K)">🔗</button>
+                    <button class="tool-btn" data-syntax="image" title="图片">🖼️</button>
+                    <button class="tool-btn" data-syntax="table" title="表格">📊</button>
+                    <button class="tool-btn" id="btn-clear-editor" style="margin-left: auto; color: #ef4444; font-size: 0.75rem;" title="清空内容">🗑️ 清空</button>
+                </div>
                 <textarea id="markdown-input" class="markdown-textarea" placeholder="# 故事标题&#10;&#10;> 这里是心流引用块...&#10;&#10;在这里撰写故事的主体正文。系统会自动渲染出右侧的可视化效果，您可以一边编辑一边查看。&#10;&#10;支持拖拽外部 .md 文件到本编辑区直接载入。"></textarea>
             </div>
         </section>
@@ -436,6 +524,10 @@
 
             const btnSaveDraft = document.getElementById('btn-save-draft');
             const btnPublish = document.getElementById('btn-publish');
+
+            const wordCountEl = document.getElementById('word-count');
+            const charCountEl = document.getElementById('char-count');
+            const readTimeEl = document.getElementById('read-time');
 
             const editorDropzone = document.getElementById('editor-dropzone');
             const dropOverlay = document.getElementById('drop-overlay');
@@ -505,7 +597,27 @@
                 return processed.join('\n');
             }
 
-            // 6. 实时渲染更新逻辑 (去抖)
+            // 6. 统计字数和预计阅读时间 (与 markdown_tool.html 规则保持一致)
+            function updateStats(text) {
+                if (!wordCountEl || !charCountEl || !readTimeEl) return;
+                if (!text) {
+                    wordCountEl.innerText = "0";
+                    charCountEl.innerText = "0";
+                    readTimeEl.innerText = "0";
+                    return;
+                }
+                const charCount = text.length;
+                // 英文/中文混合统计：去除空白和标点
+                const cleanText = text.replace(/[\s\p{P}]/gu, '');
+                const wordCount = cleanText.length;
+                const readTime = Math.ceil(wordCount / 300); // 按照 300 字/分钟估算
+
+                wordCountEl.innerText = wordCount;
+                charCountEl.innerText = charCount;
+                readTimeEl.innerText = readTime;
+            }
+
+            // 7. 实时渲染更新逻辑 (去抖)
             let renderTimer = null;
             function updatePreview() {
                 const title = titleInput.value.trim() || "未命名故事";
@@ -517,6 +629,9 @@
                 previewTime.innerText = targetStory ? new Date(targetStory.createdAt).toLocaleDateString('zh-CN') : "刚刚";
 
                 previewContent.innerHTML = parseMarkdown(content);
+
+                // 触发字数统计更新
+                updateStats(content);
             }
 
             function triggerPreviewWithDebounce() {
@@ -648,6 +763,106 @@
             // 9. 按钮事件绑定
             btnSaveDraft.addEventListener('click', () => saveStoryData(0));
             btnPublish.addEventListener('click', () => saveStoryData(1));
+
+            // 10. 语法插入核心逻辑
+            function insertSyntax(type) {
+                const start = markdownInput.selectionStart;
+                const end = markdownInput.selectionEnd;
+                const text = markdownInput.value;
+                const selected = text.substring(start, end);
+
+                let before = "";
+                let after = "";
+                let placeholder = "";
+
+                switch (type) {
+                    case 'bold': before = "**"; after = "**"; placeholder = "粗体文字"; break;
+                    case 'italic': before = "*"; after = "*"; placeholder = "斜体文字"; break;
+                    case 'h1': before = "# "; after = ""; placeholder = "一级标题"; break;
+                    case 'h2': before = "## "; after = ""; placeholder = "二级标题"; break;
+                    case 'h3': before = "### "; after = ""; placeholder = "三级标题"; break;
+                    case 'quote': before = "> "; after = ""; placeholder = "引用内容"; break;
+                    case 'code': before = "`"; after = "`"; placeholder = "code"; break;
+                    case 'codeblock': before = "```javascript\n"; after = "\n```"; placeholder = "// 在此输入代码"; break;
+                    case 'link': before = "["; after = "](https://example.com)"; placeholder = "链接描述"; break;
+                    case 'image': before = "!["; after = "](https://example.com/image.png)"; placeholder = "图片替代文字"; break;
+                    case 'table': 
+                        before = "\n| 表头1 | 表头2 | 表头3 |\n| :--- | :--- | :--- |\n| 单元格 | 单元格 | 单元格 |\n"; 
+                        after = ""; 
+                        break;
+                }
+
+                const insertVal = selected || placeholder;
+                const replacement = before + insertVal + after;
+                markdownInput.value = text.substring(0, start) + replacement + text.substring(end);
+                
+                // 重置光标焦点并选中插入的占位内容
+                markdownInput.focus();
+                markdownInput.selectionStart = start + before.length;
+                markdownInput.selectionEnd = start + before.length + insertVal.length;
+
+                triggerPreviewWithDebounce();
+            }
+
+            // 11. 工具栏按钮事件绑定
+            document.querySelectorAll('.editor-toolbar .tool-btn[data-syntax]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const syntax = btn.getAttribute('data-syntax');
+                    if (syntax) insertSyntax(syntax);
+                });
+            });
+
+            // 12. 清空编辑器按钮绑定
+            const btnClearEditor = document.getElementById('btn-clear-editor');
+            if (btnClearEditor) {
+                btnClearEditor.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (confirm('确认清空编辑器里的所有内容吗？')) {
+                        markdownInput.value = '';
+                        triggerPreviewWithDebounce();
+                    }
+                });
+            }
+
+            // 13. 常用快捷键键盘事件侦听 (Ctrl+B, Ctrl+I, Ctrl+K, Ctrl+1/2/3, Ctrl+/, Ctrl+Alt+C)
+            markdownInput.addEventListener('keydown', (e) => {
+                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+                if (isCmdOrCtrl) {
+                    let type = null;
+                    if (e.key.toLowerCase() === 'b') {
+                        e.preventDefault();
+                        type = 'bold';
+                    } else if (e.key.toLowerCase() === 'i') {
+                        e.preventDefault();
+                        type = 'italic';
+                    } else if (e.key === '1') {
+                        e.preventDefault();
+                        type = 'h1';
+                    } else if (e.key === '2') {
+                        e.preventDefault();
+                        type = 'h2';
+                    } else if (e.key === '3') {
+                        e.preventDefault();
+                        type = 'h3';
+                    } else if (e.key === '/') {
+                        e.preventDefault();
+                        type = 'code';
+                    } else if (e.key.toLowerCase() === 'k') {
+                        e.preventDefault();
+                        type = 'link';
+                    }
+
+                    if (type) {
+                        insertSyntax(type);
+                    }
+                } else if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'c') {
+                    e.preventDefault();
+                    insertSyntax('codeblock');
+                }
+            });
         });
     </script>
 </body>
