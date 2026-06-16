@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user && profileIdentity && avatarEl) {
         // 如果是管理员，显示管理相关入口
         if (user.role === 'admin') {
-            if (adminConsoleCard) adminConsoleCard.style.display = 'block';
+            if (adminConsoleCard) adminConsoleCard.style.display = 'flex';
             if (adminFilterBtn) adminFilterBtn.style.display = 'inline-block';
         }
 
