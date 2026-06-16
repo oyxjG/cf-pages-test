@@ -139,7 +139,7 @@
 
         /* Markdown 正文内容排版 */
         .article-content {
-            font-size: 1.125rem; /* 18px */
+            font-size: var(--article-font-size, 1.125rem); /* 18px */
             line-height: 1.95;
             letter-spacing: 0.02em;
             color: var(--text-main);
@@ -274,6 +274,244 @@
             text-align: center;
             padding: 60px 20px;
             color: var(--text-muted);
+        }
+
+        /* 护眼绿豆沙模式 */
+        [data-theme="eye-care"] {
+            --bg-grad: linear-gradient(135deg, #f0f7f4 0%, #e1efe6 100%);
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(0, 0, 0, 0.05);
+            --accent: #2e7d32;
+            --accent-soft: rgba(46, 125, 50, 0.1);
+            --text-main: #1f3a24;
+            --text-muted: #53765c;
+        }
+
+        /* 复古羊皮纸模式 */
+        [data-theme="sepia"] {
+            --bg-grad: linear-gradient(135deg, #fbf0df 0%, #f4e3c9 100%);
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(0, 0, 0, 0.05);
+            --accent: #8d5b1b;
+            --accent-soft: rgba(141, 91, 27, 0.1);
+            --text-main: #3e2f1e;
+            --text-muted: #725d48;
+        }
+
+        /* 深色模式强制适配 */
+        [data-theme="dark"] {
+            --bg-grad: linear-gradient(135deg, #111827 0%, #030712 100%);
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent: #ef8b57;
+            --accent-soft: rgba(239, 139, 87, 0.2);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+        }
+
+        /* 悬浮控制面板样式 */
+        .reading-settings-wrapper {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .settings-toggle-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            outline: none;
+        }
+        .settings-toggle-btn:hover {
+            transform: scale(1.1) rotate(45deg);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .settings-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            width: 280px;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: panel-show 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: right bottom;
+        }
+        .settings-panel.active {
+            display: flex;
+        }
+
+        @keyframes panel-show {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .setting-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* 主题选项列表 */
+        .theme-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .theme-opt-btn {
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            padding: 8px 4px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .theme-opt-btn:hover {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+        }
+        .theme-opt-btn.active {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        /* 字体缩放控制 */
+        .font-scale-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        [data-theme="light"] .font-scale-control {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .font-btn {
+            border: none;
+            background: none;
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .font-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        [data-theme="light"] .font-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        .font-size-text {
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        /* 自动滚动控制 */
+        .scroll-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .scroll-toggle-btn {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .scroll-toggle-btn:hover {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+        .scroll-toggle-btn.scrolling {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+        }
+
+        .scroll-speed-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1.2;
+        }
+
+        .scroll-speed-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 99px;
+            background: var(--border-color);
+            outline: none;
+        }
+        .scroll-speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .scroll-speed-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
         }
     </style>
 </head>
@@ -485,12 +723,20 @@
                 document.title = `${story.title} - 故事花园`;
 
                 // 渲染文章 HTML
+                const contentText = story.content || '';
+                const charCount = contentText.length;
+                const cleanText = contentText.replace(/[\s\p{P}]/gu, '');
+                const wordCount = cleanText.length;
+                const readTime = Math.ceil(wordCount / 300);
+
                 articleBody.innerHTML = `
                     <div class="article-header">
                         <h1 class="article-title">${story.title}</h1>
                         <div class="article-meta">
                             <span>作者: ${story.author}</span>
                             <span>发布时间: ${new Date(story.createdAt).toLocaleDateString('zh-CN')}</span>
+                            <span>字数: ${wordCount} 字</span>
+                            <span>预计阅读: ${readTime} 分钟</span>
                         </div>
                     </div>
                     <div class="article-content" id="article-content">
@@ -511,7 +757,176 @@
                     </div>
                 `;
             }
+
+            // 8. 悬浮阅读设置控制
+            const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+            const settingsPanel = document.getElementById('settings-panel');
+
+            if (settingsToggleBtn && settingsPanel) {
+                settingsToggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    settingsPanel.classList.toggle('active');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!settingsPanel.contains(e.target) && e.target !== settingsToggleBtn && !settingsToggleBtn.contains(e.target)) {
+                        settingsPanel.classList.remove('active');
+                    }
+                });
+            }
+
+            // 初始化当前的主题激活按钮态
+            const updateThemeActiveButton = (activeTheme) => {
+                document.querySelectorAll('.theme-opt-btn').forEach(btn => {
+                    if (btn.getAttribute('data-theme-val') === activeTheme) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            };
+
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            updateThemeActiveButton(currentTheme);
+
+            document.querySelectorAll('.theme-opt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const themeVal = btn.getAttribute('data-theme-val');
+                    document.documentElement.setAttribute('data-theme', themeVal);
+                    localStorage.setItem('theme', themeVal);
+                    updateThemeActiveButton(themeVal);
+                    
+                    window.dispatchEvent(new CustomEvent('theme-changed', { detail: themeVal }));
+                });
+            });
+
+            window.addEventListener('theme-changed', (e) => {
+                updateThemeActiveButton(e.detail);
+            });
+
+            // 9. 字体缩放控制
+            const fontDecBtn = document.getElementById('font-dec-btn');
+            const fontIncBtn = document.getElementById('font-inc-btn');
+            const fontSizeVal = document.getElementById('font-size-val');
+
+            let fontScale = parseInt(localStorage.getItem('reading-font-scale')) || 100;
+            
+            const applyFontScale = (scale) => {
+                fontScale = Math.max(70, Math.min(150, scale));
+                localStorage.setItem('reading-font-scale', fontScale);
+                if (fontSizeVal) fontSizeVal.innerText = `${fontScale}%`;
+                
+                const remSize = (fontScale / 100) * 1.125;
+                document.documentElement.style.setProperty('--article-font-size', `${remSize}rem`);
+            };
+
+            applyFontScale(fontScale);
+
+            if (fontDecBtn && fontIncBtn) {
+                fontDecBtn.addEventListener('click', () => applyFontScale(fontScale - 10));
+                fontIncBtn.addEventListener('click', () => applyFontScale(fontScale + 10));
+            }
+
+            // 10. 自动滚动控制
+            const scrollToggleBtn = document.getElementById('scroll-toggle-btn');
+            const scrollSpeedSlider = document.getElementById('scroll-speed-slider');
+            let scrollInterval = null;
+            let isScrolling = false;
+
+            const startAutoScroll = () => {
+                if (scrollInterval) clearInterval(scrollInterval);
+                
+                const speedVal = parseInt(scrollSpeedSlider.value) || 3;
+                const intervalTime = Math.max(5, 70 - (speedVal * 6));
+
+                scrollInterval = setInterval(() => {
+                    window.scrollBy(0, 1);
+                    if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 1) {
+                        stopAutoScroll();
+                    }
+                }, intervalTime);
+
+                scrollToggleBtn.classList.add('scrolling');
+                scrollToggleBtn.querySelector('.scroll-icon').innerText = '⏸';
+                scrollToggleBtn.querySelector('.scroll-text').innerText = '暂停滚动';
+                isScrolling = true;
+            };
+
+            const stopAutoScroll = () => {
+                if (scrollInterval) {
+                    clearInterval(scrollInterval);
+                    scrollInterval = null;
+                }
+                if (scrollToggleBtn) {
+                    scrollToggleBtn.classList.remove('scrolling');
+                    scrollToggleBtn.querySelector('.scroll-icon').innerText = '▶';
+                    scrollToggleBtn.querySelector('.scroll-text').innerText = '开始滚动';
+                }
+                isScrolling = false;
+            };
+
+            if (scrollToggleBtn) {
+                scrollToggleBtn.addEventListener('click', () => {
+                    if (isScrolling) {
+                        stopAutoScroll();
+                    } else {
+                        startAutoScroll();
+                    }
+                });
+            }
+
+            if (scrollSpeedSlider) {
+                scrollSpeedSlider.addEventListener('input', () => {
+                    if (isScrolling) {
+                        startAutoScroll();
+                    }
+                });
+            }
         });
     </script>
-</body>
-</html>
+
+    <!-- 悬浮控制面板 -->
+    <div class="reading-settings-wrapper">
+        <div class="settings-panel" id="settings-panel">
+            <!-- 模式切换 -->
+            <div class="setting-section">
+                <span class="setting-label">阅读模式</span>
+                <div class="theme-options">
+                    <button class="theme-opt-btn" data-theme-val="light">日间</button>
+                    <button class="theme-opt-btn" data-theme-val="dark">夜间</button>
+                    <button class="theme-opt-btn" data-theme-val="eye-care">护眼</button>
+                    <button class="theme-opt-btn" data-theme-val="sepia">暖黄</button>
+                </div>
+            </div>
+            
+            <!-- 字体大小 -->
+            <div class="setting-section">
+                <span class="setting-label">字体大小</span>
+                <div class="font-scale-control">
+                    <button class="font-btn" id="font-dec-btn" title="减小字号">A-</button>
+                    <span class="font-size-text" id="font-size-val">100%</span>
+                    <button class="font-btn" id="font-inc-btn" title="增大字号">A+</button>
+                </div>
+            </div>
+
+            <!-- 自动滚动 -->
+            <div class="setting-section">
+                <span class="setting-label">自动滚动</span>
+                <div class="scroll-control">
+                    <button class="scroll-toggle-btn" id="scroll-toggle-btn">
+                        <span class="scroll-icon">▶</span> <span class="scroll-text">开始滚动</span>
+                    </button>
+                    <div class="scroll-speed-wrapper">
+                        <input type="range" class="scroll-speed-slider" id="scroll-speed-slider" min="1" max="10" value="3" title="滚动速度">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="settings-toggle-btn" id="settings-toggle-btn" title="阅读设置">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+        </button>
+    </div>
