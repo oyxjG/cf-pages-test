@@ -566,13 +566,10 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLpFilter();
 
     // ==========================================
+    // ==========================================
     // 7. 故事花园 (Story Oasis) 首页逻辑
     // ==========================================
     const storyBody = document.getElementById('story-body');
-    const selectBubble = document.getElementById('quote-select-bubble');
-
-    let activeStoryTitle = '';
-    let activeStorySelection = '';
 
     const HOME_DEFAULT_STORIES = [
         {
@@ -600,36 +597,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return JSON.parse(stories);
     }
 
-    // 简易 Regex Markdown 解析器
-    function parseStoryMarkdown(md) {
-        // 安全转义 HTML 标签防止注入
-        let html = md
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-
-        // 基础 MD 元素解析
-        html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
-        html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
-        html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
-        html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
-        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        
-        // 分段处理
-        const lines = html.split('\n');
-        const processedLines = lines.map(line => {
-            const trimmed = line.trim();
-            if (trimmed.length === 0) return '';
-            if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('</blockquote')) {
-                return line;
-            }
-            return `<p>${line}</p>`;
-        });
-
-        return processedLines.join('\n');
-    }
-
     // 渲染故事列表
     function renderHomeStories() {
         if (!storyBody) return;
@@ -655,135 +622,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <span class="story-item-arrow">→</span>
             `;
-            item.addEventListener('click', () => showStoryReader(story));
+            item.addEventListener('click', () => {
+                window.open(`/story.html?id=${story.id}`, '_blank');
+            });
             listContainer.appendChild(item);
         });
 
         storyBody.appendChild(listContainer);
-    }
-
-    // 渲染进入阅读态
-    function showStoryReader(story) {
-        if (!storyBody) return;
-        storyBody.innerHTML = '';
-
-        activeStoryTitle = story.title;
-
-        const reader = document.createElement('div');
-        reader.className = 'story-reader';
-        reader.innerHTML = `
-            <div class="story-reader-header">
-                <h5 class="story-reader-title">${story.title}</h5>
-                <span class="story-reader-meta">作者: ${story.author}</span>
-            </div>
-            <div class="story-reader-content" id="story-reader-content">
-                ${parseStoryMarkdown(story.content)}
-            </div>
-            <button class="story-back-btn" id="story-back-btn">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                返回列表
-            </button>
-        `;
-
-        const backBtn = reader.querySelector('#story-back-btn');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                if (selectBubble) selectBubble.style.display = 'none';
-                renderHomeStories();
-            });
-        }
-
-        storyBody.appendChild(reader);
-    }
-
-    // 划词监听与浮动气泡计算
-    function handleSelectionChange(e) {
-        const readerContent = document.getElementById('story-reader-content');
-        if (!readerContent || !selectBubble) return;
-
-        // 如果鼠标点击的是气泡自身，跳过处理以防清除选区
-        if (e.target.closest('#quote-select-bubble')) return;
-
-        setTimeout(() => {
-            const selection = window.getSelection();
-            const selected = selection.toString().trim();
-
-            if (selected.length >= 2 && selected.length <= 100 && readerContent.contains(selection.anchorNode)) {
-                activeStorySelection = selected;
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-
-                // 考虑滚动高度定位
-                const scrollX = window.scrollX || window.pageXOffset;
-                const scrollY = window.scrollY || window.pageYOffset;
-
-                selectBubble.style.left = `${rect.left + rect.width / 2 + scrollX}px`;
-                selectBubble.style.top = `${rect.top + scrollY - 10}px`;
-                selectBubble.style.display = 'flex';
-            } else {
-                selectBubble.style.display = 'none';
-            }
-        }, 10);
-    }
-
-    // 首页全局划词与气泡隐藏处理
-    document.addEventListener('mouseup', handleSelectionChange);
-    document.addEventListener('touchend', handleSelectionChange);
-
-    // 气泡点击收藏逻辑
-    if (selectBubble) {
-        selectBubble.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!activeStorySelection) return;
-
-            const QUOTE_STATE_KEY = 'daily_quote_state_v1';
-            let quoteState = { favorites: [] };
-            const saved = localStorage.getItem(QUOTE_STATE_KEY);
-            
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    if (parsed && Array.isArray(parsed.favorites)) {
-                        quoteState = parsed;
-                    }
-                } catch (err) {}
-            }
-
-            const cleanText = activeStorySelection.replace(/\s+/g, '');
-            const exists = quoteState.favorites.some(q => q.text.replace(/\s+/g, '') === cleanText);
-
-            // 统一的精致 Toast 提示
-            const showHomeToast = (message, icon = '✨') => {
-                const container = document.getElementById('quote-toast-container') || document.body;
-                const toast = document.createElement('div');
-                toast.className = 'quote-toast';
-                toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
-                container.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.classList.add('fade-out');
-                    setTimeout(() => toast.remove(), 300);
-                }, 2200);
-            };
-
-            if (exists) {
-                showHomeToast("该金句已在收藏夹中 ❤️", "💡");
-            } else {
-                quoteState.favorites.push({
-                    text: activeStorySelection,
-                    from: `《${activeStoryTitle}》`
-                });
-                localStorage.setItem(QUOTE_STATE_KEY, JSON.stringify(quoteState));
-
-                // 派发自定义更新事件触发一言组件载入新收藏
-                window.dispatchEvent(new CustomEvent('quote-configs-updated'));
-                showHomeToast("成功收录金句，已同步至每日一言 🌟", "❤️");
-            }
-
-            // 清理划词状态
-            window.getSelection().removeAllRanges();
-            selectBubble.style.display = 'none';
-        });
     }
 
     // 初始渲染故事

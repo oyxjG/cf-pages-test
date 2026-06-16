@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>故事花园 - 沉浸式阅读</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        :root {
+            /* 复制核心配色变量，确保独立运行不依赖 */
+            --bg-grad: linear-gradient(135deg, #111827 0%, #030712 100%);
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent: #ef8b57;
+            --accent-soft: rgba(239, 139, 87, 0.2);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+        }
+
+        /* 浅色主题兼容 */
+        [data-theme="light"] {
+            --bg-grad: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --accent: #bf5b32;
+            --accent-soft: rgba(191, 91, 50, 0.1);
+            --text-main: #111827;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", sans-serif;
+            background: var(--bg-grad);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 顶部导航 Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 99px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .back-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            transform: translateX(-2px);
+        }
+
+        .logo-text {
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* 阅读进度条 */
+        .progress-indicator {
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), #f472b6);
+            transition: width 0.1s ease-out;
+        }
+
+        /* 阅读容器居中排版 */
+        .container {
+            max-width: 760px;
+            width: 100%;
+            margin: 110px auto 80px;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* 文章头部 */
+        .article-header {
+            text-align: center;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 24px;
+            margin-bottom: 36px;
+        }
+
+        .article-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 900;
+            line-height: 1.25;
+            margin: 0 0 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .article-meta {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        /* Markdown 正文内容排版 */
+        .article-content {
+            font-size: 1.125rem; /* 18px */
+            line-height: 1.95;
+            letter-spacing: 0.02em;
+            color: var(--text-main);
+            text-align: justify;
+        }
+
+        .article-content p {
+            margin: 0 0 24px;
+        }
+
+        .article-content h1,
+        .article-content h2,
+        .article-content h3 {
+            color: var(--accent);
+            margin: 40px 0 20px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+        .article-content h1 { font-size: 1.6rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .article-content h2 { font-size: 1.4rem; }
+        .article-content h3 { font-size: 1.25rem; }
+
+        .article-content blockquote {
+            margin: 32px 0;
+            padding: 16px 24px;
+            border-left: 4px solid var(--accent);
+            background: var(--accent-soft);
+            border-radius: 0 16px 16px 0;
+            font-style: italic;
+            color: var(--text-main);
+        }
+
+        .article-content strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* 划词高亮与气泡 */
+        .quote-action-bubble {
+            position: absolute;
+            z-index: 10000;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            transform: translate(-50%, -100%) scale(1);
+            transform-origin: bottom center;
+            animation: bubble-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .quote-action-bubble::after {
+            content: "";
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px 6px 0;
+            border-style: solid;
+            border-color: var(--card-bg) transparent transparent;
+            display: block;
+            width: 0;
+        }
+        .quote-action-bubble:hover {
+            transform: translate(-50%, -100%) scale(1.05);
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+        .quote-action-bubble:hover::after {
+            border-color: var(--accent) transparent transparent;
+        }
+
+        @keyframes bubble-pop {
+            from { transform: translate(-50%, -85%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+        }
+
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 12px 24px;
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: toast-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .toast.fade-out {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        @keyframes toast-in {
+            from { transform: translateY(24px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .empty-tips {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/index.html" class="back-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            返回主页
+        </a>
+        <div class="logo-text">故事花园 · 沉浸阅读</div>
+        <div style="width: 100px;"></div> <!-- 占位保持左右平衡 -->
+        <div class="progress-indicator" id="progress-bar"></div>
+    </header>
+
+    <main class="container">
+        <article id="article-body">
+            <!-- JS 渲染 -->
+            <div class="empty-tips">正在加载故事内容中...</div>
+        </article>
+    </main>
+
+    <!-- 自由划词收藏浮动气泡 -->
+    <div class="quote-action-bubble" id="quote-select-bubble" style="display: none;">
+        ❤️ 收藏至一言
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="theme.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const articleBody = document.getElementById('article-body');
+            const selectBubble = document.getElementById('quote-select-bubble');
+            const progressBar = document.getElementById('progress-bar');
+            const toastContainer = document.getElementById('toast-container');
+
+            let currentStoryTitle = '';
+            let selectedQuoteText = '';
+
+            // 1. 获取 URL 故事 ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const storyId = urlParams.get('id');
+
+            if (!storyId) {
+                renderError('未指定阅读的故事，请从主页列表进入 ☕');
+                return;
+            }
+
+            // 2. 从 LocalStorage 中载入故事
+            const stories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
+            const story = stories.find(s => s.id === storyId);
+
+            if (!story) {
+                renderError('您要阅读的故事已被下架或不存在 🌧️');
+                return;
+            }
+
+            currentStoryTitle = story.title;
+            document.title = `${story.title} - 故事花园`;
+
+            // 3. 极简 Regex Markdown 解析函数
+            function parseMarkdown(md) {
+                let html = md
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
+                html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+                html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+                html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+                html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                const lines = html.split('\n');
+                const processed = lines.map(line => {
+                    const trimmed = line.trim();
+                    if (trimmed.length === 0) return '';
+                    if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('</blockquote')) {
+                        return line;
+                    }
+                    return `<p>${line}</p>`;
+                });
+
+                return processed.join('\n');
+            }
+
+            // 4. 渲染文章 HTML
+            articleBody.innerHTML = `
+                <div class="article-header">
+                    <h1 class="article-title">${story.title}</h1>
+                    <div class="article-meta">
+                        <span>作者: ${story.author}</span>
+                        <span>发布时间: ${new Date(story.createdAt).toLocaleDateString('zh-CN')}</span>
+                    </div>
+                </div>
+                <div class="article-content" id="article-content">
+                    ${parseMarkdown(story.content)}
+                </div>
+            `;
+
+            // 5. 监听阅读滚动进度条
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                if (scrollHeight > 0) {
+                    const percentage = (scrollTop / scrollHeight) * 100;
+                    progressBar.style.width = `${percentage}%`;
+                }
+            });
+
+            // 6. 自由划词选择检测
+            const articleContent = document.getElementById('article-content');
+
+            function handleSelection(e) {
+                if (e.target.closest('#quote-select-bubble')) return;
+
+                setTimeout(() => {
+                    const selection = window.getSelection();
+                    const selected = selection.toString().trim();
+
+                    if (selected.length >= 2 && selected.length <= 100 && articleContent.contains(selection.anchorNode)) {
+                        selectedQuoteText = selected;
+                        const range = selection.getRangeAt(0);
+                        const rect = range.getBoundingClientRect();
+
+                        const scrollX = window.scrollX || window.pageXOffset;
+                        const scrollY = window.scrollY || window.pageYOffset;
+
+                        selectBubble.style.left = `${rect.left + rect.width / 2 + scrollX}px`;
+                        selectBubble.style.top = `${rect.top + scrollY - 10}px`;
+                        selectBubble.style.display = 'flex';
+                    } else {
+                        selectBubble.style.display = 'none';
+                    }
+                }, 10);
+            }
+
+            document.addEventListener('mouseup', handleSelection);
+            document.addEventListener('touchend', handleSelection);
+
+            // 7. 气泡点击收藏逻辑
+            if (selectBubble) {
+                selectBubble.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!selectedQuoteText) return;
+
+                    const QUOTE_STATE_KEY = 'daily_quote_state_v1';
+                    let quoteState = { favorites: [] };
+                    const saved = localStorage.getItem(QUOTE_STATE_KEY);
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            if (parsed && Array.isArray(parsed.favorites)) {
+                                quoteState = parsed;
+                            }
+                        } catch (err) {}
+                    }
+
+                    const cleanText = selectedQuoteText.replace(/\s+/g, '');
+                    const exists = quoteState.favorites.some(q => q.text.replace(/\s+/g, '') === cleanText);
+
+                    const showToast = (message, icon = '✨') => {
+                        const toast = document.createElement('div');
+                        toast.className = 'toast';
+                        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+                        toastContainer.appendChild(toast);
+
+                        setTimeout(() => {
+                            toast.classList.add('fade-out');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 2200);
+                    };
+
+                    if (exists) {
+                        showToast("该金句已在收藏夹中 ❤️", "💡");
+                    } else {
+                        quoteState.favorites.push({
+                            text: selectedQuoteText,
+                            from: `《${currentStoryTitle}》`
+                        });
+                        localStorage.setItem(QUOTE_STATE_KEY, JSON.stringify(quoteState));
+
+                        // 发送通知，便于首页挂件轮播
+                        window.dispatchEvent(new CustomEvent('quote-configs-updated'));
+                        showToast("成功收录，已同步至每日一言 🌟", "❤️");
+                    }
+
+                    window.getSelection().removeAllRanges();
+                    selectBubble.style.display = 'none';
+                });
+            }
+
+            function renderError(msg) {
+                articleBody.innerHTML = `
+                    <div class="empty-tips">
+                        <p>${msg}</p>
+                        <a href="/index.html" class="back-btn" style="margin-top: 16px;">返回个人面板首页</a>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
