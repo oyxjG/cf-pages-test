@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS stories (
   title TEXT NOT NULL,
   author TEXT DEFAULT '管理员',
   content TEXT NOT NULL,
+  status TEXT DEFAULT 'published',
   created_at INTEGER
 );
 

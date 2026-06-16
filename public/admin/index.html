@@ -244,7 +244,10 @@
             <div class="story-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <!-- 发布故事表单 -->
                 <div class="story-form-card" style="background: var(--panel); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 1rem;">
-                    <h3 style="margin: 0; font-size: 1.25rem;">✍️ 发布新故事</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-size: 1.25rem;">✍️ 发布新故事</h3>
+                        <button onclick="window.location.href='/admin/edit_story.html'" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">✨ 进入高级编辑器</button>
+                    </div>
                     <div>
                         <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">故事标题</label>
                         <input type="text" id="story-title-input" placeholder="输入故事标题..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-size: 0.875rem;">
@@ -265,27 +268,32 @@
                         <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">故事正文 (Markdown 源码)</label>
                         <textarea id="story-content-textarea" rows="10" placeholder="# 标题...\n\n在此输入故事的正文..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-family: monospace; font-size: 0.875rem; resize: vertical; min-height: 150px;"></textarea>
                     </div>
-                    <button id="story-publish-btn" style="width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;">发布故事</button>
+                    <button id="story-publish-btn" style="width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;">直接发布故事</button>
                 </div>
 
-                <!-- 已发布故事列表 -->
+                <!-- 故事列表与草稿箱 -->
                 <div class="story-list-card" style="background: var(--panel); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;">
-                    <h3 style="margin-top: 0; margin-bottom: 1.5rem;">📚 已发布故事列表</h3>
+                    <!-- 子选项卡 -->
+                    <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <button id="subtab-published" class="active" style="background: none; border: none; color: var(--text); font-size: 0.95rem; font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; transition: all 0.2s; border-bottom: 2px solid var(--primary); outline: none;">📚 已发布 (<span id="count-published">0</span>)</button>
+                        <button id="subtab-drafts" style="background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; transition: all 0.2s; border-bottom: 2px solid transparent; outline: none;">📁 草稿箱 (<span id="count-drafts">0</span>)</button>
+                    </div>
+                    
                     <div class="table-container" style="flex: 1; max-height: 520px; overflow-y: auto;">
                         <table style="width: 100%;">
                             <thead>
                                 <tr>
-                                    <th style="width: 45%;">故事标题</th>
+                                    <th style="width: 40%;">故事标题</th>
                                     <th style="width: 20%;">作者</th>
-                                    <th style="width: 20%;">发布时间</th>
-                                    <th style="width: 15%;">操作</th>
+                                    <th style="width: 20%;">修改时间</th>
+                                    <th style="width: 20%;">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="story-list-tbody">
                                 <!-- JS 动态渲染 -->
                             </tbody>
                         </table>
-                        <div id="story-list-empty" style="text-align: center; padding: 3rem; color: var(--text-muted); display: none;">暂无发布的故事 ☕</div>
+                        <div id="story-list-empty" style="text-align: center; padding: 3rem; color: var(--text-muted); display: none;">暂无相关故事 ☕</div>
                     </div>
                 </div>
             </div>
@@ -418,6 +426,12 @@
 
         loadUsers();
 
+        // 自动根据 URL hash 切换 Tab
+        if (window.location.hash === '#stories') {
+            const storiesTab = document.getElementById('tab-stories');
+            if (storiesTab) storiesTab.click();
+        }
+
         // ==========================================
         // 故事管理 Tab 页逻辑与数据交互
         // ==========================================
@@ -454,7 +468,8 @@
                 id: "1699990000001",
                 title: "星之继承者",
                 author: "詹姆斯·霍根",
-                content: "# 星之继承者\n\n> 那些遥望星空的人，早已把他们的一部分灵魂留在了群星之中。\n\n在月球的寒冷尘埃中，探索队发现了一具红色的宇航服，里面包裹着一具距今已有五万年的古老尸体。人类的科学界陷入了前所未有的震动。他并非来自未来，也并非天外来客，他那五万年前的心脏，曾跳动在与我们完全一致的人类胸膛中。\n\n**这一发现证明了，在人类文明之前，月球就曾是智慧生命的舞台。** 那么，我们究竟继承了什么？是跨越群星的血脉，还是对未知永恒的求索？",
+                content: "# 星之继承者\n\n> 那些遥望星空的人，早已把他们的一部分灵魂留在了群星之中。\n\n在月球的寒冷尘埃中，探索队发现了一具红色的宇航服，里面包裹着一具距今已有五万年的古老尸体。人类的科学界陷入了前所未有的震动。他并非来自未来，也并非天外来客，他那五万年前的心脏，曾跳动在与我们完全一致的人类胸膛中。\n\n**这一发现证明了，在人类文明之前，月球就曾是智慧生命的舞台。** 那么，我们究竟继承了什么？是跨越群星 of 血脉，还是对未知永恒的求索？",
+                status: "published",
                 createdAt: 1699990000001
             },
             {
@@ -462,9 +477,40 @@
                 title: "给岁月以文明",
                 author: "刘慈欣",
                 content: "# 给岁月以文明\n\n> “给岁月以文明，而不是给文明以岁月。” —— 这不仅是黑暗战役的信条，也是生命的最高尊严。\n\n在浩瀚的宇宙尺度中，个体的生命显得微不足道。三体舰队正在以光速十分之一的速度逼近地球，人类社会被巨大的绝望和虚无感所笼罩。然而，真正的文明不应当只是苟延残喘的年岁，而应当在这有限的年岁中，绽放出思想、艺术与热爱的光芒。*哪怕最后只剩下一颗沙粒，它也曾反射过太阳的光辉。*",
+                status: "published",
                 createdAt: 1699990000002
             }
         ];
+
+        let currentSubTab = 'published';
+
+        // 绑定子 Tab 切换
+        const subtabPublished = document.getElementById('subtab-published');
+        const subtabDrafts = document.getElementById('subtab-drafts');
+
+        if (subtabPublished && subtabDrafts) {
+            subtabPublished.addEventListener('click', () => {
+                currentSubTab = 'published';
+                subtabPublished.classList.add('active');
+                subtabPublished.style.color = 'var(--text)';
+                subtabPublished.style.borderBottom = '2px solid var(--primary)';
+                subtabDrafts.classList.remove('active');
+                subtabDrafts.style.color = 'var(--text-muted)';
+                subtabDrafts.style.borderBottom = '2px solid transparent';
+                loadStories();
+            });
+
+            subtabDrafts.addEventListener('click', () => {
+                currentSubTab = 'drafts';
+                subtabDrafts.classList.add('active');
+                subtabDrafts.style.color = 'var(--text)';
+                subtabDrafts.style.borderBottom = '2px solid var(--primary)';
+                subtabPublished.classList.remove('active');
+                subtabPublished.style.color = 'var(--text-muted)';
+                subtabPublished.style.borderBottom = '2px solid transparent';
+                loadStories();
+            });
+        }
 
         function getStories() {
             let stories = localStorage.getItem('garden-stories');
@@ -487,14 +533,26 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (stories.length === 0) {
-                if (emptyEl) emptyEl.style.display = 'block';
+            // 过滤并计算数量
+            const publishedStories = stories.filter(s => s.status === 'published');
+            const draftStories = stories.filter(s => s.status === 'draft');
+
+            document.getElementById('count-published').innerText = publishedStories.length;
+            document.getElementById('count-drafts').innerText = draftStories.length;
+
+            const activeStories = currentSubTab === 'published' ? publishedStories : draftStories;
+
+            if (activeStories.length === 0) {
+                if (emptyEl) {
+                    emptyEl.innerText = currentSubTab === 'published' ? '暂无发布的故事 ☕' : '草稿箱空空如也 📁';
+                    emptyEl.style.display = 'block';
+                }
                 return;
             }
 
             if (emptyEl) emptyEl.style.display = 'none';
 
-            stories.sort((a, b) => b.createdAt - a.createdAt).forEach((story) => {
+            activeStories.sort((a, b) => b.createdAt - a.createdAt).forEach((story) => {
                 const dateStr = new Date(story.createdAt).toLocaleString('zh-CN', {
                     year: 'numeric',
                     month: '2-digit',
@@ -504,20 +562,67 @@
                 });
 
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="font-weight: 600; color: var(--text);">${story.title}</td>
-                    <td style="color: var(--text-muted);">${story.author}</td>
-                    <td style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</td>
-                    <td>
-                        <button class="btn-action btn-delete" onclick="deleteStory('${story.id}')">下架</button>
-                    </td>
-                `;
+                if (currentSubTab === 'published') {
+                    row.innerHTML = `
+                        <td style="font-weight: 600; color: var(--text);">${story.title}</td>
+                        <td style="color: var(--text-muted);">${story.author}</td>
+                        <td style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</td>
+                        <td>
+                            <button class="btn-action" onclick="editStory('${story.id}')">编辑</button>
+                            <button class="btn-action btn-delete" onclick="depublishStory('${story.id}')">下架</button>
+                        </td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td style="font-weight: 600; color: var(--text);">${story.title}</td>
+                        <td style="color: var(--text-muted);">${story.author}</td>
+                        <td style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</td>
+                        <td>
+                            <button class="btn-action" style="color: var(--success); border-color: rgba(34, 197, 94, 0.2);" onclick="publishDraft('${story.id}')">发布</button>
+                            <button class="btn-action" onclick="editStory('${story.id}')">编辑</button>
+                            <button class="btn-action btn-delete" onclick="deleteStory('${story.id}')">删除</button>
+                        </td>
+                    `;
+                }
                 tbody.appendChild(row);
             });
         }
 
+        // 下架故事逻辑：变为草稿
+        window.depublishStory = function(id) {
+            if (!confirm('确定要下架这篇故事吗？下架后首页将不再显示，并会移入故事草稿箱。')) return;
+            let stories = getStories();
+            stories = stories.map(s => {
+                if (s.id === id) {
+                    return { ...s, status: 'draft', createdAt: Date.now() }; // 更新时间为下架时间
+                }
+                return s;
+            });
+            saveStories(stories);
+            loadStories();
+        };
+
+        // 重新发布草稿逻辑
+        window.publishDraft = function(id) {
+            let stories = getStories();
+            stories = stories.map(s => {
+                if (s.id === id) {
+                    return { ...s, status: 'published', createdAt: Date.now() }; // 发布时间更新为当前时间
+                }
+                return s;
+            });
+            saveStories(stories);
+            loadStories();
+        };
+
+        // 编辑故事逻辑：跳转至双栏编辑器
+        window.editStory = function(id) {
+            window.location.href = `/admin/edit_story.html?id=${id}`;
+        };
+
+        // 彻底删除草稿逻辑
         window.deleteStory = function(id) {
-            if (!confirm('确定要下架这篇故事吗？下架后首页故事卡片将不再显示该故事。')) return;
+            if (!confirm('确定要彻底删除该故事草稿吗？此操作不可逆。')) return;
             let stories = getStories();
             stories = stories.filter(s => s.id !== id);
             saveStories(stories);
@@ -603,6 +708,7 @@
                     title,
                     author,
                     content,
+                    status: 'published',
                     createdAt: Date.now()
                 };
 
@@ -612,7 +718,7 @@
                 
                 // 清空表单
                 titleInput.value = '';
-                authorInput.value = '';
+                authorInput.value = '管理员';
                 contentTextarea.value = '';
                 if (fileInput) fileInput.value = '';
 
