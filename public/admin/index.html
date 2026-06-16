@@ -469,7 +469,7 @@
                 title: "星之继承者",
                 author: "詹姆斯·霍根",
                 content: "# 星之继承者\n\n> 那些遥望星空的人，早已把他们的一部分灵魂留在了群星之中。\n\n在月球的寒冷尘埃中，探索队发现了一具红色的宇航服，里面包裹着一具距今已有五万年的古老尸体。人类的科学界陷入了前所未有的震动。他并非来自未来，也并非天外来客，他那五万年前的心脏，曾跳动在与我们完全一致的人类胸膛中。\n\n**这一发现证明了，在人类文明之前，月球就曾是智慧生命的舞台。** 那么，我们究竟继承了什么？是跨越群星 of 血脉，还是对未知永恒的求索？",
-                status: "published",
+                status: 1,
                 createdAt: 1699990000001
             },
             {
@@ -477,7 +477,7 @@
                 title: "给岁月以文明",
                 author: "刘慈欣",
                 content: "# 给岁月以文明\n\n> “给岁月以文明，而不是给文明以岁月。” —— 这不仅是黑暗战役的信条，也是生命的最高尊严。\n\n在浩瀚的宇宙尺度中，个体的生命显得微不足道。三体舰队正在以光速十分之一的速度逼近地球，人类社会被巨大的绝望和虚无感所笼罩。然而，真正的文明不应当只是苟延残喘的年岁，而应当在这有限的年岁中，绽放出思想、艺术与热爱的光芒。*哪怕最后只剩下一颗沙粒，它也曾反射过太阳的光辉。*",
-                status: "published",
+                status: 1,
                 createdAt: 1699990000002
             }
         ];
@@ -533,9 +533,9 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            // 过滤并计算数量
-            const publishedStories = stories.filter(s => s.status === 'published');
-            const draftStories = stories.filter(s => s.status === 'draft');
+            // 过滤并计算数量 (支持向前兼容旧的字符串状态和没有状态的数据)
+            const publishedStories = stories.filter(s => s.status === 1 || s.status === 'published' || !s.status);
+            const draftStories = stories.filter(s => s.status === 0 || s.status === 'draft');
 
             document.getElementById('count-published').innerText = publishedStories.length;
             document.getElementById('count-drafts').innerText = draftStories.length;
@@ -594,7 +594,7 @@
             let stories = getStories();
             stories = stories.map(s => {
                 if (s.id === id) {
-                    return { ...s, status: 'draft', createdAt: Date.now() }; // 更新时间为下架时间
+                    return { ...s, status: 0, createdAt: Date.now() }; // 更新状态为 0，时间为下架时间
                 }
                 return s;
             });
@@ -607,7 +607,7 @@
             let stories = getStories();
             stories = stories.map(s => {
                 if (s.id === id) {
-                    return { ...s, status: 'published', createdAt: Date.now() }; // 发布时间更新为当前时间
+                    return { ...s, status: 1, createdAt: Date.now() }; // 发布状态更新为 1，时间更新为当前时间
                 }
                 return s;
             });
@@ -708,7 +708,7 @@
                     title,
                     author,
                     content,
-                    status: 'published',
+                    status: 1, // 状态码 1 代表发布
                     createdAt: Date.now()
                 };
 

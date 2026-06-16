@@ -460,7 +460,7 @@
                     markdownInput.value = targetStory.content;
 
                     // 设置状态徽章
-                    if (targetStory.status === 'draft') {
+                    if (targetStory.status === 0 || targetStory.status === 'draft') {
                         storyBadge.className = "status-badge badge-draft";
                         storyBadge.innerText = "草稿";
                     } else {
@@ -620,7 +620,7 @@
                                 content,
                                 status,
                                 // 如果是存为草稿，保持原创建时间；若是直接发布，重置为当前最新发布时间
-                                createdAt: status === 'published' ? timestamp : s.createdAt
+                                createdAt: status === 1 ? timestamp : s.createdAt
                             };
                         }
                         return s;
@@ -639,15 +639,15 @@
                 }
 
                 localStorage.setItem('garden-stories', JSON.stringify(allStories));
-                alert(status === 'published' ? '故事已成功发布！' : '草稿保存成功！');
+                alert(status === 1 ? '故事已成功发布！' : '草稿保存成功！');
                 
                 // 跳转回故事管理面板
                 window.location.href = '/admin/index.html#stories';
             }
 
             // 9. 按钮事件绑定
-            btnSaveDraft.addEventListener('click', () => saveStoryData('draft'));
-            btnPublish.addEventListener('click', () => saveStoryData('published'));
+            btnSaveDraft.addEventListener('click', () => saveStoryData(0));
+            btnPublish.addEventListener('click', () => saveStoryData(1));
         });
     </script>
 </body>

@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "星之继承者",
             author: "詹姆斯·霍根",
             content: "# 星之继承者\n\n> 那些遥望星空的人，早已把他们的一部分灵魂留在了群星之中。\n\n在月球的寒冷尘埃中，探索队发现了一具红色的宇航服，里面包裹着一具距今已有五万年的古老尸体。人类的科学界陷入了前所未有的震动。他并非来自未来，也并非天外来客，他那五万年前的心脏，曾跳动在与我们完全一致的人类胸膛中。\n\n**这一发现证明了，在人类文明之前，月球就曾是智慧生命的舞台。** 那么，我们究竟继承了什么？是跨越群星的血脉，还是对未知永恒的求索？",
-            status: "published",
+            status: 1,
             createdAt: 1699990000001
         },
         {
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "给岁月以文明",
             author: "刘慈欣",
             content: "# 给岁月以文明\n\n> “给岁月以文明，而不是给文明以岁月。” —— 这不仅是黑暗战役的信条，也是生命的最高尊严。\n\n在浩瀚的宇宙尺度中，个体的生命显得微不足道。三体舰队正在以光速十分之一的速度逼近地球，人类社会被巨大的绝望 and 虚无感所笼罩。然而，真正的文明不应当只是苟延残喘的年岁，而应当在这有限年岁中，绽放出思想、艺术与热爱的光芒。*哪怕最后只剩下一颗沙粒，它也曾反射过太阳的光辉。*",
-            status: "published",
+            status: 1,
             createdAt: 1699990000002
         }
     ];
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
         storyBody.innerHTML = '';
 
         const allStories = getHomeStories();
-        const stories = allStories.filter(s => s.status === 'published');
+        const stories = allStories.filter(s => s.status === 1 || s.status === 'published');
 
         if (stories.length === 0) {
             storyBody.innerHTML = `<div class="story-empty-tips">故事花园暂时空无一物 ☕<br>请登录超管账号前往后台管理发布新故事。</div>`;
