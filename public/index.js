@@ -600,18 +600,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 渲染故事列表
-    function renderHomeStories() {
+    async function renderHomeStories() {
         if (!storyBody) return;
-        storyBody.innerHTML = '';
+        storyBody.innerHTML = '<div class="story-loading" style="text-align: center; opacity: 0.6; padding: 20px;">正在探索故事花园...</div>';
 
-        const allStories = getHomeStories();
-        const stories = allStories.filter(s => s.status === 1 || s.status === 'published');
+        let stories = [];
+        let isLocalBackup = false;
+
+        try {
+            const res = await fetch('/api/stories');
+            if (res.ok) {
+                const resData = await res.json();
+                if (resData.ok && Array.isArray(resData.data)) {
+                    stories = resData.data;
+                } else {
+                    throw new Error(resData.msg || '获取数据失败');
+                }
+            } else {
+                throw new Error(`HTTP ${res.status}`);
+            }
+        } catch (err) {
+            console.warn('云端故事加载失败，降级使用 LocalStorage:', err);
+            isLocalBackup = true;
+            const allStories = getHomeStories();
+            stories = allStories.filter(s => s.status === 1 || s.status === 'published');
+        }
 
         if (stories.length === 0) {
             storyBody.innerHTML = `<div class="story-empty-tips">故事花园暂时空无一物 ☕<br>请登录超管账号前往后台管理发布新故事。</div>`;
             return;
         }
 
+        storyBody.innerHTML = '';
         const listContainer = document.createElement('div');
         listContainer.className = 'story-list';
 
@@ -620,13 +640,13 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'story-item';
             item.innerHTML = `
                 <div class="story-item-info">
-                     <span class="story-item-title">${story.title}</span>
+                     <span class="story-item-title">${story.title}${isLocalBackup ? ' <span style="font-size:0.7rem;opacity:0.6;font-weight:normal;">(本地缓存)</span>' : ''}</span>
                      <span class="story-item-meta">作者: ${story.author}</span>
                 </div>
                 <span class="story-item-arrow">→</span>
             `;
             item.addEventListener('click', () => {
-                window.open(`/story.html?id=${story.id}`, '_blank');
+                window.open(`/story.html?id=${story.id}${isLocalBackup ? '&local=true' : ''}`, '_blank');
             });
             listContainer.appendChild(item);
         });

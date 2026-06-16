@@ -8,12 +8,14 @@ function parseJsonSafe(request) {
 
 const JWT_SECRET = "your-secret-key-at-least-32-chars"; // 实际生产中应从 env.JWT_SECRET 获取
 
-// 不需要 Token 校验的公开路径
+// 不需要 Token 校验 Jun 16 公开路径
 const PUBLIC_PATHS = [
   "/",
   "/api/login",
   "/api/register",
-  "/api/test"
+  "/api/test",
+  "/api/stories",
+  "/api/stories/detail"
 ];
 
 async function getAuthUser(request, env) {
@@ -66,6 +68,66 @@ export default {
 
       if (pathname === "/api/test") {
         return json({ ok: true, msg: "backend is working" });
+      }
+
+      if (pathname === "/api/stories") {
+        if (request.method !== "GET") return methodNotAllowed();
+        const db = env.apitest_bind;
+        if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+
+        try {
+          const { results } = await db.prepare(
+            "SELECT id, title, author, created_at AS createdAt, status FROM stories WHERE status = 1 ORDER BY created_at DESC"
+          ).all();
+
+          return json({
+            ok: true,
+            data: results
+          });
+        } catch (err) {
+          return json({ ok: false, msg: err.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/stories/detail") {
+        if (request.method !== "GET") return methodNotAllowed();
+        const db = env.apitest_bind;
+        if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+
+        const id = url.searchParams.get("id");
+        if (!id) return json({ ok: false, msg: "Missing story ID" }, 400);
+
+        try {
+          const story = await db.prepare(
+            "SELECT id, title, author, content, status, created_at AS createdAt FROM stories WHERE id = ?"
+          ).bind(id).first();
+
+          if (!story) {
+            return json({ ok: false, msg: "故事不存在" }, 404);
+          }
+
+          if (story.status === 0) {
+            // 草稿箱，只有管理员才能访问
+            const authUser = await getAuthUser(request, env);
+            if (!authUser || authUser.role !== 'admin') {
+              return json({ ok: false, msg: "无权查看草稿" }, 403);
+            }
+          }
+
+          return json({
+            ok: true,
+            data: {
+              id: story.id,
+              title: story.title,
+              author: story.author,
+              content: story.content,
+              status: story.status,
+              createdAt: story.createdAt
+            }
+          });
+        } catch (err) {
+          return json({ ok: false, msg: err.message }, 500);
+        }
       }
 
 
@@ -192,6 +254,103 @@ export default {
       if (pathname.startsWith("/api/admin/")) {
         if (authUser.role !== 'admin') {
           return json({ ok: false, msg: "无权访问管理接口" }, 403);
+        }
+
+        if (pathname === "/api/admin/stories") {
+          if (request.method !== "GET") return methodNotAllowed();
+          const db = env.apitest_bind;
+          if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+
+          try {
+            const { results } = await db.prepare(
+              "SELECT id, title, author, created_at AS createdAt, status FROM stories ORDER BY created_at DESC"
+            ).all();
+            return json({ ok: true, data: results });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        if (pathname === "/api/admin/stories/save") {
+          if (request.method !== "POST") return methodNotAllowed();
+          const db = env.apitest_bind;
+          if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+
+          const body = await parseJsonSafe(request);
+          if (!body) return json({ ok: false, msg: "Invalid JSON body" }, 400);
+
+          const { id, title, author, content, status } = body;
+          if (!id || !title || !content) {
+            return json({ ok: false, msg: "ID、标题和内容不能为空" }, 400);
+          }
+
+          const numericStatus = parseInt(status) === 1 ? 1 : 0;
+          const now = Date.now();
+
+          try {
+            const existing = await db.prepare("SELECT created_at FROM stories WHERE id = ?").bind(id).first();
+            if (existing) {
+              let createdAt = existing.created_at || now;
+              if (numericStatus === 1) {
+                createdAt = now;
+              }
+              await db.prepare(
+                "UPDATE stories SET title = ?, author = ?, content = ?, status = ?, created_at = ? WHERE id = ?"
+              ).bind(title, author || '管理员', content, numericStatus, createdAt, id).run();
+              return json({ ok: true, msg: "更新故事成功" });
+            } else {
+              const createdAt = now;
+              await db.prepare(
+                "INSERT INTO stories (id, title, author, content, status, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+              ).bind(id, title, author || '管理员', content, numericStatus, createdAt).run();
+              return json({ ok: true, msg: "保存故事成功" });
+            }
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        if (pathname === "/api/admin/stories/update-status") {
+          if (request.method !== "POST") return methodNotAllowed();
+          const db = env.apitest_bind;
+          if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+
+          const body = await parseJsonSafe(request);
+          if (!body) return json({ ok: false, msg: "Invalid JSON body" }, 400);
+
+          const { id, status } = body;
+          if (!id) return json({ ok: false, msg: "Missing story ID" }, 400);
+
+          const numericStatus = parseInt(status) === 1 ? 1 : 0;
+          const now = Date.now();
+
+          try {
+            await db.prepare(
+              "UPDATE stories SET status = ?, created_at = ? WHERE id = ?"
+            ).bind(numericStatus, now, id).run();
+            return json({ ok: true, msg: "更新状态成功" });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        if (pathname === "/api/admin/stories/delete") {
+          if (request.method !== "POST") return methodNotAllowed();
+          const db = env.apitest_bind;
+          if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+
+          const body = await parseJsonSafe(request);
+          if (!body) return json({ ok: false, msg: "Invalid JSON body" }, 400);
+
+          const { id } = body;
+          if (!id) return json({ ok: false, msg: "Missing story ID" }, 400);
+
+          try {
+            await db.prepare("DELETE FROM stories WHERE id = ?").bind(id).run();
+            return json({ ok: true, msg: "彻底删除成功" });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
         }
 
         if (pathname === "/api/admin/users") {

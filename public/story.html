@@ -326,18 +326,6 @@
                 return;
             }
 
-            // 2. 从 LocalStorage 中载入故事
-            const stories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
-            const story = stories.find(s => s.id === storyId);
-
-            if (!story) {
-                renderError('您要阅读的故事已被下架或不存在 🌧️');
-                return;
-            }
-
-            currentStoryTitle = story.title;
-            document.title = `${story.title} - 故事花园`;
-
             // 3. 极简 Regex Markdown 解析函数
             function parseMarkdown(md) {
                 let html = md
@@ -365,21 +353,7 @@
                 return processed.join('\n');
             }
 
-            // 4. 渲染文章 HTML
-            articleBody.innerHTML = `
-                <div class="article-header">
-                    <h1 class="article-title">${story.title}</h1>
-                    <div class="article-meta">
-                        <span>作者: ${story.author}</span>
-                        <span>发布时间: ${new Date(story.createdAt).toLocaleDateString('zh-CN')}</span>
-                    </div>
-                </div>
-                <div class="article-content" id="article-content">
-                    ${parseMarkdown(story.content)}
-                </div>
-            `;
-
-            // 5. 监听阅读滚动进度条
+            // 4. 监听阅读滚动进度条
             window.addEventListener('scroll', () => {
                 const scrollTop = window.scrollY || document.documentElement.scrollTop;
                 const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -389,10 +363,11 @@
                 }
             });
 
-            // 6. 自由划词选择检测
-            const articleContent = document.getElementById('article-content');
+            // 5. 自由划词选择检测
+            let articleContent = null;
 
             function handleSelection(e) {
+                if (!articleContent) return;
                 if (e.target.closest('#quote-select-bubble')) return;
 
                 setTimeout(() => {
@@ -419,7 +394,7 @@
             document.addEventListener('mouseup', handleSelection);
             document.addEventListener('touchend', handleSelection);
 
-            // 7. 气泡点击收藏逻辑
+            // 6. 气泡点击收藏逻辑
             if (selectBubble) {
                 selectBubble.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -470,6 +445,63 @@
                     selectBubble.style.display = 'none';
                 });
             }
+
+            // 2. 载入并渲染故事
+            async function loadStory() {
+                const isLocal = urlParams.get('local') === 'true';
+                let story = null;
+
+                if (!isLocal) {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const headers = {};
+                        if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+                        const res = await fetch(`/api/stories/detail?id=${storyId}`, { headers });
+                        if (res.ok) {
+                            const resData = await res.json();
+                            if (resData.ok && resData.data) {
+                                story = resData.data;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('云端故事详情加载失败，降级使用 LocalStorage:', err);
+                    }
+                }
+
+                // 降级使用 LocalStorage
+                if (!story) {
+                    const stories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
+                    story = stories.find(s => s.id === storyId);
+                }
+
+                if (!story) {
+                    renderError('您要阅读的故事已被下架或不存在 🌧️');
+                    return;
+                }
+
+                currentStoryTitle = story.title;
+                document.title = `${story.title} - 故事花园`;
+
+                // 渲染文章 HTML
+                articleBody.innerHTML = `
+                    <div class="article-header">
+                        <h1 class="article-title">${story.title}</h1>
+                        <div class="article-meta">
+                            <span>作者: ${story.author}</span>
+                            <span>发布时间: ${new Date(story.createdAt).toLocaleDateString('zh-CN')}</span>
+                        </div>
+                    </div>
+                    <div class="article-content" id="article-content">
+                        ${parseMarkdown(story.content)}
+                    </div>
+                `;
+
+                articleContent = document.getElementById('article-content');
+            }
+
+            loadStory();
 
             function renderError(msg) {
                 articleBody.innerHTML = `

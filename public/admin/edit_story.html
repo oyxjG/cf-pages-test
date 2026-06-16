@@ -543,8 +543,28 @@
             authorInput.value = user.nick_name || user.username || '管理员';
 
             // 4. 回显编辑故事数据
-            if (editStoryId) {
-                targetStory = allStories.find(s => s.id === editStoryId);
+            async function loadStoryForEdit() {
+                if (!editStoryId) return;
+
+                try {
+                    const headers = { 'Authorization': `Bearer ${token}` };
+                    const res = await fetch(`/api/stories/detail?id=${editStoryId}`, { headers });
+                    if (res.ok) {
+                        const resData = await res.json();
+                        if (resData.ok && resData.data) {
+                            targetStory = resData.data;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('云端故事详情加载失败，降级使用 LocalStorage:', err);
+                }
+
+                // 降级使用 LocalStorage
+                if (!targetStory) {
+                    allStories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
+                    targetStory = allStories.find(s => s.id === editStoryId);
+                }
+
                 if (targetStory) {
                     pageActionText.innerText = "编辑故事";
                     titleInput.value = targetStory.title;
@@ -559,10 +579,10 @@
                         storyBadge.className = "status-badge badge-published";
                         storyBadge.innerText = "已发布";
                     }
+                    updatePreview();
                 } else {
                     alert('要编辑的故事不存在或已被下架。');
                     window.location.href = '/admin/index.html#stories';
-                    return;
                 }
             }
 
@@ -660,6 +680,7 @@
 
             // 初始化首次渲染
             updatePreview();
+            loadStoryForEdit();
 
             // 7. 拖拽文件导入 Markdown
             if (editorDropzone) {
@@ -710,7 +731,7 @@
             }
 
             // 8. 统一保存故事方法
-            function saveStoryData(status) {
+            async function saveStoryData(status) {
                 const title = titleInput.value.trim();
                 const author = authorInput.value.trim() || '管理员';
                 const content = markdownInput.value;
@@ -720,42 +741,64 @@
                     return;
                 }
 
-                // 重新读取全部故事列表以确保最新
-                allStories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
-
                 const timestamp = Date.now();
-                if (targetStory) {
-                    // 编辑已有故事
-                    allStories = allStories.map(s => {
-                        if (s.id === targetStory.id) {
-                            return {
-                                ...s,
-                                title,
-                                author,
-                                content,
-                                status,
-                                // 如果是存为草稿，保持原创建时间；若是直接发布，重置为当前最新发布时间
-                                createdAt: status === 1 ? timestamp : s.createdAt
-                            };
-                        }
-                        return s;
+                const storyId = targetStory ? targetStory.id : timestamp.toString();
+
+                const newStoryObj = {
+                    id: storyId,
+                    title,
+                    author,
+                    content,
+                    status,
+                    createdAt: targetStory ? (status === 1 ? timestamp : targetStory.createdAt) : timestamp
+                };
+
+                try {
+                    const res = await fetch('/api/admin/stories/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(newStoryObj)
                     });
-                } else {
-                    // 新建故事
-                    const newStoryObj = {
-                        id: timestamp.toString(),
-                        title,
-                        author,
-                        content,
-                        status,
-                        createdAt: timestamp
-                    };
-                    allStories.push(newStoryObj);
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.ok) {
+                            alert(status === 1 ? '故事已成功发布！' : '草稿保存成功！');
+                        } else {
+                            throw new Error(data.msg || '保存失败');
+                        }
+                    } else {
+                        throw new Error('HTTP status ' + res.status);
+                    }
+                } catch (err) {
+                    console.error('云端保存失败，降级保存至 LocalStorage:', err);
+                    // 重新读取全部故事列表以确保最新
+                    allStories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
+
+                    if (targetStory) {
+                        allStories = allStories.map(s => {
+                            if (s.id === targetStory.id) {
+                                return {
+                                    ...s,
+                                    title,
+                                    author,
+                                    content,
+                                    status,
+                                    createdAt: status === 1 ? timestamp : s.createdAt
+                                };
+                            }
+                            return s;
+                        });
+                    } else {
+                        allStories.push(newStoryObj);
+                    }
+                    localStorage.setItem('garden-stories', JSON.stringify(allStories));
+                    alert(status === 1 ? '故事已成功发布（已保存至本地缓存）！' : '草稿保存成功（已保存至本地缓存）！');
                 }
 
-                localStorage.setItem('garden-stories', JSON.stringify(allStories));
-                alert(status === 1 ? '故事已成功发布！' : '草稿保存成功！');
-                
                 // 跳转回故事管理面板
                 window.location.href = '/admin/index.html#stories';
             }
