@@ -3012,3 +3012,233 @@ body::after {
     }
 }
 
+/* ==========================================
+ * 故事花园 (Story Oasis) 专用样式
+ * ========================================== */
+.story-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 列表容器滚动 */
+.story-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* 自定义卡片式滚动条 */
+.story-list::-webkit-scrollbar,
+.story-reader-content::-webkit-scrollbar {
+    width: 6px;
+}
+.story-list::-webkit-scrollbar-track,
+.story-reader-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.story-list::-webkit-scrollbar-thumb,
+.story-reader-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
+}
+.story-list::-webkit-scrollbar-thumb:hover,
+.story-reader-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 单个故事卡片项 */
+.story-item {
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.story-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-soft);
+    box-shadow: 0 8px 24px rgba(191, 91, 50, 0.08);
+}
+.story-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.story-item-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+.story-item-meta {
+    font-size: 12px;
+    color: var(--muted);
+}
+.story-item-arrow {
+    font-size: 14px;
+    color: var(--accent);
+    opacity: 0.6;
+    transition: transform 0.2s;
+}
+.story-item:hover .story-item-arrow {
+    transform: translateX(4px);
+    opacity: 1;
+}
+
+/* 故事阅读区 */
+.story-reader {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    animation: reader-fade-in 0.3s ease;
+}
+@keyframes reader-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.story-reader-header {
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+.story-reader-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 4px;
+}
+.story-reader-meta {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* 阅读器正文 Markdown 排版 */
+.story-reader-content {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    padding-right: 4px;
+    margin-bottom: 12px;
+    text-align: justify;
+}
+.story-reader-content h1,
+.story-reader-content h2,
+.story-reader-content h3 {
+    color: var(--accent);
+    margin: 16px 0 8px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.story-reader-content h1 { font-size: 18px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.story-reader-content h2 { font-size: 16px; }
+.story-reader-content h3 { font-size: 15px; }
+
+.story-reader-content p {
+    margin: 0 0 12px;
+}
+.story-reader-content blockquote {
+    margin: 14px 0;
+    padding: 8px 16px;
+    border-left: 3px solid var(--accent);
+    background: rgba(191, 91, 50, 0.06);
+    border-radius: 0 12px 12px 0;
+    color: var(--text);
+    font-style: italic;
+}
+.story-reader-content strong {
+    color: var(--accent);
+}
+
+.story-back-btn {
+    align-self: flex-start;
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 99px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.story-back-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+/* 自由划词浮动气泡 */
+.quote-action-bubble {
+    position: absolute;
+    z-index: 10000;
+    background: var(--paper-strong);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    padding: 8px 14px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    transform: translate(-50%, -100%) scale(1);
+    transform-origin: bottom center;
+    animation: bubble-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: auto;
+}
+.quote-action-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: var(--paper-strong) transparent transparent;
+    display: block;
+    width: 0;
+}
+.quote-action-bubble:hover {
+    transform: translate(-50%, -100%) scale(1.05);
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+.quote-action-bubble:hover::after {
+    border-color: var(--accent) transparent transparent;
+}
+
+@keyframes bubble-pop {
+    from { transform: translate(-50%, -85%) scale(0.8); opacity: 0; }
+    to { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+}
+
+.story-empty-tips {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+

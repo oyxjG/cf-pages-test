@@ -479,6 +479,11 @@
         closeLibraryModal();
       }
     });
+
+    window.addEventListener('quote-configs-updated', () => {
+      loadConfigs();
+      updateQuoteWidgetUI();
+    });
   }
 
   // ==========================================

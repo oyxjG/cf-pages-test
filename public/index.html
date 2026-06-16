@@ -437,16 +437,14 @@
                             </div>
                         </article>
 
-                        <article class="card tall">
+                        <article class="card tall story-card" id="story-panel">
                             <div class="accent-strip"></div>
-                            <div class="eyebrow">Exploration</div>
-                            <h4>愿望与足迹</h4>
-                            <p class="muted">
-                                记录向往的远方与心仪的好物。这不仅是清单，更是对未来的期许与生活的热爱。</p>
-                            <div class="chips">
-                                <span class="chip">旅行计划</span>
-                                <span class="chip warm">探店收藏</span>
-                                <span class="chip gold">心愿单</span>
+                            <div class="eyebrow">Oasis</div>
+                            <div class="story-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h4 style="margin: 0;">故事花园</h4>
+                            </div>
+                            <div class="story-body" id="story-body" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+                                <!-- 由 JS 渲染故事列表或阅读器 -->
                             </div>
                         </article>
                     </div>
@@ -785,6 +783,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 自由划词收藏浮动气泡 -->
+    <div class="quote-action-bubble" id="quote-select-bubble" style="display: none;">
+        ❤️ 收藏至一言
     </div>
 
     <!-- Toast Container -->

@@ -24,3 +24,11 @@ CREATE TABLE IF NOT EXISTS todos (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS stories (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  author TEXT DEFAULT '管理员',
+  content TEXT NOT NULL,
+  created_at INTEGER
+);
+

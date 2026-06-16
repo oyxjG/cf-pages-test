@@ -564,4 +564,228 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初始化时触发一次应用过滤逻辑，确保移动端等初始筛选生效
     applyLpFilter();
+
+    // ==========================================
+    // 7. 故事花园 (Story Oasis) 首页逻辑
+    // ==========================================
+    const storyBody = document.getElementById('story-body');
+    const selectBubble = document.getElementById('quote-select-bubble');
+
+    let activeStoryTitle = '';
+    let activeStorySelection = '';
+
+    const HOME_DEFAULT_STORIES = [
+        {
+            id: "1699990000001",
+            title: "星之继承者",
+            author: "詹姆斯·霍根",
+            content: "# 星之继承者\n\n> 那些遥望星空的人，早已把他们的一部分灵魂留在了群星之中。\n\n在月球的寒冷尘埃中，探索队发现了一具红色的宇航服，里面包裹着一具距今已有五万年的古老尸体。人类的科学界陷入了前所未有的震动。他并非来自未来，也并非天外来客，他那五万年前的心脏，曾跳动在与我们完全一致的人类胸膛中。\n\n**这一发现证明了，在人类文明之前，月球就曾是智慧生命的舞台。** 那么，我们究竟继承了什么？是跨越群星的血脉，还是对未知永恒的求索？",
+            createdAt: 1699990000001
+        },
+        {
+            id: "1699990000002",
+            title: "给岁月以文明",
+            author: "刘慈欣",
+            content: "# 给岁月以文明\n\n> “给岁月以文明，而不是给文明以岁月。” —— 这不仅是黑暗战役的信条，也是生命的最高尊严。\n\n在浩瀚的宇宙尺度中，个体的生命显得微不足道。三体舰队正在以光速十分之一的速度逼近地球，人类社会被巨大的绝望和虚无感所笼罩。然而，真正的文明不应当只是苟延残喘的年岁，而应当在这有限年岁中，绽放出思想、艺术与热爱的光芒。*哪怕最后只剩下一颗沙粒，它也曾反射过太阳的光辉。*",
+            createdAt: 1699990000002
+        }
+    ];
+
+    function getHomeStories() {
+        let stories = localStorage.getItem('garden-stories');
+        if (!stories) {
+            stories = JSON.stringify(HOME_DEFAULT_STORIES);
+            localStorage.setItem('garden-stories', stories);
+        }
+        return JSON.parse(stories);
+    }
+
+    // 简易 Regex Markdown 解析器
+    function parseStoryMarkdown(md) {
+        // 安全转义 HTML 标签防止注入
+        let html = md
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        // 基础 MD 元素解析
+        html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+        html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+        html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // 分段处理
+        const lines = html.split('\n');
+        const processedLines = lines.map(line => {
+            const trimmed = line.trim();
+            if (trimmed.length === 0) return '';
+            if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('</blockquote')) {
+                return line;
+            }
+            return `<p>${line}</p>`;
+        });
+
+        return processedLines.join('\n');
+    }
+
+    // 渲染故事列表
+    function renderHomeStories() {
+        if (!storyBody) return;
+        storyBody.innerHTML = '';
+
+        const stories = getHomeStories();
+
+        if (stories.length === 0) {
+            storyBody.innerHTML = `<div class="story-empty-tips">故事花园暂时空无一物 ☕<br>请登录超管账号前往后台管理发布新故事。</div>`;
+            return;
+        }
+
+        const listContainer = document.createElement('div');
+        listContainer.className = 'story-list';
+
+        stories.sort((a, b) => b.createdAt - a.createdAt).forEach(story => {
+            const item = document.createElement('div');
+            item.className = 'story-item';
+            item.innerHTML = `
+                <div class="story-item-info">
+                    <span class="story-item-title">${story.title}</span>
+                    <span class="story-item-meta">作者: ${story.author}</span>
+                </div>
+                <span class="story-item-arrow">→</span>
+            `;
+            item.addEventListener('click', () => showStoryReader(story));
+            listContainer.appendChild(item);
+        });
+
+        storyBody.appendChild(listContainer);
+    }
+
+    // 渲染进入阅读态
+    function showStoryReader(story) {
+        if (!storyBody) return;
+        storyBody.innerHTML = '';
+
+        activeStoryTitle = story.title;
+
+        const reader = document.createElement('div');
+        reader.className = 'story-reader';
+        reader.innerHTML = `
+            <div class="story-reader-header">
+                <h5 class="story-reader-title">${story.title}</h5>
+                <span class="story-reader-meta">作者: ${story.author}</span>
+            </div>
+            <div class="story-reader-content" id="story-reader-content">
+                ${parseStoryMarkdown(story.content)}
+            </div>
+            <button class="story-back-btn" id="story-back-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                返回列表
+            </button>
+        `;
+
+        const backBtn = reader.querySelector('#story-back-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                if (selectBubble) selectBubble.style.display = 'none';
+                renderHomeStories();
+            });
+        }
+
+        storyBody.appendChild(reader);
+    }
+
+    // 划词监听与浮动气泡计算
+    function handleSelectionChange(e) {
+        const readerContent = document.getElementById('story-reader-content');
+        if (!readerContent || !selectBubble) return;
+
+        // 如果鼠标点击的是气泡自身，跳过处理以防清除选区
+        if (e.target.closest('#quote-select-bubble')) return;
+
+        setTimeout(() => {
+            const selection = window.getSelection();
+            const selected = selection.toString().trim();
+
+            if (selected.length >= 2 && selected.length <= 100 && readerContent.contains(selection.anchorNode)) {
+                activeStorySelection = selected;
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+
+                // 考虑滚动高度定位
+                const scrollX = window.scrollX || window.pageXOffset;
+                const scrollY = window.scrollY || window.pageYOffset;
+
+                selectBubble.style.left = `${rect.left + rect.width / 2 + scrollX}px`;
+                selectBubble.style.top = `${rect.top + scrollY - 10}px`;
+                selectBubble.style.display = 'flex';
+            } else {
+                selectBubble.style.display = 'none';
+            }
+        }, 10);
+    }
+
+    // 首页全局划词与气泡隐藏处理
+    document.addEventListener('mouseup', handleSelectionChange);
+    document.addEventListener('touchend', handleSelectionChange);
+
+    // 气泡点击收藏逻辑
+    if (selectBubble) {
+        selectBubble.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!activeStorySelection) return;
+
+            const QUOTE_STATE_KEY = 'daily_quote_state_v1';
+            let quoteState = { favorites: [] };
+            const saved = localStorage.getItem(QUOTE_STATE_KEY);
+            
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && Array.isArray(parsed.favorites)) {
+                        quoteState = parsed;
+                    }
+                } catch (err) {}
+            }
+
+            const cleanText = activeStorySelection.replace(/\s+/g, '');
+            const exists = quoteState.favorites.some(q => q.text.replace(/\s+/g, '') === cleanText);
+
+            // 统一的精致 Toast 提示
+            const showHomeToast = (message, icon = '✨') => {
+                const container = document.getElementById('quote-toast-container') || document.body;
+                const toast = document.createElement('div');
+                toast.className = 'quote-toast';
+                toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('fade-out');
+                    setTimeout(() => toast.remove(), 300);
+                }, 2200);
+            };
+
+            if (exists) {
+                showHomeToast("该金句已在收藏夹中 ❤️", "💡");
+            } else {
+                quoteState.favorites.push({
+                    text: activeStorySelection,
+                    from: `《${activeStoryTitle}》`
+                });
+                localStorage.setItem(QUOTE_STATE_KEY, JSON.stringify(quoteState));
+
+                // 派发自定义更新事件触发一言组件载入新收藏
+                window.dispatchEvent(new CustomEvent('quote-configs-updated'));
+                showHomeToast("成功收录金句，已同步至每日一言 🌟", "❤️");
+            }
+
+            // 清理划词状态
+            window.getSelection().removeAllRanges();
+            selectBubble.style.display = 'none';
+        });
+    }
+
+    // 初始渲染故事
+    renderHomeStories();
 });

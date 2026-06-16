@@ -184,53 +184,111 @@
 
         <div class="nav-label">系统管理</div>
         <nav>
-            <a href="#" class="active">
+            <a href="#" id="tab-users" class="active">
                 <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 用户管理
             </a>
-            <!-- 预留其他管理项位置 -->
+            <a href="#" id="tab-stories">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                故事管理
+            </a>
         </nav>
     </aside>
 
     <main>
         <header>
-            <h1>用户列表</h1>
+            <h1 id="page-title">用户列表</h1>
             <div id="admin-info" style="font-size: 0.875rem; color: var(--text-muted);"></div>
         </header>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <span>总注册用户</span>
-                <h3 id="stat-total">0</h3>
+        <!-- 用户管理面板 -->
+        <div id="panel-users">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span>总注册用户</span>
+                    <h3 id="stat-total">0</h3>
+                </div>
+                <div class="stat-card">
+                    <span>活跃账号</span>
+                    <h3 id="stat-active">0</h3>
+                </div>
+                <div class="stat-card">
+                    <span>今日新增</span>
+                    <h3 id="stat-today">0</h3>
+                </div>
             </div>
-            <div class="stat-card">
-                <span>活跃账号</span>
-                <h3 id="stat-active">0</h3>
-            </div>
-            <div class="stat-card">
-                <span>今日新增</span>
-                <h3 id="stat-today">0</h3>
+
+            <div class="table-container">
+                <table id="user-table">
+                    <thead>
+                        <tr>
+                            <th>用户</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>电子邮箱</th>
+                            <th>手机号码</th>
+                            <th>最后登录</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list">
+                        <!-- JS 渲染 -->
+                    </tbody>
+                </table>
+                <div id="loading" class="loading">加载数据中...</div>
             </div>
         </div>
 
-        <div class="table-container">
-            <table id="user-table">
-                <thead>
-                    <tr>
-                        <th>用户</th>
-                        <th>角色</th>
-                        <th>状态</th>
-                        <th>电子邮箱</th>
-                        <th>手机号码</th>
-                        <th>最后登录</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="user-list">
-                    <!-- JS 渲染 -->
-                </tbody>
-            </table>
-            <div id="loading" class="loading">加载数据中...</div>
+        <!-- 故事管理面板 -->
+        <div id="panel-stories" style="display: none;">
+            <div class="story-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- 发布故事表单 -->
+                <div class="story-form-card" style="background: var(--panel); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.25rem;">✍️ 发布新故事</h3>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">故事标题</label>
+                        <input type="text" id="story-title-input" placeholder="输入故事标题..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-size: 0.875rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">作者</label>
+                        <input type="text" id="story-author-input" value="管理员" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-size: 0.875rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">导入 Markdown 文件 (.md)</label>
+                        <div id="story-dropzone" style="border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(0,0,0,0.1);">
+                            <span style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;">📄</span>
+                            <span style="font-size: 0.8125rem; color: var(--text-muted);">拖拽文件至此 或 点击选择文件</span>
+                            <input type="file" id="story-file-input" accept=".md" style="display: none;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">故事正文 (Markdown 源码)</label>
+                        <textarea id="story-content-textarea" rows="10" placeholder="# 标题...\n\n在此输入故事的正文..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-family: monospace; font-size: 0.875rem; resize: vertical; min-height: 150px;"></textarea>
+                    </div>
+                    <button id="story-publish-btn" style="width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;">发布故事</button>
+                </div>
+
+                <!-- 已发布故事列表 -->
+                <div class="story-list-card" style="background: var(--panel); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;">
+                    <h3 style="margin-top: 0; margin-bottom: 1.5rem;">📚 已发布故事列表</h3>
+                    <div class="table-container" style="flex: 1; max-height: 520px; overflow-y: auto;">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45%;">故事标题</th>
+                                    <th style="width: 20%;">作者</th>
+                                    <th style="width: 20%;">发布时间</th>
+                                    <th style="width: 15%;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="story-list-tbody">
+                                <!-- JS 动态渲染 -->
+                            </tbody>
+                        </table>
+                        <div id="story-list-empty" style="text-align: center; padding: 3rem; color: var(--text-muted); display: none;">暂无发布的故事 ☕</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -359,6 +417,209 @@
         }
 
         loadUsers();
+
+        // ==========================================
+        // 故事管理 Tab 页逻辑与数据交互
+        // ==========================================
+        const tabUsers = document.getElementById('tab-users');
+        const tabStories = document.getElementById('tab-stories');
+        const panelUsers = document.getElementById('panel-users');
+        const panelStories = document.getElementById('panel-stories');
+        const pageTitle = document.getElementById('page-title');
+
+        if (tabUsers && tabStories && panelUsers && panelStories) {
+            tabUsers.addEventListener('click', (e) => {
+                e.preventDefault();
+                tabUsers.classList.add('active');
+                tabStories.classList.remove('active');
+                panelUsers.style.display = 'block';
+                panelStories.style.display = 'none';
+                pageTitle.innerText = "用户列表";
+            });
+
+            tabStories.addEventListener('click', (e) => {
+                e.preventDefault();
+                tabStories.classList.add('active');
+                tabUsers.classList.remove('active');
+                panelUsers.style.display = 'none';
+                panelStories.style.display = 'block';
+                pageTitle.innerText = "故事发布与管理";
+                loadStories();
+            });
+        }
+
+        // 初始化一些经典故事以防本地为空
+        const DEFAULT_STORIES = [
+            {
+                id: "1699990000001",
+                title: "星之继承者",
+                author: "詹姆斯·霍根",
+                content: "# 星之继承者\n\n> 那些遥望星空的人，早已把他们的一部分灵魂留在了群星之中。\n\n在月球的寒冷尘埃中，探索队发现了一具红色的宇航服，里面包裹着一具距今已有五万年的古老尸体。人类的科学界陷入了前所未有的震动。他并非来自未来，也并非天外来客，他那五万年前的心脏，曾跳动在与我们完全一致的人类胸膛中。\n\n**这一发现证明了，在人类文明之前，月球就曾是智慧生命的舞台。** 那么，我们究竟继承了什么？是跨越群星的血脉，还是对未知永恒的求索？",
+                createdAt: 1699990000001
+            },
+            {
+                id: "1699990000002",
+                title: "给岁月以文明",
+                author: "刘慈欣",
+                content: "# 给岁月以文明\n\n> “给岁月以文明，而不是给文明以岁月。” —— 这不仅是黑暗战役的信条，也是生命的最高尊严。\n\n在浩瀚的宇宙尺度中，个体的生命显得微不足道。三体舰队正在以光速十分之一的速度逼近地球，人类社会被巨大的绝望和虚无感所笼罩。然而，真正的文明不应当只是苟延残喘的年岁，而应当在这有限的年岁中，绽放出思想、艺术与热爱的光芒。*哪怕最后只剩下一颗沙粒，它也曾反射过太阳的光辉。*",
+                createdAt: 1699990000002
+            }
+        ];
+
+        function getStories() {
+            let stories = localStorage.getItem('garden-stories');
+            if (!stories) {
+                stories = JSON.stringify(DEFAULT_STORIES);
+                localStorage.setItem('garden-stories', stories);
+            }
+            return JSON.parse(stories);
+        }
+
+        function saveStories(stories) {
+            localStorage.setItem('garden-stories', JSON.stringify(stories));
+        }
+
+        function loadStories() {
+            const stories = getStories();
+            const tbody = document.getElementById('story-list-tbody');
+            const emptyEl = document.getElementById('story-list-empty');
+            
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (stories.length === 0) {
+                if (emptyEl) emptyEl.style.display = 'block';
+                return;
+            }
+
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            stories.sort((a, b) => b.createdAt - a.createdAt).forEach((story) => {
+                const dateStr = new Date(story.createdAt).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 600; color: var(--text);">${story.title}</td>
+                    <td style="color: var(--text-muted);">${story.author}</td>
+                    <td style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</td>
+                    <td>
+                        <button class="btn-action btn-delete" onclick="deleteStory('${story.id}')">下架</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        window.deleteStory = function(id) {
+            if (!confirm('确定要下架这篇故事吗？下架后首页故事卡片将不再显示该故事。')) return;
+            let stories = getStories();
+            stories = stories.filter(s => s.id !== id);
+            saveStories(stories);
+            loadStories();
+        };
+
+        // 拖拽与发布逻辑绑定
+        const dropzone = document.getElementById('story-dropzone');
+        const fileInput = document.getElementById('story-file-input');
+        const titleInput = document.getElementById('story-title-input');
+        const authorInput = document.getElementById('story-author-input');
+        const contentTextarea = document.getElementById('story-content-textarea');
+        const publishBtn = document.getElementById('story-publish-btn');
+
+        if (dropzone && fileInput) {
+            dropzone.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+            // 拖拽高亮样式
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'var(--primary)';
+                dropzone.style.background = 'rgba(99, 102, 241, 0.05)';
+            });
+
+            const resetDropzoneStyle = () => {
+                dropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+                dropzone.style.background = 'rgba(0,0,0,0.1)';
+            };
+
+            dropzone.addEventListener('dragleave', resetDropzoneStyle);
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                resetDropzoneStyle();
+                if (e.dataTransfer.files.length > 0) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.md')) {
+                alert('只支持导入 Markdown (.md) 格式的文件！');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                if (contentTextarea) contentTextarea.value = text;
+                
+                // 智能解析：如果首行是 # 标题，自动提取标题填入输入框
+                const firstLine = text.trim().split('\n')[0];
+                if (firstLine.startsWith('# ')) {
+                    const extractedTitle = firstLine.substring(2).trim();
+                    if (titleInput) titleInput.value = extractedTitle;
+                } else {
+                    // 使用文件名作为默认标题
+                    const defaultTitle = file.name.substring(0, file.name.lastIndexOf('.'));
+                    if (titleInput) titleInput.value = defaultTitle;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        if (publishBtn) {
+            publishBtn.addEventListener('click', () => {
+                const title = titleInput.value.trim();
+                const author = authorInput.value.trim() || '管理员';
+                const content = contentTextarea.value.trim();
+
+                if (!title || !content) {
+                    alert('标题和内容不能为空！');
+                    return;
+                }
+
+                const newStory = {
+                    id: Date.now().toString(),
+                    title,
+                    author,
+                    content,
+                    createdAt: Date.now()
+                };
+
+                const stories = getStories();
+                stories.push(newStory);
+                saveStories(stories);
+                
+                // 清空表单
+                titleInput.value = '';
+                authorInput.value = '';
+                contentTextarea.value = '';
+                if (fileInput) fileInput.value = '';
+
+                alert('故事发布成功！');
+                loadStories();
+            });
+        }
     </script>
 </body>
 </html>
