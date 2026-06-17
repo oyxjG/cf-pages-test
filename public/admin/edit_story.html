@@ -607,14 +607,42 @@
                 html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
                 html = html.replace(/^[-*_]{3,}$/gm, '<hr>');
 
-                // 4. 还原引用标签
-                html = html.replace(/^__BLOCKQUOTE_PREFIX__(.*?)$/gm, '<blockquote>$1</blockquote>');
+                // 4. 合并连续的引用行并渲染为同一个 <blockquote>
+                html = html.replace(/(?:^__BLOCKQUOTE_PREFIX__(.*?)(?:\r?\n|$))+/gm, (match) => {
+                    const lines = match.split(/\r?\n/);
+                    const innerContents = [];
+                    lines.forEach(line => {
+                        if (line.startsWith('__BLOCKQUOTE_PREFIX__')) {
+                            innerContents.push(line.replace(/^__BLOCKQUOTE_PREFIX__/, ''));
+                        }
+                    });
+                    
+                    const processedLines = innerContents.map(content => {
+                        let clean = content;
+                        if (clean.endsWith('\\')) {
+                            clean = clean.slice(0, -1) + '<br>';
+                        }
+                        return clean;
+                    });
+
+                    // 精准处理换行符拼接，避免由于前一行带有 \ 导致多余的 <br><br>
+                    let mergedContent = '';
+                    processedLines.forEach((line, index) => {
+                        mergedContent += line;
+                        if (index < processedLines.length - 1) {
+                            if (!line.endsWith('<br>')) {
+                                mergedContent += '<br>';
+                            }
+                        }
+                    });
+                    return `<blockquote>${mergedContent}</blockquote>\n`;
+                });
 
                 // 5. 渲染行内样式：加粗和斜体
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-                // 6. 按行拆分，对非结构性标签行包裹 <p>，排除 <hr>
+                // 6. 按行拆分，对非结构性标签行包裹 <p>，排除 <hr> 和 <blockquote>
                 const lines = html.split('\n');
                 const processed = lines.map(line => {
                     const trimmed = line.trim();
