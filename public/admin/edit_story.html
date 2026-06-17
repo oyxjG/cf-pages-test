@@ -592,23 +592,39 @@
                     return `<p style="color: var(--text-muted); font-style: italic;">故事正文内容为空，请在左侧编辑器中开始创作 ☕</p>`;
                 }
                 
-                let html = md
+                // 1. 临时占位引用语法开头的 >，防止其被转义为 &gt;
+                let html = md.replace(/^>(?:[ \t]+(.*))?$/gm, '__BLOCKQUOTE_PREFIX__$1');
+
+                // 2. 转义特殊字符，防御 XSS 攻击
+                html = html
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;");
 
+                // 3. 渲染标题与水平分割线 (--- / *** / ___)
                 html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
                 html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
                 html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
-                html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+                html = html.replace(/^[-*_]{3,}$/gm, '<hr>');
+
+                // 4. 还原引用标签
+                html = html.replace(/^__BLOCKQUOTE_PREFIX__(.*?)$/gm, '<blockquote>$1</blockquote>');
+
+                // 5. 渲染行内样式：加粗和斜体
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
+                // 6. 按行拆分，对非结构性标签行包裹 <p>，排除 <hr>
                 const lines = html.split('\n');
                 const processed = lines.map(line => {
                     const trimmed = line.trim();
                     if (trimmed.length === 0) return '';
-                    if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('</blockquote')) {
+                    if (
+                        trimmed.startsWith('<h') || 
+                        trimmed.startsWith('<blockquote') || 
+                        trimmed.startsWith('</blockquote') || 
+                        trimmed.startsWith('<hr')
+                    ) {
                         return line;
                     }
                     return `<p>${line}</p>`;
