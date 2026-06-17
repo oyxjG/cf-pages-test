@@ -397,6 +397,72 @@
             color: var(--accent);
             font-weight: 700;
         }
+
+        /* 自定义 Modal 样式 */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            width: 420px;
+            max-width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transform: scale(0.9);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .modal-backdrop.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
     </style>
 </head>
 <body>
@@ -492,6 +558,45 @@
     <script src="/theme.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- 全局自定义模态框（Modal）控制核心逻辑 ---
+            const customModal = document.getElementById('custom-modal-backdrop');
+            const modalTitle = document.getElementById('custom-modal-title');
+            const modalMsg = document.getElementById('custom-modal-message');
+            const modalConfirmBtn = document.getElementById('custom-modal-confirm-btn');
+            const modalCancelBtn = document.getElementById('custom-modal-cancel-btn');
+
+            let modalPromiseResolver = null;
+
+            function showModal(message, title = '提示', isConfirm = false) {
+                return new Promise((resolve) => {
+                    modalTitle.innerText = title;
+                    modalMsg.innerText = message;
+                    modalCancelBtn.style.display = isConfirm ? 'inline-block' : 'none';
+                    
+                    // 激活显示
+                    customModal.classList.add('active');
+                    modalPromiseResolver = resolve;
+                });
+            }
+
+            function closeModal(result) {
+                customModal.classList.remove('active');
+                if (modalPromiseResolver) {
+                    modalPromiseResolver(result);
+                    modalPromiseResolver = null;
+                }
+            }
+
+            modalConfirmBtn.addEventListener('click', () => closeModal(true));
+            modalCancelBtn.addEventListener('click', () => closeModal(false));
+            
+            // 点击背景默认关闭（confirm 模式为 cancel，alert 模式直接关闭）
+            customModal.addEventListener('click', (e) => {
+                if (e.target === customModal) {
+                    closeModal(false);
+                }
+            });
+
             // 1. 鉴权与登录状态校验
             function parseJwt(token) {
                 try {
@@ -510,8 +615,9 @@
             const user = token ? parseJwt(token) : null;
 
             if (!user || user.role !== 'admin') {
-                alert('您没有访问权限！请登录管理员账号。');
-                window.location.href = '/index.html';
+                showModal('您没有访问权限！请登录管理员账号。', '权限错误', false).then(() => {
+                    window.location.href = '/index.html';
+                });
                 return;
             }
 
@@ -587,8 +693,9 @@
                     }
                     updatePreview();
                 } else {
-                    alert('要编辑的故事不存在或已被下架。');
-                    window.location.href = '/admin/index.html#stories';
+                    showModal('要编辑的故事不存在或已被下架。', '加载失败', false).then(() => {
+                        window.location.href = '/admin/index.html#stories';
+                    });
                 }
             }
 
@@ -774,7 +881,7 @@
                             };
                             reader.readAsText(file);
                         } else {
-                            alert('只支持导入 Markdown (.md) 格式的文件！');
+                            showModal('只支持导入 Markdown (.md) 格式的文件！', '格式错误', false);
                         }
                     }
                 });
@@ -787,7 +894,7 @@
                 const content = markdownInput.value;
 
                 if (!title || !content.trim()) {
-                    alert('标题和故事内容不能为空！');
+                    await showModal('标题和故事内容不能为空！', '提示', false);
                     return;
                 }
 
@@ -816,7 +923,7 @@
                     if (res.ok) {
                         const data = await res.json();
                         if (data.ok) {
-                            alert(status === 1 ? '故事已成功发布！' : '草稿保存成功！');
+                            await showModal(status === 1 ? '故事已成功发布！' : '草稿保存成功！', '保存成功', false);
                         } else {
                             throw new Error(data.msg || '保存失败');
                         }
@@ -846,7 +953,7 @@
                         allStories.push(newStoryObj);
                     }
                     localStorage.setItem('garden-stories', JSON.stringify(allStories));
-                    alert(status === 1 ? '故事已成功发布（已保存至本地缓存）！' : '草稿保存成功（已保存至本地缓存）！');
+                    await showModal(status === 1 ? '故事已成功发布（已保存至本地缓存）！' : '草稿保存成功（已保存至本地缓存）！', '保存成功', false);
                 }
 
                 // 跳转回故事管理面板
@@ -909,9 +1016,9 @@
             // 12. 清空编辑器按钮绑定
             const btnClearEditor = document.getElementById('btn-clear-editor');
             if (btnClearEditor) {
-                btnClearEditor.addEventListener('click', (e) => {
+                btnClearEditor.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    if (confirm('确认清空编辑器里的所有内容吗？')) {
+                    if (await showModal('确认清空编辑器里的所有内容吗？', '确认操作', true)) {
                         markdownInput.value = '';
                         triggerPreviewWithDebounce();
                     }
@@ -958,5 +1065,16 @@
             });
         });
     </script>
+    <!-- 全局自定义提示/确认模态框 -->
+    <div class="modal-backdrop" id="custom-modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header" id="custom-modal-title">提示</div>
+            <div class="modal-body" id="custom-modal-message">提示内容</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="custom-modal-cancel-btn">取消</button>
+                <button class="btn btn-primary" id="custom-modal-confirm-btn">确定</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
