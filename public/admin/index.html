@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,7 @@
         aside {
             width: 260px;
             background: var(--panel);
-            border-right: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
             padding: 2rem;
             display: flex;
             flex-direction: column;
@@ -71,7 +72,7 @@
 
         nav a:hover {
             color: var(--text);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         nav a.active {
@@ -109,17 +110,24 @@
             background: var(--panel);
             padding: 1.5rem;
             border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .stat-card span { color: var(--text-muted); font-size: 0.875rem; }
-        .stat-card h3 { margin: 0.5rem 0 0; font-size: 1.5rem; }
+        .stat-card span {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .stat-card h3 {
+            margin: 0.5rem 0 0;
+            font-size: 1.5rem;
+        }
 
         /* Table */
         .table-container {
             background: var(--panel);
             border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             overflow: hidden;
         }
 
@@ -131,7 +139,7 @@
         th {
             text-align: left;
             padding: 1rem 1.5rem;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -140,7 +148,7 @@
 
         td {
             padding: 1rem 1.5rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.875rem;
         }
 
@@ -151,12 +159,19 @@
             font-weight: 600;
         }
 
-        .badge-success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
-        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
 
         .btn-action {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text);
             padding: 0.4rem 0.8rem;
             border-radius: 8px;
@@ -165,19 +180,35 @@
             margin-right: 0.5rem;
         }
 
-        .btn-action:hover { background: rgba(255,255,255,0.1); }
-        .btn-delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
 
-        .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+        .btn-delete {
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
     </style>
 </head>
+
 <body>
     <aside>
         <div class="logo">ADMIN PANEL</div>
-        
+
         <div style="margin-bottom: 2rem;">
-            <a href="/index.html" style="display: flex; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.875rem; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s;">
-                <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <a href="/index.html"
+                style="display: flex; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.875rem; padding: 0.75rem 1rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s;">
+                <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
                 返回首页
             </a>
         </div>
@@ -185,11 +216,21 @@
         <div class="nav-label">系统管理</div>
         <nav>
             <a href="#" id="tab-users" class="active">
-                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
                 用户管理
             </a>
             <a href="#" id="tab-stories">
-                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
                 故事管理
             </a>
         </nav>
@@ -241,59 +282,46 @@
 
         <!-- 故事管理面板 -->
         <div id="panel-stories" style="display: none;">
-            <div class="story-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <!-- 发布故事表单 -->
-                <div class="story-form-card" style="background: var(--panel); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0; font-size: 1.25rem;">✍️ 发布新故事</h3>
-                        <button onclick="window.location.href='/admin/edit_story.html'" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">✨ 进入高级编辑器</button>
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">故事标题</label>
-                        <input type="text" id="story-title-input" placeholder="输入故事标题..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-size: 0.875rem;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">作者</label>
-                        <input type="text" id="story-author-input" value="管理员" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-size: 0.875rem;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">导入 Markdown 文件 (.md)</label>
-                        <div id="story-dropzone" style="border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(0,0,0,0.1);">
-                            <span style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;">📄</span>
-                            <span style="font-size: 0.8125rem; color: var(--text-muted);">拖拽文件至此 或 点击选择文件</span>
-                            <input type="file" id="story-file-input" accept=".md" style="display: none;">
+            <div class="story-list-card"
+                style="background: var(--panel); padding: 1.8rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;">
+                
+                <!-- 头部区域，包含子 Tab 和新增故事按钮 -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <!-- 子选项卡 -->
+                        <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.25rem;">
+                            <button id="subtab-published" class="active"
+                                style="background: none; border: none; color: var(--text); font-size: 0.95rem; font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; transition: all 0.2s; border-bottom: 2px solid var(--primary); outline: none;">📚
+                                已发布 (<span id="count-published">0</span>)</button>
+                            <button id="subtab-drafts"
+                                style="background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; transition: all 0.2s; border-bottom: 2px solid transparent; outline: none;">📁
+                                草稿箱 (<span id="count-drafts">0</span>)</button>
                         </div>
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">故事正文 (Markdown 源码)</label>
-                        <textarea id="story-content-textarea" rows="10" placeholder="# 标题...\n\n在此输入故事的正文..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1rem; border-radius: 10px; color: var(--text); font-family: monospace; font-size: 0.875rem; resize: vertical; min-height: 150px;"></textarea>
-                    </div>
-                    <button id="story-publish-btn" style="width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;">直接发布故事</button>
+                    
+                    <button onclick="window.location.href='/admin/edit_story.html'"
+                        style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-size: 0.875rem; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); transition: all 0.2s;"
+                        onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        ✨ 新增故事
+                    </button>
                 </div>
 
-                <!-- 故事列表与草稿箱 -->
-                <div class="story-list-card" style="background: var(--panel); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;">
-                    <!-- 子选项卡 -->
-                    <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <button id="subtab-published" class="active" style="background: none; border: none; color: var(--text); font-size: 0.95rem; font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; transition: all 0.2s; border-bottom: 2px solid var(--primary); outline: none;">📚 已发布 (<span id="count-published">0</span>)</button>
-                        <button id="subtab-drafts" style="background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; transition: all 0.2s; border-bottom: 2px solid transparent; outline: none;">📁 草稿箱 (<span id="count-drafts">0</span>)</button>
-                    </div>
-                    
-                    <div class="table-container" style="flex: 1; max-height: 520px; overflow-y: auto;">
-                        <table style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40%;">故事标题</th>
-                                    <th style="width: 20%;">作者</th>
-                                    <th style="width: 20%;">修改时间</th>
-                                    <th style="width: 20%;">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="story-list-tbody">
-                                <!-- JS 动态渲染 -->
-                            </tbody>
-                        </table>
-                        <div id="story-list-empty" style="text-align: center; padding: 3rem; color: var(--text-muted); display: none;">暂无相关故事 ☕</div>
+                <div class="table-container" style="flex: 1; max-height: 600px; overflow-y: auto;">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 45%;">故事标题</th>
+                                <th style="width: 20%;">作者</th>
+                                <th style="width: 20%;">修改时间</th>
+                                <th style="width: 15%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="story-list-tbody">
+                            <!-- JS 动态渲染 -->
+                        </tbody>
+                    </table>
+                    <div id="story-list-empty"
+                        style="text-align: center; padding: 3rem; color: var(--text-muted); display: none;">暂无相关故事 ☕
                     </div>
                 </div>
             </div>
@@ -306,7 +334,7 @@
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                 }).join(''));
                 return JSON.parse(jsonPayload);
@@ -365,14 +393,14 @@
         function renderTable(users, stats) {
             const list = document.getElementById('user-list');
             list.innerHTML = '';
-            
+
             // 使用后端返回的精确统计
             if (stats) {
                 document.getElementById('stat-total').innerText = stats.total;
                 document.getElementById('stat-active').innerText = stats.active;
                 document.getElementById('stat-today').innerText = stats.today;
             }
-            
+
             users.forEach(u => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -528,7 +556,7 @@
         async function loadStories() {
             const tbody = document.getElementById('story-list-tbody');
             const emptyEl = document.getElementById('story-list-empty');
-            
+
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 20px;">正在加载故事列表...</td></tr>';
 
@@ -604,7 +632,7 @@
         }
 
         // 下架故事逻辑：变为草稿
-        window.depublishStory = async function(id) {
+        window.depublishStory = async function (id) {
             if (!confirm('确定要下架这篇故事吗？下架后首页将不再显示，并会移入故事草稿箱。')) return;
             try {
                 const res = await adminFetch('/api/admin/stories/update-status', {
@@ -634,7 +662,7 @@
         };
 
         // 重新发布草稿逻辑
-        window.publishDraft = async function(id) {
+        window.publishDraft = async function (id) {
             try {
                 const res = await adminFetch('/api/admin/stories/update-status', {
                     method: 'POST',
@@ -663,12 +691,12 @@
         };
 
         // 编辑故事逻辑：跳转至双栏编辑器
-        window.editStory = function(id) {
+        window.editStory = function (id) {
             window.location.href = `/admin/edit_story.html?id=${id}`;
         };
 
         // 彻底删除草稿逻辑
-        window.deleteStory = async function(id) {
+        window.deleteStory = async function (id) {
             if (!confirm('确定要彻底删除该故事草稿吗？此操作不可逆。')) return;
             try {
                 const res = await adminFetch('/api/admin/stories/delete', {
@@ -692,122 +720,7 @@
             loadStories();
         };
 
-        // 拖拽与发布逻辑绑定
-        const dropzone = document.getElementById('story-dropzone');
-        const fileInput = document.getElementById('story-file-input');
-        const titleInput = document.getElementById('story-title-input');
-        const authorInput = document.getElementById('story-author-input');
-        const contentTextarea = document.getElementById('story-content-textarea');
-        const publishBtn = document.getElementById('story-publish-btn');
-
-        if (dropzone && fileInput) {
-            dropzone.addEventListener('click', () => fileInput.click());
-            
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    handleFile(e.target.files[0]);
-                }
-            });
-
-            // 拖拽高亮样式
-            dropzone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropzone.style.borderColor = 'var(--primary)';
-                dropzone.style.background = 'rgba(99, 102, 241, 0.05)';
-            });
-
-            const resetDropzoneStyle = () => {
-                dropzone.style.borderColor = 'rgba(255,255,255,0.1)';
-                dropzone.style.background = 'rgba(0,0,0,0.1)';
-            };
-
-            dropzone.addEventListener('dragleave', resetDropzoneStyle);
-            dropzone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                resetDropzoneStyle();
-                if (e.dataTransfer.files.length > 0) {
-                    handleFile(e.dataTransfer.files[0]);
-                }
-            });
-        }
-
-        function handleFile(file) {
-            if (!file.name.endsWith('.md')) {
-                alert('只支持导入 Markdown (.md) 格式的文件！');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target.result;
-                if (contentTextarea) contentTextarea.value = text;
-                
-                // 智能解析：如果首行是 # 标题，自动提取标题填入输入框
-                const firstLine = text.trim().split('\n')[0];
-                if (firstLine.startsWith('# ')) {
-                    const extractedTitle = firstLine.substring(2).trim();
-                    if (titleInput) titleInput.value = extractedTitle;
-                } else {
-                    // 使用文件名作为默认标题
-                    const defaultTitle = file.name.substring(0, file.name.lastIndexOf('.'));
-                    if (titleInput) titleInput.value = defaultTitle;
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        if (publishBtn) {
-            publishBtn.addEventListener('click', async () => {
-                const title = titleInput.value.trim();
-                const author = authorInput.value.trim() || '管理员';
-                const content = contentTextarea.value.trim();
-
-                if (!title || !content) {
-                    alert('标题和内容不能为空！');
-                    return;
-                }
-
-                const storyId = Date.now().toString();
-                const newStory = {
-                    id: storyId,
-                    title,
-                    author,
-                    content,
-                    status: 1, // 状态码 1 代表发布
-                    createdAt: Date.now()
-                };
-
-                try {
-                    const res = await adminFetch('/api/admin/stories/save', {
-                        method: 'POST',
-                        body: JSON.stringify(newStory)
-                    });
-                    if (res && res.ok) {
-                        const data = await res.json();
-                        if (data.ok) {
-                            alert('故事发布成功！');
-                        } else {
-                            throw new Error(data.msg || '保存失败');
-                        }
-                    } else {
-                        throw new Error('HTTP status ' + (res ? res.status : 'unknown'));
-                    }
-                } catch (err) {
-                    console.error('保存至 D1 数据库失败，降级保存至 LocalStorage:', err);
-                    const stories = getStories();
-                    stories.push(newStory);
-                    saveStories(stories);
-                    alert('故事发布成功（已保存至本地缓存）！');
-                }
-                
-                // 清空表单
-                titleInput.value = '';
-                authorInput.value = '管理员';
-                contentTextarea.value = '';
-                if (fileInput) fileInput.value = '';
-
-                loadStories();
-            });
-        }
     </script>
 </body>
+
 </html>
