@@ -513,16 +513,120 @@
         .scroll-speed-slider::-webkit-slider-thumb:hover {
             transform: scale(1.2);
         }
+
+        /* 故事大厅样式 */
+        .stories-hall {
+            animation: hall-fade-in 0.4s ease;
+        }
+        @keyframes hall-fade-in {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hall-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .hall-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 12px;
+            letter-spacing: -0.02em;
+        }
+        .hall-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin: 0;
+            font-weight: 500;
+        }
+        .hall-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .hall-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .hall-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .hall-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 30px rgba(239, 139, 87, 0.12);
+        }
+        [data-theme="light"] .hall-card:hover {
+            box-shadow: 0 12px 30px rgba(191, 91, 50, 0.08);
+        }
+        .hall-card:hover::before {
+            opacity: 0.8;
+        }
+        .hall-card-title {
+            font-size: 1.125rem;
+            font-weight: 800;
+            color: var(--text-main);
+            z-index: 1;
+            margin: 0;
+            transition: color 0.2s;
+        }
+        .hall-card:hover .hall-card-title {
+            color: var(--accent);
+        }
+        .hall-card-desc {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            flex-grow: 1;
+            z-index: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-align: justify;
+        }
+        .hall-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 8px;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
     <header>
-        <a href="/index.html" class="back-btn">
+        <a href="/index.html" class="back-btn" id="back-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            返回主页
+            <span id="back-btn-text">返回主页</span>
         </a>
         <div class="logo-text">故事花园 · 沉浸阅读</div>
         <div style="width: 100px;"></div> <!-- 占位保持左右平衡 -->
@@ -558,10 +662,23 @@
             // 1. 获取 URL 故事 ID
             const urlParams = new URLSearchParams(window.location.search);
             const storyId = urlParams.get('id');
+            const backBtn = document.getElementById('back-btn');
+            const backBtnText = document.getElementById('back-btn-text');
+            const readingSettings = document.querySelector('.reading-settings-wrapper');
 
             if (!storyId) {
-                renderError('未指定阅读的故事，请从主页列表进入 ☕');
-                return;
+                // 大厅列表模式：自适应调整
+                if (backBtn) backBtn.href = '/index.html';
+                if (backBtnText) backBtnText.innerText = '返回首页';
+                if (readingSettings) readingSettings.style.display = 'none';
+                if (progressBar) progressBar.style.display = 'none';
+                loadStoriesHall();
+            } else {
+                // 单篇文章阅读模式
+                if (backBtn) backBtn.href = '/story.html';
+                if (backBtnText) backBtnText.innerText = '返回大厅';
+                // loadStory 将在后面定义后执行，此处由于 JS 函数提升可直接调用
+                loadStory();
             }
 
             // 3. 极简 Regex Markdown 解析函数
@@ -792,7 +909,81 @@
                 articleContent = document.getElementById('article-content');
             }
 
-            loadStory();
+            // 2.2 载入并渲染故事列表大厅
+            async function loadStoriesHall() {
+                articleBody.innerHTML = '<div class="empty-tips">正在探索故事大厅...</div>';
+                let stories = [];
+                let isLocal = false;
+
+                try {
+                    const res = await fetch('/api/stories');
+                    if (res.ok) {
+                        const resData = await res.json();
+                        if (resData.ok && Array.isArray(resData.data)) {
+                            stories = resData.data;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('云端故事大厅获取失败，降级使用本地存储:', err);
+                }
+
+                if (stories.length === 0) {
+                    stories = JSON.parse(localStorage.getItem('garden-stories') || '[]');
+                    stories = stories.filter(s => s.status === 1 || s.status === 'published');
+                    isLocal = true;
+                }
+
+                if (stories.length === 0) {
+                    articleBody.innerHTML = `
+                        <div class="empty-tips">
+                            <p>故事探索大厅暂时空空如也 ☕</p>
+                            <a href="/index.html" class="back-btn" style="margin-top: 16px;">返回首页</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                document.title = '故事探索大厅 - 故事花园';
+
+                // 生成大厅 HTML
+                const hallHtml = `
+                    <div class="stories-hall">
+                        <div class="hall-header">
+                            <h1 class="hall-title">🌿 故事花园大厅</h1>
+                            <p class="hall-subtitle">漫步数字温室，探索智慧与灵感之花</p>
+                        </div>
+                        <div class="hall-grid" id="hall-grid"></div>
+                    </div>
+                `;
+                articleBody.innerHTML = hallHtml;
+                const gridContainer = document.getElementById('hall-grid');
+
+                stories.sort((a, b) => b.createdAt - a.createdAt).forEach(story => {
+                    // 清洗 markdown 提取摘要文本
+                    const cleanDesc = (story.content || '')
+                        .replace(/[#*`>_\-]/g, '') // 去除 markdown 语法标记
+                        .replace(/\[.*?\]\(.*?\)/g, '') // 去除链接文本和地址
+                        .replace(/\r?\n/g, ' ') // 换行替换为空格
+                        .trim()
+                        .substring(0, 95);
+                    const descText = cleanDesc ? `${cleanDesc}...` : '这篇故事尚无简要摘要。';
+
+                    const card = document.createElement('div');
+                    card.className = 'hall-card';
+                    card.innerHTML = `
+                        <h3 class="hall-card-title">${story.title}</h3>
+                        <div class="hall-card-desc">${descText}</div>
+                        <div class="hall-card-meta">
+                            <span>作者: ${story.author}</span>
+                            <span>${new Date(story.createdAt).toLocaleDateString('zh-CN')}</span>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        window.location.href = `/story.html?id=${story.id}${isLocal ? '&local=true' : ''}`;
+                    });
+                    gridContainer.appendChild(card);
+                });
+            }
 
             function renderError(msg) {
                 articleBody.innerHTML = `

@@ -635,7 +635,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const listContainer = document.createElement('div');
         listContainer.className = 'story-list';
 
-        stories.sort((a, b) => b.createdAt - a.createdAt).forEach(story => {
+        const sortedStories = stories.sort((a, b) => b.createdAt - a.createdAt);
+        const displayedStories = sortedStories.slice(0, 3);
+
+        displayedStories.forEach(story => {
             const item = document.createElement('div');
             item.className = 'story-item';
             item.innerHTML = `
@@ -650,6 +653,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             listContainer.appendChild(item);
         });
+
+        if (sortedStories.length > 3) {
+            const moreBtn = document.createElement('a');
+            moreBtn.className = 'story-more-btn';
+            moreBtn.href = '/story.html';
+            moreBtn.target = '_blank';
+            moreBtn.innerHTML = `查看全部故事 (${sortedStories.length}) <span style="font-size: 11px;">➔</span>`;
+            listContainer.appendChild(moreBtn);
+        }
 
         storyBody.appendChild(listContainer);
     }
