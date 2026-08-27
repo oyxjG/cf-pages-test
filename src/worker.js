@@ -250,6 +250,125 @@ export default {
         return methodNotAllowed();
       }
 
+      // 用户工具偏好设置 (收藏、最近使用等)
+      if (pathname === "/api/user/preferences") {
+        const db = env.apitest_bind;
+        if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+        const userId = authUser.userId;
+
+        if (request.method === "GET") {
+          try {
+            const row = await db.prepare(
+              "SELECT favorites, recent_tools, custom_settings FROM user_preferences WHERE user_id = ?"
+            ).bind(userId).first();
+
+            if (!row) {
+              return json({
+                ok: true,
+                data: { favorites: [], recentTools: [], customSettings: {} }
+              });
+            }
+
+            return json({
+              ok: true,
+              data: {
+                favorites: JSON.parse(row.favorites || "[]"),
+                recentTools: JSON.parse(row.recent_tools || "[]"),
+                customSettings: JSON.parse(row.custom_settings || "{}")
+              }
+            });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        if (request.method === "POST") {
+          const body = await parseJsonSafe(request);
+          if (!body) return json({ ok: false, msg: "Invalid JSON body" }, 400);
+
+          const favoritesStr = JSON.stringify(Array.isArray(body.favorites) ? body.favorites : []);
+          const recentStr = JSON.stringify(Array.isArray(body.recentTools) ? body.recentTools : []);
+          const settingsStr = JSON.stringify(typeof body.customSettings === 'object' ? body.customSettings : {});
+
+          try {
+            await db.prepare(`
+              INSERT INTO user_preferences (user_id, favorites, recent_tools, custom_settings, updated_at)
+              VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
+              ON CONFLICT(user_id) DO UPDATE SET
+                favorites = excluded.favorites,
+                recent_tools = excluded.recent_tools,
+                custom_settings = excluded.custom_settings,
+                updated_at = datetime('now', 'localtime')
+            `).bind(userId, favoritesStr, recentStr, settingsStr).run();
+
+            return json({ ok: true, msg: "偏好设置保存成功" });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        return methodNotAllowed();
+      }
+
+      // 云端代码片段 / 便签管理
+      if (pathname === "/api/snippets") {
+        const db = env.apitest_bind;
+        if (!db) return json({ ok: false, msg: "D1 database not configured" }, 500);
+        const userId = authUser.userId;
+
+        if (request.method === "GET") {
+          try {
+            const { results } = await db.prepare(
+              "SELECT id, title, content, lang, created_at AS createdAt, updated_at AS updatedAt FROM snippets WHERE user_id = ? ORDER BY id DESC"
+            ).bind(userId).all();
+
+            return json({ ok: true, data: results });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        if (request.method === "POST") {
+          const body = await parseJsonSafe(request);
+          if (!body?.title || !body?.content) {
+            return json({ ok: false, msg: "标题和内容不能为空" }, 400);
+          }
+
+          const { id, title, content, lang = 'plaintext' } = body;
+
+          try {
+            if (id) {
+              await db.prepare(
+                "UPDATE snippets SET title = ?, content = ?, lang = ?, updated_at = datetime('now', 'localtime') WHERE id = ? AND user_id = ?"
+              ).bind(title, content, lang, id, userId).run();
+              return json({ ok: true, msg: "更新成功" });
+            } else {
+              const res = await db.prepare(
+                "INSERT INTO snippets (user_id, title, content, lang) VALUES (?, ?, ?, ?)"
+              ).bind(userId, title, content, lang).run();
+              return json({ ok: true, msg: "创建成功", id: res.meta?.last_row_id });
+            }
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        if (request.method === "DELETE") {
+          const id = url.searchParams.get("id");
+          if (!id) return json({ ok: false, msg: "缺少 ID" }, 400);
+
+          try {
+            await db.prepare("DELETE FROM snippets WHERE id = ? AND user_id = ?").bind(id, userId).run();
+            return json({ ok: true, msg: "删除成功" });
+          } catch (err) {
+            return json({ ok: false, msg: err.message }, 500);
+          }
+        }
+
+        return methodNotAllowed();
+      }
+
+
       // 管理后台接口额外权限检查
       if (pathname.startsWith("/api/admin/")) {
         if (authUser.role !== 'admin') {

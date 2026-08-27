@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>休闲茶歇室 (Playground) - DevTools</title>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="index.css">
+    <script src="theme.js"></script>
+    <style>
+        .games-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+        .games-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .games-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        .games-back-link:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-color);
+            transform: translateX(-2px);
+        }
+        .games-hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .games-hero h1 {
+            font-size: 2.2rem;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, #ff7675, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .games-hero p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1rem;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        .game-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem 1.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient, linear-gradient(90deg, #6c5ce7, #a29bfe));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+        .game-card:hover::before {
+            opacity: 1;
+        }
+        .game-icon-box {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        .game-card:hover .game-icon-box {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .game-card h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.2rem;
+        }
+        .game-card p {
+            margin: 0 0 1.25rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            flex: 1;
+        }
+        .game-play-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        .game-card:hover .game-play-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="games-page">
+        <header class="games-header">
+            <a href="/" class="games-back-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                返回 DevTools 工具箱
+            </a>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <button id="theme-toggle" class="theme-btn" title="切换主题">
+                    <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="games-hero">
+            <div class="badge" style="margin-bottom: 0.5rem;">Relaxation Zone</div>
+            <h1>休闲茶歇室</h1>
+            <p>写代码或工作累了？来玩几局经典轻巧的小游戏放松一下大脑，重新充满灵感与活力。</p>
+        </section>
+
+        <div class="games-grid">
+            <!-- 扫雷 -->
+            <a href="/game/minesweeper/index.html" target="_blank" class="game-card" style="--accent-gradient: linear-gradient(90deg, #ff7675, #fab1a0);">
+                <div class="game-icon-box" style="background: linear-gradient(135deg, rgba(255,118,117,0.15), rgba(250,177,160,0.15));">💣</div>
+                <h3>经典扫雷</h3>
+                <p>考验逻辑与敏锐洞察力，重温惊心动魄的排雷快感。</p>
+                <span class="game-play-btn">立即开始 →</span>
+            </a>
+
+            <!-- 像素飞鸟 -->
+            <a href="/game/flappy_bird/index.html" target="_blank" class="game-card" style="--accent-gradient: linear-gradient(90deg, #55efc4, #81ecec);">
+                <div class="game-icon-box" style="background: linear-gradient(135deg, rgba(85,239,196,0.15), rgba(129,236,236,0.15));">🐦</div>
+                <h3>像素飞鸟</h3>
+                <p>极简单键点击操作，挑战你的手速与耐力极限。</p>
+                <span class="game-play-btn">立即开始 →</span>
+            </a>
+
+            <!-- 灵动萌兔 -->
+            <a href="/game/running_rabbit/index.html" target="_blank" class="game-card" style="--accent-gradient: linear-gradient(90deg, #fdcb6e, #ffeaa7);">
+                <div class="game-icon-box" style="background: linear-gradient(135deg, rgba(253,203,110,0.15), rgba(255,234,167,0.15));">🐰</div>
+                <h3>灵动萌兔</h3>
+                <p>敏捷跑酷躲避重重障碍，向着终点全速冲刺。</p>
+                <span class="game-play-btn">立即开始 →</span>
+            </a>
+
+            <!-- 3D 赛车 -->
+            <a href="/game/3d_racing/index.html" target="_blank" class="game-card" style="--accent-gradient: linear-gradient(90deg, #6c5ce7, #a29bfe);">
+                <div class="game-icon-box" style="background: linear-gradient(135deg, rgba(108,92,231,0.15), rgba(162,155,254,0.15));">🚗</div>
+                <h3>漫步公路 3D</h3>
+                <p>身临其境的 3D 驾驶与疾驰快感，尽享解压与沉浸体验。</p>
+                <span class="game-play-btn">立即开始 →</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

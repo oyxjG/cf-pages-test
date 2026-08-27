@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>个人聚合面板</title>
+    <title>个人聚合面板 - Digital Garden & Productivity Hub</title>
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="index.css">
     <script src="theme.js"></script>
@@ -13,249 +13,173 @@
 <body>
     <main class="page">
         <div class="shell">
+            <!-- 左侧控制台 -->
             <aside class="sidebar">
-                <!-- Digital Garden Card -->
+                <!-- 个人名片 Card -->
                 <section class="panel profile-card">
                     <div class="profile-header">
                         <div class="badge">Digital Garden</div>
-                        <button id="theme-toggle" class="theme-btn" title="切换深色模式">
-                            <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="5"></circle>
-                                <line x1="12" y1="1" x2="12" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="23"></line>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                <line x1="1" y1="12" x2="3" y2="12"></line>
-                                <line x1="21" y1="12" x2="23" y2="12"></line>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg>
-                            <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" style="display: none;">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg>
-                        </button>
+                        <div class="profile-actions">
+                            <button id="theme-toggle" class="theme-btn" title="切换深色模式">
+                                <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                                <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="profile-content">
-                        <div class="avatar">KT</div>
+                        <div class="avatar" id="userAvatar">KT</div>
                         <div class="identity">
-                            <strong>空瞳</strong>
-                            <span>开发者 / 终身学习者 / 效率探索者</span>
+                            <strong id="userName">空瞳</strong>
+                            <span id="userBio">开发者 / 终身学习者 / 效率探索者</span>
                         </div>
+                    </div>
+                    <div class="profile-footer" id="profileAuthRow">
+                        <!-- 由 JS 渲染登录/退出入口 -->
                     </div>
                 </section>
 
-                <!-- Clock Card -->
+                <!-- 实时时钟 Card -->
                 <section class="panel clock-card">
                     <div class="clock-display" id="main-clock">00:00</div>
                     <div class="clock-status" id="clock-status">加载中...</div>
                 </section>
 
-                <!-- Pomodoro Card -->
-                <section class="panel pomodoro-card" id="pomodoro-widget">
-                    <div class="pomo-card-inner">
-                        <!-- 正面 -->
-                        <div class="pomo-front">
-                            <div class="pomo-header">
-                                <span class="pomo-title" id="pomodoro-label">专注时间</span>
-                                <div class="pomo-header-right">
-                                    <span class="pomo-badge status-idle" id="pomodoro-state">已准备 🎯</span>
-                                    <button class="pomo-icon-btn" id="pomodoro-settings-btn" title="设置">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="pomo-body">
-                                <div class="pomo-ring-wrapper">
-                                    <svg class="pomo-svg" viewBox="0 0 100 100">
-                                        <circle class="pomo-track" cx="50" cy="50" r="40"></circle>
-                                        <circle class="pomo-ring" id="pomodoro-ring" cx="50" cy="50" r="40"></circle>
-                                    </svg>
-                                    <div class="pomo-time" id="pomodoro-display">25:00</div>
-                                </div>
-                            </div>
-
-                            <!-- 循环进度指示器 (Session Dots) -->
-                            <div class="pomo-sessions" id="pomodoro-sessions" title="当前循环进度，每4轮专注可享受长休">
-                                <span class="pomo-dot" data-index="1"></span>
-                                <span class="pomo-dot" data-index="2"></span>
-                                <span class="pomo-dot" data-index="3"></span>
-                                <span class="pomo-dot" data-index="4"></span>
-                            </div>
-
-                            <div class="pomo-footer">
-                                <button class="pomo-btn play" id="pomodoro-start" title="开始/暂停">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                    </svg>
-                                </button>
-                                <button class="pomo-btn reset" id="pomodoro-reset" title="重置">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                <!-- 随手速记便签 Card -->
+                <section class="panel memo-card" id="memo-widget">
+                    <div class="memo-header">
+                        <div class="memo-title-wrap">
+                            <span class="memo-icon">📌</span>
+                            <span class="memo-title">灵感速记</span>
                         </div>
-
-                        <!-- 背面 -->
-                        <div class="pomo-back">
-                            <div class="pomo-header">
-                                <span class="pomo-title">定时器设置</span>
-                                <button class="pomo-icon-btn" id="pomodoro-settings-close" title="返回">✕</button>
-                            </div>
-                            <div class="pomo-settings-body">
-                                <div class="settings-group">
-                                    <label for="pomo-work-duration">专注时长</label>
-                                    <select id="pomo-work-duration">
-                                        <option value="15">15 分钟</option>
-                                        <option value="25" selected>25 分钟</option>
-                                        <option value="30">30 分钟</option>
-                                        <option value="45">45 分钟</option>
-                                        <option value="60">60 分钟</option>
-                                    </select>
-                                </div>
-                                <div class="settings-group">
-                                    <label for="pomo-break-duration">短休时长</label>
-                                    <select id="pomo-break-duration">
-                                        <option value="3">3 分钟</option>
-                                        <option value="5" selected>5 分钟</option>
-                                        <option value="10">10 分钟</option>
-                                        <option value="15">15 分钟</option>
-                                    </select>
-                                </div>
-                                <div class="settings-group">
-                                    <label for="pomo-long-break-duration">长休时长</label>
-                                    <select id="pomo-long-break-duration">
-                                        <option value="10">10 分钟</option>
-                                        <option value="15" selected>15 分钟</option>
-                                        <option value="20">20 分钟</option>
-                                        <option value="30">30 分钟</option>
-                                    </select>
-                                </div>
-                                <div class="settings-group">
-                                    <label for="pomo-sound-select">提醒音效</label>
-                                    <div class="settings-controls">
-                                        <select id="pomo-sound-select">
-                                            <option value="chime">禅意铜钟</option>
-                                            <option value="chord" selected>清脆和弦</option>
-                                            <option value="beep">科技嘀嘀</option>
-                                        </select>
-                                        <button class="sound-test-btn" id="pomo-sound-test" title="试听">🔊</button>
-                                    </div>
-                                </div>
-                                <div class="settings-group checkbox-group">
-                                    <label class="switch-label">
-                                        <input type="checkbox" id="pomo-notify-toggle">
-                                        <span>启用桌面系统通知</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="pomo-settings-footer">
-                                <button class="pomo-save-btn" id="pomodoro-save-settings">保存并应用</button>
-                            </div>
+                        <div class="memo-actions">
+                            <button class="memo-action-btn" id="memoSaveBtn" title="归档存入历史便签库">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                            </button>
+                            <button class="memo-action-btn" id="memoHistoryBtn" title="查看历史便签库">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                            </button>
+                            <button class="memo-action-btn" id="memoCopyBtn" title="复制便签内容">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                            <button class="memo-action-btn" id="memoClearBtn" title="清空草稿">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
                         </div>
+                    </div>
+                    <div class="memo-body">
+                        <textarea id="memoInput" placeholder="随手粘贴临时代码、备忘或灵感碎片，自动实时保存..." rows="3"></textarea>
+                    </div>
+                    <div class="memo-footer">
+                        <span id="memoCount">0 字符</span>
+                        <span class="memo-sync-badge" id="memoSyncBadge">已保存</span>
                     </div>
                 </section>
 
-                <!-- Navigation Card -->
+                <!-- 常用书签快捷导航 Card -->
+                <section class="panel bookmarks-card">
+                    <div class="bookmarks-header">
+                        <span class="bookmarks-title">常用书签</span>
+                    </div>
+                    <div class="bookmarks-grid">
+                        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="GitHub">
+                            <span class="bm-icon">🐙</span>
+                            <span class="bm-name">GitHub</span>
+                        </a>
+                        <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="ChatGPT">
+                            <span class="bm-icon">🤖</span>
+                            <span class="bm-name">ChatGPT</span>
+                        </a>
+                        <a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="Cloudflare">
+                            <span class="bm-icon">☁️</span>
+                            <span class="bm-name">Cloudflare</span>
+                        </a>
+                        <a href="https://www.v2ex.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="V2EX 创意工作者社区">
+                            <span class="bm-icon">🪐</span>
+                            <span class="bm-name">V2EX</span>
+                        </a>
+                        <a href="https://juejin.cn" target="_blank" rel="noopener noreferrer" class="bm-link" title="稀土掘金">
+                            <span class="bm-icon">💎</span>
+                            <span class="bm-name">稀土掘金</span>
+                        </a>
+                        <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="Gmail 邮箱">
+                            <span class="bm-icon">✉️</span>
+                            <span class="bm-name">邮件中心</span>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- 快捷导航栏 -->
                 <section class="panel nav-panel">
-                    <div class="badge">Navigation</div>
-                    <div class="nav-list">
-                        <a class="nav-item" href="#tools">
-                            <div class="nav-title">
-                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M12 20h9"></path>
-                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                </svg>
-                                <span>效率工坊</span>
-                            </div>
-                            <span class="nav-num">01</span>
-                        </a>
-                        <a class="nav-item" href="#projects">
-                            <div class="nav-title">
-                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path
-                                        d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5">
-                                    </path>
-                                    <path d="M9 18h6"></path>
-                                    <path d="M10 22h4"></path>
-                                </svg>
-                                <span>项目与灵感</span>
-                            </div>
-                            <span class="nav-num">02</span>
-                        </a>
-                        <a class="nav-item" href="#fun">
-                            <div class="nav-title">
-                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                                    <path d="M6 12h4"></path>
-                                    <path d="M8 10v4"></path>
-                                    <path d="M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z">
-                                    </path>
-                                </svg>
-                                <span>娱乐放松</span>
-                            </div>
-                            <span class="nav-num">03</span>
-                        </a>
-                        <a class="nav-item" href="#rhythm">
-                            <div class="nav-title">
-                                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                </svg>
-                                <span>近期动态</span>
-                            </div>
-                            <span class="nav-num">04</span>
-                        </a>
-                    </div>
-                </section>
-
-                <!-- Motto Card -->
-                <section class="panel motto-panel">
-                    <div class="badge">Motto</div>
-                    <div class="motto-stack">
-                        <div class="motto-item">
-                            <strong>设计哲学</strong>
-                            <p>追求极简与功能的平衡，在复杂的世界中寻找秩序。</p>
-                        </div>
-                        <div class="motto-item">
-                            <strong>视觉风格</strong>
-                            <p>采用极致的深夜模式与流变美学，构建深邃且充满律动的数字力场。</p>
-                        </div>
-                    </div>
+                    <a href="#life" class="nav-link-item">
+                        <span>🌱</span> 生活节奏
+                    </a>
+                    <a href="#tools" class="nav-link-item">
+                        <span>⚡</span> 效率工坊
+                    </a>
+                    <a href="/tasks.html" class="nav-link-item">
+                        <span>☁️</span> 云端任务中心
+                    </a>
+                    <a href="/games.html" class="nav-link-item">
+                        <span>🎮</span> 休闲茶歇室
+                    </a>
+                    <a href="/admin/index.html" class="nav-link-item" id="sidebarAdminLink" style="display: none;">
+                        <span>👤</span> 管理控制台
+                    </a>
                 </section>
             </aside>
 
+            <!-- 右侧主屏 -->
             <div class="main">
+                <!-- Hero 区域 -->
                 <section class="hero">
                     <div class="hero-content">
-                        <div class="badge">Workspace</div>
+                        <div class="badge">Personal Hub</div>
                         <h2>保持热爱，奔赴山海。</h2>
 
                         <div class="toolbar">
-                            <a class="button primary" href="#tools">开启效率工坊</a>
-                            <a class="button secondary" href="#projects">探索新项目</a>
+                            <button class="button primary" id="heroLaunchpadBtn">
+                                <span>🚀</span> 启动效率工具箱 (Ctrl+K)
+                            </button>
+                            <a class="button secondary" href="/tasks.html">
+                                <span>📋</span> 云端任务中心
+                            </a>
                         </div>
 
-                        <!-- Daily Quote Card -->
+                        <!-- 每日一言 Card -->
                         <div class="hero-quote-card" id="quote-widget">
                             <div class="quote-card-inner">
-                                <!-- 正面 -->
                                 <div class="quote-front">
                                     <div class="quote-content">
-                                        <span class="quote-icon">“</span>
-                                        <p class="quote-text" id="quote-text">加载灵感中...</p>
+                                        <span class="quote-mark">“</span>
+                                        <span class="quote-text" id="quote-text">加载灵感中...</span>
+                                        <span class="quote-mark">”</span>
                                         <span class="quote-author" id="quote-author">—— 个人聚合面板</span>
                                     </div>
                                     <div class="quote-actions">
@@ -276,18 +200,6 @@
                                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                             </svg>
                                         </button>
-                                        <button class="quote-action-btn" id="quote-library-btn" title="查看收藏夹">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                            </svg>
-                                        </button>
-                                        <button class="quote-action-btn" id="quote-settings-btn" title="一言设置">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="12" cy="12" r="3"></circle>
-                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                                            </svg>
-                                        </button>
                                         <button class="quote-btn" id="quote-refresh-btn" title="点击换一句灵感">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
@@ -295,59 +207,11 @@
                                         </button>
                                     </div>
                                 </div>
-                                <!-- 背面 (设置) -->
-                                <div class="quote-back">
-                                    <div class="quote-back-header">
-                                        <span class="quote-back-title">一言设置</span>
-                                        <button class="quote-back-close" id="quote-settings-close" title="返回正面">✕</button>
-                                    </div>
-                                    <div class="quote-settings-content">
-                                        <div class="quote-setting-row">
-                                            <label for="quote-source-select">数据源</label>
-                                            <select id="quote-source-select">
-                                                <option value="api" selected>网络 API (Hitokoto)</option>
-                                                <option value="local">本地兜底库</option>
-                                                <option value="favorite">我的收藏</option>
-                                                <option value="custom">自定义录入</option>
-                                            </select>
-                                        </div>
-                                        <div class="quote-setting-row" id="quote-categories-row">
-                                            <label>API 分类</label>
-                                            <div class="quote-category-list">
-                                                <label class="quote-checkbox-label">
-                                                    <input type="checkbox" value="a" name="quote-cat" checked><span>动漫</span>
-                                                </label>
-                                                <label class="quote-checkbox-label">
-                                                    <input type="checkbox" value="b" name="quote-cat" checked><span>漫画</span>
-                                                </label>
-                                                <label class="quote-checkbox-label">
-                                                    <input type="checkbox" value="c" name="quote-cat" checked><span>游戏</span>
-                                                </label>
-                                                <label class="quote-checkbox-label">
-                                                    <input type="checkbox" value="d" name="quote-cat" checked><span>小说</span>
-                                                </label>
-                                                <label class="quote-checkbox-label">
-                                                    <input type="checkbox" value="i" name="quote-cat" checked><span>诗词</span>
-                                                </label>
-                                                <label class="quote-checkbox-label">
-                                                    <input type="checkbox" value="k" name="quote-cat"><span>哲学</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="quote-setting-row" id="quote-custom-row" style="display: none;">
-                                            <label>录入格言</label>
-                                            <div class="quote-custom-form">
-                                                <input type="text" id="quote-custom-text" placeholder="输入格言内容..." maxlength="100">
-                                                <input type="text" id="quote-custom-author" placeholder="作者/出处" maxlength="20">
-                                                <button id="quote-custom-add-btn">添加</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- 时间脉搏看板 -->
                     <div class="hero-stats-grid">
                         <div class="stat-card">
                             <div class="stat-header">
@@ -386,77 +250,85 @@
                     </div>
                 </section>
 
+                <!-- 生活节奏核心卡片 -->
                 <section class="section" id="life">
                     <div class="section-head">
                         <div>
-                            <div class="badge">Lifestyle</div>
+                            <div class="badge">Lifestyle Rhythm</div>
                             <h3>生活节奏</h3>
                         </div>
-                        <p class="muted">捕捉生活的点滴，管理日常支出与愿望，让生活更加有序。记录，是为了更好地生活。</p>
+                        <p class="muted">捕捉生活的点滴，管理习惯与心流，让每一天都井井有条、张弛有度。</p>
                     </div>
 
                     <div class="card-grid">
+                        <!-- 卡片 1: 今日待办 (直接与 D1 云端打通) -->
                         <article class="card tall todo-card" id="todo-panel">
                             <div class="accent-strip"></div>
                             <div class="eyebrow">Routine</div>
                             <div class="todo-header">
                                 <h4>今日待办</h4>
-                                <a href="/tasks.html" class="icon-btn tasks-link" title="进入任务中心">
+                                <a href="/tasks.html" class="icon-btn tasks-link" title="进入全屏任务中心">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                 </a>
                             </div>
                             <div class="todo-input-wrapper">
-                                <input type="text" id="todo-input" placeholder="添加新任务..." maxlength="50">
+                                <input type="text" id="todo-input" placeholder="输入待办按回车直接保存..." maxlength="60">
                                 <button id="add-todo" title="添加任务">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="12" y1="5" x2="12" y2="19"></line>
                                         <line x1="5" y1="12" x2="19" y2="12"></line>
                                     </svg>
                                 </button>
                             </div>
                             <div class="todo-list" id="todo-list">
-                                <!-- 待办事项将通过 JS 渲染 -->
+                                <!-- 由 JS 渲染 -->
                             </div>
                             <div class="todo-footer">
                                 <span id="todo-stats">0 个任务</span>
-                                <button id="clear-completed" class="text-btn">隐藏已完成</button>
+                                <button id="clear-completed" class="text-btn">清理已完成</button>
                             </div>
                         </article>
 
-                        <article class="card tall">
+                        <!-- 卡片 2: 日常习惯打卡 (Daily Rituals - 全新上线) -->
+                        <article class="card tall habit-card" id="habit-panel">
                             <div class="accent-strip"></div>
-                            <div class="eyebrow">Finance</div>
-                            <h4>财务管理</h4>
-                            <p class="muted">
-                                监控预算与开支，追踪订阅服务，保持健康的财务状态。让每一分钱都有迹可循。</p>
-                            <div class="chips">
-                                <span class="chip gold">支出分析</span>
-                                <span class="chip warm">预算管控</span>
-                                <span class="chip">订阅项目</span>
+                            <div class="eyebrow">Daily Rituals</div>
+                            <div class="habit-header">
+                                <h4>习惯打卡</h4>
+                                <span class="habit-rate" id="habit-rate">0/5 完成</span>
+                            </div>
+                            <p class="muted" style="font-size: 0.82rem; margin-bottom: 0.75rem;">微小的坚持，汇聚成巨大的改变。</p>
+                            
+                            <div class="habit-list" id="habit-list">
+                                <!-- 由 JS 渲染打卡项 -->
+                            </div>
+                            <div class="habit-footer">
+                                <span id="habit-streak-tip">🔥 坚持打卡中</span>
                             </div>
                         </article>
 
+                        <!-- 卡片 3: 故事花园 (Story Oasis) -->
                         <article class="card tall story-card" id="story-panel">
                             <div class="accent-strip"></div>
                             <div class="eyebrow">Oasis</div>
-                            <div class="story-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <h4 style="margin: 0;">故事花园</h4>
+                            <div class="story-header">
+                                <h4>故事与心流</h4>
                             </div>
-                            <div class="story-body" id="story-body" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
-                                <!-- 由 JS 渲染故事列表或阅读器 -->
+                            <div class="story-body" id="story-body">
+                                <!-- 由 JS 渲染故事短文与金句 -->
                             </div>
                         </article>
                     </div>
                 </section>
 
+                <!-- 效率工坊 -->
                 <section class="section" id="tools">
                     <div class="section-head">
                         <div>
                             <div class="badge">Efficiency</div>
                             <h3>效率工坊</h3>
                         </div>
-                        <p class="muted">精选高频使用的效率工具，旨在消除繁琐，提升效率。点击常用推荐直达，或打开全屏工具箱检索全部小工具。</p>
+                        <p class="muted">精选高频效率工具，本地私密零延迟。点击常用直达，或打开 Launchpad 检索全部 18+ 款工具。</p>
                     </div>
 
                     <div class="full-width">
@@ -475,8 +347,12 @@
                                     <span>本地文本差异比对，行/字级细粒度高亮，支持双栏与单栏视图。</span>
                                 </a>
                                 <a class="link-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer">
-                                    <strong>🛡️ 国密安全解密</strong>
+                                    <strong>🛡️ 国密安全加解密</strong>
                                     <span>本地高性能 SM2 密钥对解析，提供安全的明文加解密与签名验证。</span>
+                                </a>
+                                <a class="link-card" href="/tool/opencv_beauty.html" target="_blank" rel="noopener noreferrer">
+                                    <strong>✨ OpenCV 实时美颜实验</strong>
+                                    <span>基于 WebAssembly 纯前端人脸识别与实时视频流磨皮、滤镜渲染。</span>
                                 </a>
                                 <a class="link-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer">
                                     <strong>📦 JSON 格式化工具</strong>
@@ -485,84 +361,21 @@
                                 <div class="link-card launchpad-trigger-card" id="launchpadTriggerBtn">
                                     <div class="glow-layer"></div>
                                     <strong>🚀 启动效率工具箱 (Launchpad)</strong>
-                                    <span>点击此处或按 <kbd>Ctrl + K</kbd> 唤出全屏毛玻璃工具启动面板</span>
+                                    <span>点击此处或按 <kbd>Ctrl + K</kbd> 唤出全屏毛玻璃工具启动面板 (17+ 款)</span>
                                 </div>
                             </div>
                         </article>
                     </div>
                 </section>
 
-                <section class="section" id="projects">
-                    <div class="section-head">
-                        <div>
-                            <div class="badge">Creations</div>
-                            <h3>项目与灵感</h3>
-                        </div>
-                        <p class="muted">展示我的最新作品、技术博客与偶尔闪现的灵感。探索未知，并将其转化为可见的价值。</p>
-                    </div>
-
-                    <div class="card-grid">
-                        <article class="card">
-                            <div class="eyebrow">Articles</div>
-                            <h4>技术博客</h4>
-                            <p class="muted">记录技术成长、项目复盘与行业洞察。在写作中沉淀，在交流中成长。</p>
-                            <div class="chips">
-                                <span class="chip">前端开发</span>
-                                <span class="chip warm">架构思考</span>
-                                <span class="chip gold">经验分享</span>
-                            </div>
-                        </article>
-
-                        <article class="card">
-                            <div class="eyebrow">Laboratory</div>
-                            <h4>实验项目</h4>
-                            <p class="muted">展示各类创意原型、开源项目与技术实验。探索技术的边界与更多可能性。</p>
-                            <div class="chips">
-                                <span class="chip">Open Source</span>
-                                <span class="chip warm">Creative Coding</span>
-                                <span class="chip gold">Demo</span>
-                            </div>
-                        </article>
-
-                        <article class="card">
-                            <div class="eyebrow">Flash</div>
-                            <h4>灵感碎片</h4>
-                            <p class="muted">收集那一刻的火花与思考。虽不成体系，却是构建未来的重要基石。</p>
-                            <div class="chips">
-                                <span class="chip">想法</span>
-                                <span class="chip warm">思考</span>
-                                <span class="chip gold">草稿</span>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="featured-project clickable" onclick="window.open('/tool/opencv_beauty.html', '_blank')">
-                        <div class="featured-content">
-                            <div class="badge">Featured Experiment</div>
-                            <h4>OpenCV 实时美颜实验室</h4>
-                            <p class="muted">探索 WebAssembly 与计算机视觉的边界。通过高性能的双边滤波算法，在浏览器端实现电影级的实时视频磨皮与光感调节实验。</p>
-                            <div class="chips">
-                                <span class="chip">OpenCV.js</span>
-                                <span class="chip warm">WASM Turbo</span>
-                                <span class="chip gold">Computer Vision</span>
-                            </div>
-                        </div>
-                        <div class="featured-visual">
-                            <div class="visual-placeholder">
-                                <div class="visual-glow"></div>
-                                <div class="visual-text">CV ENGINE</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
+                <!-- 休闲茶歇室 -->
                 <section class="section" id="fun">
                     <div class="section-head">
                         <div>
                             <div class="badge">Relaxation</div>
-                            <h3>娱乐放松</h3>
+                            <h3>休闲茶歇室</h3>
                         </div>
-                        <p class="muted">在高效工作之余，也需要片刻的宁静与快乐。游戏是为了更好地出发。</p>
+                        <p class="muted">在高效工作之余，也需要片刻的宁静与快乐。游戏是为了更好地满电出发。</p>
                     </div>
 
                     <div class="full-width">
@@ -572,23 +385,19 @@
                             <p class="muted">精选几款经典耐玩的小游戏，缓解压力，找回童心。</p>
 
                             <div class="link-grid tools-grid">
-                                <a class="link-card" href="/game/minesweeper/index.html" target="_blank"
-                                    rel="noopener noreferrer">
+                                <a class="link-card" href="/game/minesweeper/index.html" target="_blank" rel="noopener noreferrer">
                                     <strong>💣 经典扫雷</strong>
                                     <span>逻辑与运气的博弈，重温那份紧张与快感。</span>
                                 </a>
-                                <a class="link-card" href="/game/flappy_bird/index.html" target="_blank"
-                                    rel="noopener noreferrer">
+                                <a class="link-card" href="/game/flappy_bird/index.html" target="_blank" rel="noopener noreferrer">
                                     <strong>🐦 像素飞鸟</strong>
                                     <span>极简操作，极限挑战。你能飞多远？</span>
                                 </a>
-                                <a class="link-card" href="/game/running_rabbit/index.html" target="_blank"
-                                    rel="noopener noreferrer">
+                                <a class="link-card" href="/game/running_rabbit/index.html" target="_blank" rel="noopener noreferrer">
                                     <strong>🐰 灵动萌兔</strong>
                                     <span>快节奏跑酷，躲避障碍，向着终点全速前进。</span>
                                 </a>
-                                <a class="link-card" href="/game/3d_racing/index.html" target="_blank"
-                                    rel="noopener noreferrer">
+                                <a class="link-card" href="/game/3d_racing/index.html" target="_blank" rel="noopener noreferrer">
                                     <strong>🚗 漫步公路</strong>
                                     <span>身临其境的 3D 驾驶体验，享受无尽的驾驶禅意。</span>
                                 </a>
@@ -596,64 +405,13 @@
                         </article>
                     </div>
                 </section>
-
-                <section class="section" id="rhythm">
-                    <div class="section-head">
-                        <div>
-                            <div class="badge">Rhythm</div>
-                            <h3>近期动态</h3>
-                        </div>
-                        <p class="muted">专注当下的重要事项，保持节奏，稳步前行。每一周，都是一个新的起点。</p>
-                    </div>
-
-                    <div class="split">
-                        <article class="feature">
-                            <div class="eyebrow">Top Priorities</div>
-                            <h4>本周核心目标</h4>
-                            <div class="timeline">
-                                <div class="timeline-item">
-                                    <div class="timeline-time">1</div>
-                                    <div>
-                                        <strong>完善数字花园架构</strong>
-                                        <span>深度优化首页布局与交互逻辑，构建清晰的内容展示路径。</span>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-time">2</div>
-                                    <div>
-                                        <strong>更新深度技术博文</strong>
-                                        <span>总结近期项目实战经验，输出高质量的内容分享。</span>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-time">3</div>
-                                    <div>
-                                        <strong>迭代效率工具库</strong>
-                                        <span>优化现有工具性能，并规划引入更多实用的效率助手。</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-
-                        <article class="feature">
-                            <div class="eyebrow">Vision</div>
-                            <h4>未来展望</h4>
-                            <p class="muted">
-                                我将持续丰富这个数字空间，包括但不限于作品集、阅读深度思考、以及更多有趣的交互式实验。使其不仅是一个工具集，更是一个有灵魂的个人阵地。</p>
-                            <p class="footer-note">
-                                保持热爱，奔赴山海。每一个小小的改进，都是向理想生活的迈进。</p>
-                        </article>
-                    </div>
-                </section>
             </div>
         </div>
-
     </main>
 
-    <!-- Launchpad 全屏启动器遮罩层 -->
+    <!-- Launchpad 全屏启动器遮罩层 (Ctrl + K) -->
     <div class="launchpad-overlay" id="launchpadOverlay">
         <button class="launchpad-close-btn" id="launchpadCloseBtn" title="关闭 Launchpad (Esc)">✕</button>
-        
         <div class="launchpad-content">
             <div class="launchpad-header">
                 <div class="launchpad-search-wrapper">
@@ -664,149 +422,37 @@
                     <input type="text" id="launchpadSearch" placeholder="输入工具名称、拼音或分类检索..." autocomplete="off">
                 </div>
 
-                <div class="launchpad-filter-tabs">
+                <div class="launchpad-filter-tabs" id="launchpadFilterTabs">
                     <button class="lp-filter-btn active" data-filter="all">全部工具</button>
                     <button class="lp-filter-btn" data-filter="mobile">📱 手机推荐</button>
                     <button class="lp-filter-btn" data-filter="dev">💻 开发者</button>
                     <button class="lp-filter-btn" data-filter="daily">🏡 生活效率</button>
                     <button class="lp-filter-btn" data-filter="security">🔐 安全加密</button>
-                    <button class="lp-filter-btn" id="lp-admin-filter-btn" data-filter="admin" style="display: none;">👤 系统管理</button>
                 </div>
             </div>
 
             <div class="launchpad-grid" id="launchpadGrid">
-                <!-- App 1: 管理控制台 -->
-                <a class="launchpad-app-card" href="/admin/index.html" data-category="admin" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #708090 0%, #4f4f4f 100%);">👤</div>
-                    <strong class="app-title">管理控制台</strong>
-                    <span class="app-desc">系统设置与用户状态控制</span>
-                </a>
-                <!-- App 2: 节假日计算器 -->
-                <a class="launchpad-app-card" href="/tool/holiday_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">📅</div>
-                    <strong class="app-title">节假日计算</strong>
-                    <span class="app-desc">调休安排与假期规划助手</span>
-                </a>
-                <!-- App 3: 时间戳转换 -->
-                <a class="launchpad-app-card" href="/tool/timestamp_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🕒</div>
-                    <strong class="app-title">时间戳转换</strong>
-                    <span class="app-desc">实时展示与双向格式化</span>
-                </a>
-                <!-- App 4: 密码生成 -->
-                <a class="launchpad-app-card" href="/tool/password_generator.html" target="_blank" rel="noopener noreferrer" data-category="security" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">🔐</div>
-                    <strong class="app-title">高强度密码</strong>
-                    <span class="app-desc">自定义规则防破解生成</span>
-                </a>
-                <!-- App 5: 二维码生成 -->
-                <a class="launchpad-app-card" href="/tool/qrcode_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">📷</div>
-                    <strong class="app-title">二维码工具</strong>
-                    <span class="app-desc">快速编码生成与拖拽识别</span>
-                </a>
-                <!-- App 6: Base64 处理 -->
-                <a class="launchpad-app-card" href="/tool/base64_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">🔗</div>
-                    <strong class="app-title">Base64处理</strong>
-                    <span class="app-desc">字符串即时编解码转换</span>
-                </a>
-                <!-- App 7: JSON 格式化 -->
-                <a class="launchpad-app-card" href="/tool/json_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">📦</div>
-                    <strong class="app-title">JSON格式化</strong>
-                    <span class="app-desc">高亮校验美化与折叠层级</span>
-                </a>
-                <!-- App 8: Diff 文本对比 -->
-                <a class="launchpad-app-card" href="/tool/diff_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #a8b2bd 0%, #576574 100%);">📋</div>
-                    <strong class="app-title">Diff文本对比</strong>
-                    <span class="app-desc">行级/字级差异比对高亮</span>
-                </a>
-                <!-- App 9: Markdown 工具 -->
-                <a class="launchpad-app-card" href="/tool/markdown_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #2af598 0%, #009efd 100%);">📝</div>
-                    <strong class="app-title">Markdown编辑</strong>
-                    <span class="app-desc">实时预览、公式图表与导出</span>
-                </a>
-                <!-- App 10: 正则测试 -->
-                <a class="launchpad-app-card" href="/tool/regex_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #13547a 0%, #80d0c7 100%);">🔍</div>
-                    <strong class="app-title">正则测试器</strong>
-                    <span class="app-desc">可视化捕获组测试与速查</span>
-                </a>
-                <!-- App 11: 正则生成 -->
-                <a class="launchpad-app-card" href="/tool/regex_generator_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%);">🧩</div>
-                    <strong class="app-title">正则生成器</strong>
-                    <span class="app-desc">引导式规则配置快速拼装</span>
-                </a>
-                <!-- App 12: 语种检测 -->
-                <a class="launchpad-app-card" href="/tool/language_detector.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);">🌐</div>
-                    <strong class="app-title">智能语种检测</strong>
-                    <span class="app-desc">AI 算法辨识多国语言/代码</span>
-                </a>
-                <!-- App 13: 颜色转换 -->
-                <a class="launchpad-app-card" href="/tool/color_tool.html" target="_blank" rel="noopener noreferrer" data-category="dev" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🎨</div>
-                    <strong class="app-title">颜色转换器</strong>
-                    <span class="app-desc">HEX/RGB多格式互转调色</span>
-                </a>
-                <!-- App 14: 国密解密 -->
-                <a class="launchpad-app-card" href="/tool/sm2_tool.html" target="_blank" rel="noopener noreferrer" data-category="security" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);">🛡️</div>
-                    <strong class="app-title">国密安全解密</strong>
-                    <span class="app-desc">本地高性能SM2秘钥对解析</span>
-                </a>
-                <!-- App 15: 保质期计算 -->
-                <a class="launchpad-app-card" href="/tool/shelf_life_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #e6b980 0%, #eacda3 100%);">⏳</div>
-                    <strong class="app-title">保质期计算</strong>
-                    <span class="app-desc">临期提醒与库存管理助手</span>
-                </a>
-                <!-- App 16: 单位换算 -->
-                <a class="launchpad-app-card" href="/tool/unit_converter.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="true">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);">📏</div>
-                    <strong class="app-title">单位换算器</strong>
-                    <span class="app-desc">长度、面积、进制、汇率及数据联动换算</span>
-                </a>
-                <!-- App 17: 图片处理工坊 -->
-                <a class="launchpad-app-card" href="/tool/image_tool.html" target="_blank" rel="noopener noreferrer" data-category="daily" data-mobile-friendly="false">
-                    <div class="app-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🖼️</div>
-                    <strong class="app-title">图片处理工坊</strong>
-                    <span class="app-desc">本地安全处理，保障隐私安全，支持图片压缩、格式转换与 Base64</span>
-                </a>
-                
-                <div class="lp-no-results" id="lpNoResults" style="display: none;">
-                    <p>没有匹配的工具，请换个词搜搜看 🔍</p>
-                </div>
+                <!-- 由 JS 渲染 18+ 款工具卡片 -->
             </div>
         </div>
     </div>
 
-
-
-    <!-- Toast Container -->
-    <div id="quote-toast-container" class="quote-toast-container"></div>
-
-    <!-- 收藏夹 Modal 弹窗 -->
-    <div class="quote-modal-overlay" id="quote-library-modal" style="display: none;">
-        <div class="quote-modal-card">
-            <div class="quote-modal-header">
-                <h3>❤️ 我的灵感收藏</h3>
-                <button class="quote-modal-close" id="quote-library-close" title="关闭 (Esc)">✕</button>
-            </div>
-            <div class="quote-modal-body">
-                <div class="quote-fav-list" id="quote-fav-list">
-                    <!-- 由 JS 动态渲染收藏列表 -->
+    <!-- 历史便签库 Modal 弹窗 -->
+    <div class="memo-modal-overlay" id="memoHistoryOverlay">
+        <div class="memo-modal-card">
+            <div class="memo-modal-header">
+                <div class="memo-modal-title">
+                    <span>📚</span> 历史便签库 (<span id="memoHistoryCount">0</span>)
                 </div>
+                <button class="memo-modal-close" id="memoHistoryCloseBtn" title="关闭 (Esc)">✕</button>
+            </div>
+            <div class="memo-modal-body" id="memoHistoryList">
+                <!-- 由 JS 渲染历史便签 -->
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
-    <script src="lib/sidebar_widgets.js?v=1.0.0"></script>
     <script src="index.js"></script>
 </body>
 
