@@ -429,8 +429,33 @@
       user-select: text;
     }
 
+    /* 节点对象/数组块级高亮（悬浮在起始行或结束行时整体高亮） */
     .json-node {
       position: relative;
+      border-radius: 6px;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .json-node:has(> .json-node-header:hover),
+    .json-node:has(> .json-node-footer:hover) {
+      background: rgba(45, 120, 108, 0.07);
+      box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.08);
+    }
+
+    [data-theme="dark"] .json-node:has(> .json-node-header:hover),
+    [data-theme="dark"] .json-node:has(> .json-node-footer:hover) {
+      background: rgba(129, 178, 154, 0.12);
+      box-shadow: 0 0 0 3px rgba(129, 178, 154, 0.15);
+    }
+
+    .json-node:has(> .json-node-header:hover) > .json-fold-content,
+    .json-node:has(> .json-node-footer:hover) > .json-fold-content {
+      border-left-color: rgba(45, 120, 108, 0.4);
+    }
+
+    [data-theme="dark"] .json-node:has(> .json-node-header:hover) > .json-fold-content,
+    [data-theme="dark"] .json-node:has(> .json-node-footer:hover) > .json-fold-content {
+      border-left-color: rgba(129, 178, 154, 0.5);
     }
 
     /* 行容器与整行悬浮高亮 */
