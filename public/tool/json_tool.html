@@ -413,30 +413,33 @@
       border-left-color: rgba(224, 122, 95, 0.45);
     }
 
-    /* 三角折叠指示器 */
+    /* 三角折叠指示器（优化放大与热区） */
     .json-toggle {
       cursor: pointer;
       user-select: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 14px;
-      height: 14px;
+      width: 18px;
+      height: 18px;
       margin-right: 4px;
       color: var(--muted);
-      opacity: 0.65;
+      opacity: 0.85;
       transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease;
       flex-shrink: 0;
+      vertical-align: middle;
+      border-radius: 3px;
     }
 
     .json-toggle:hover {
       opacity: 1;
       color: var(--accent);
+      background: rgba(191, 91, 50, 0.1);
     }
 
     .json-toggle svg {
-      width: 10px;
-      height: 10px;
+      width: 13.5px;
+      height: 13.5px;
       transition: transform 0.15s ease;
     }
 
