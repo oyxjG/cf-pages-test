@@ -403,14 +403,20 @@
 
     /* 行容器与整行悬浮高亮 */
     .json-row {
-      display: flex;
-      align-items: baseline;
+      display: block;
       padding: 2px 6px;
       margin: 0 -6px;
       border-radius: 4px;
       white-space: pre-wrap;
-      word-break: break-all;
+      overflow-wrap: anywhere;
+      word-break: normal;
+      line-height: 1.65;
       transition: background 0.12s ease;
+    }
+
+    .json-row.json-node-header {
+      display: flex;
+      align-items: baseline;
     }
 
     .json-row:hover {
@@ -419,6 +425,26 @@
 
     [data-theme="dark"] .json-row:hover {
       background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* 键名前缀原子包裹（禁止切断 key 单词） */
+    .json-key-prefix {
+      white-space: nowrap;
+      word-break: keep-all;
+      display: inline;
+    }
+
+    .json-key {
+      color: var(--berry);
+      font-weight: 600;
+      white-space: nowrap;
+      word-break: keep-all;
+    }
+
+    .json-string {
+      color: var(--teal);
+      overflow-wrap: anywhere;
+      word-break: normal;
     }
 
     /* 缩进子层级容器与纵向对齐虚线 */
@@ -999,7 +1025,7 @@
 
     function renderJSONTree(val, key = null, isLast = true) {
       const isComplex = val !== null && typeof val === 'object';
-      const keyPrefix = key !== null ? `<span class="json-key">"${escapeHtml(key)}"</span><span class="json-punct">: </span>` : '';
+      const keyPrefix = key !== null ? `<span class="json-key-prefix"><span class="json-key">"${escapeHtml(key)}"</span><span class="json-punct">: </span></span>` : '';
       const comma = isLast ? '' : '<span class="json-punct">,</span>';
 
       if (!isComplex) {
