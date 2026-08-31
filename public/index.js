@@ -833,10 +833,15 @@
         const grid = document.getElementById('launchpadGrid');
         const filterTabs = document.getElementById('launchpadFilterTabs');
         const triggerBtn = document.getElementById('launchpadTriggerBtn');
-        const heroTriggerBtn = document.getElementById('heroLaunchpadBtn');
-
         const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+        const modKey = isMac ? '⌘' : 'Ctrl';
         let activeFilter = isMobileDevice ? 'mobile' : 'all';
+
+        // 动态适配首页工具箱启动按钮的快捷键文案 (Mac 显示 ⌘+K, Win 显示 Ctrl+K)
+        if (heroTriggerBtn) {
+            heroTriggerBtn.innerHTML = `<span>🚀</span> 启动效率工具箱 (${modKey}+K)`;
+        }
 
         // 如果是移动设备，默认激活“手机推荐”选项卡
         if (isMobileDevice) {

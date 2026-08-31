@@ -1,53 +1,58 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JSON 格式化工具 - 高级聚合面板</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON 格式化 & 语法检查工具</title>
   <link rel="stylesheet" href="../theme.css">
   <script src="../theme.js"></script>
   <style>
-    :root {
-      /* 变量已由 theme.css 提供 */
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: "Avenir Next", "PingFang SC", sans-serif;
-      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
-      color: var(--text);
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
+      font-family: "Avenir Next", "PingFang SC", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
+      color: var(--text);
+      overflow: hidden;
     }
 
-    .container {
-      width: 100%;
-      max-width: 1000px;
+    /* 顶部导航与工具栏 */
+    .top-navbar {
+      height: 56px;
+      min-height: 56px;
       background: var(--paper);
       backdrop-filter: blur(20px);
-      border-radius: var(--radius);
-      padding: 32px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 16px;
+      z-index: 50;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
     .back-link {
       text-decoration: none;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       transition: all 0.2s ease;
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: var(--radius-sm);
       background: transparent;
-      margin-left: -8px;
-      z-index: 10;
     }
 
     .back-link:hover {
@@ -55,100 +60,361 @@
       background: var(--paper-strong);
     }
 
-    .back-link svg {
-      transition: transform 0.2s ease;
-    }
-
-    .back-link:hover svg {
-      transform: translateX(-4px);
-    }
-
-    .header {
-      margin-bottom: 24px;
+    .app-title {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
+      align-items: baseline;
+      gap: 10px;
     }
 
-    .header h1 {
+    .app-title h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 18px;
+      font-weight: 700;
       letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), #d38d48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .header p {
-      margin: 8px 0 0;
+    .app-title .tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--btn-secondary-bg);
       color: var(--muted);
-      font-size: 14px;
-    }
-
-    .editor-wrapper {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .editor-container {
-      display: flex;
-      height: 500px;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--input-bg);
-      overflow: hidden;
-      font-family: "Fira Code", "Consolas", monospace;
-      transition: border-color 0.2s;
-      position: relative;
     }
 
-    #lineNumbers {
-      width: 48px;
-      background: rgba(84, 66, 49, 0.04);
-      border-right: 1px solid var(--line);
-      padding: 20px 0;
-      text-align: right;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 工具按钮 */
+    .btn {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
       user-select: none;
     }
 
-    #lineNumbers div { padding: 0 10px; height: 1.6em; }
-    #lineNumbers div.error-line { background: rgba(220, 53, 69, 0.15); color: var(--error); font-weight: bold; position: relative; }
-    #lineNumbers div.error-line::before { content: "▶"; position: absolute; left: 4px; font-size: 10px; top: 1px; }
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--paper);
+    }
 
-    textarea, #jsonRender {
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--btn-text);
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      filter: brightness(1.1);
+      color: var(--btn-text);
+      box-shadow: 0 4px 12px rgba(191, 91, 50, 0.25);
+    }
+
+    /* 布局切换胶囊 */
+    .segmented-control {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .seg-btn:hover {
+      color: var(--text);
+    }
+
+    .seg-btn.active {
+      background: var(--paper-strong);
+      color: var(--accent);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 主工作台区域 */
+    .workspace {
       flex: 1;
-      padding: 20px;
+      min-height: 0;
+      display: flex;
+      padding: 12px;
+      gap: 12px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    /* 左右布局（默认） */
+    .workspace.layout-horizontal {
+      flex-direction: row;
+    }
+
+    /* 上下布局 */
+    .workspace.layout-vertical {
+      flex-direction: column;
+    }
+
+    /* 面板结构 */
+    .panel {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      height: 42px;
+      min-height: 42px;
+      padding: 0 16px;
+      background: var(--paper-strong);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--input-bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .action-link {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+
+    .action-link:hover {
+      color: var(--accent);
+      background: var(--btn-secondary-bg);
+    }
+
+    .action-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--line);
+      margin: 0 2px;
+    }
+
+    .panel-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--input-bg);
+    }
+
+    /* 左侧编辑框（带行号） */
+    .editor-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      overflow: hidden;
+    }
+
+    #lineNumbers {
+      width: 44px;
+      background: rgba(84, 66, 49, 0.03);
+      border-right: 1px solid var(--line);
+      padding: 16px 0;
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.65;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    #lineNumbers div {
+      padding: 0 8px;
+      height: 1.65em;
+    }
+
+    #lineNumbers div.error-line {
+      background: rgba(220, 38, 38, 0.15);
+      color: #dc2626;
+      font-weight: bold;
+      position: relative;
+    }
+
+    #lineNumbers div.error-line::before {
+      content: "▶";
+      position: absolute;
+      left: 4px;
+      font-size: 9px;
+      top: 2px;
+    }
+
+    .json-textarea {
+      flex: 1;
+      padding: 16px;
       border: none;
       background: transparent;
       font-family: inherit;
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: inherit;
+      line-height: inherit;
       color: var(--text);
       resize: none;
       outline: none;
-      overflow-y: scroll;
+      overflow-y: auto;
       white-space: pre;
+      tab-size: 2;
     }
 
-    #jsonRender {
-      display: none;
-      background: transparent;
+    .json-textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    /* 右侧结果展示区容器 */
+    .result-container {
+      width: 100%;
+      height: 100%;
+      padding: 16px 20px;
+      overflow: auto;
+      outline: none;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .result-raw {
+      margin: 0;
+      white-space: pre-wrap;
       word-break: break-all;
-      white-space: pre;
+      font-family: inherit;
     }
 
-    /* 着色样式 - 适配主题变量 */
-    .json-key { color: var(--berry); font-weight: 700; }
-    .json-string { color: var(--teal); }
-    .json-number { color: var(--mustard); }
-    .json-boolean { color: var(--accent); font-weight: bold; }
-    .json-muted { color: var(--muted); opacity: 0.7; }
+    /* JSON 树形渲染与缩进虚线体系 */
+    .json-tree {
+      display: block;
+      font-family: "Fira Code", "Consolas", monospace;
+      user-select: text;
+    }
 
-    /* 折叠样式 */
-    .collapsible {
+    .json-node {
+      position: relative;
+    }
+
+    /* 行容器与整行悬浮高亮 */
+    .json-row {
+      display: flex;
+      align-items: baseline;
+      padding: 2px 6px;
+      margin: 0 -6px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      transition: background 0.12s ease;
+    }
+
+    .json-row:hover {
+      background: rgba(84, 66, 49, 0.05);
+    }
+
+    [data-theme="dark"] .json-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* 缩进子层级容器与纵向对齐虚线 */
+    .json-fold-content {
+      display: block;
+      margin-left: 6px;
+      padding-left: 16px;
+      border-left: 1px dashed var(--line);
+      transition: border-color 0.2s ease;
+    }
+
+    .json-fold-content:hover {
+      border-left-color: rgba(191, 91, 50, 0.35);
+    }
+
+    [data-theme="dark"] .json-fold-content:hover {
+      border-left-color: rgba(224, 122, 95, 0.45);
+    }
+
+    /* 三角折叠指示器 */
+    .json-toggle {
       cursor: pointer;
       user-select: none;
       display: inline-flex;
@@ -156,143 +422,372 @@
       justify-content: center;
       width: 14px;
       height: 14px;
-      background: rgba(84, 66, 49, 0.08);
-      border: 1px solid var(--line);
-      border-radius: 3px;
       margin-right: 4px;
-      font-size: 10px;
-      line-height: 1;
       color: var(--muted);
-      transition: all 0.2s;
+      opacity: 0.65;
+      transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease;
+      flex-shrink: 0;
     }
-    .collapsible:hover {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-    .collapsible::before { content: "-"; }
-    .collapsed .collapsible::before { content: "+"; }
-    
-    .fold-content { display: inline; }
-    .collapsed .fold-content { display: none; }
 
-    /* 摘要预览样式 */
-    .collapsed::after {
-      content: " " attr(data-placeholder) " ";
-      display: inline-block;
+    .json-toggle:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    .json-toggle svg {
+      width: 10px;
+      height: 10px;
+      transition: transform 0.15s ease;
+    }
+
+    /* 折叠状态处理 */
+    .json-collapsible.collapsed > .json-node-header .json-toggle svg {
+      transform: rotate(-90deg);
+    }
+
+    .json-collapsible.collapsed > .json-fold-content {
+      display: none;
+    }
+
+    .json-collapsible.collapsed > .json-node-footer {
+      display: none;
+    }
+
+    /* 折叠占位提示胶囊 */
+    .json-placeholder-badge {
+      display: none;
       background: rgba(191, 91, 50, 0.1);
       color: var(--accent);
-      padding: 0 8px;
+      padding: 0 7px;
       border-radius: 4px;
-      font-size: 12px;
-      margin-left: 4px;
+      font-size: 11.5px;
+      margin: 0 6px;
       cursor: pointer;
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       vertical-align: middle;
+      font-weight: 500;
+      border: 1px dashed rgba(191, 91, 50, 0.3);
+      user-select: none;
     }
 
-    .collapsed .close-brace {
-      display: inline; /* 确保闭合括号在折叠时也显示 */
+    .json-placeholder-badge:hover {
+      background: var(--accent);
+      color: #fff;
     }
 
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
+    .json-collapsible.collapsed > .json-node-header .json-placeholder-badge {
+      display: inline-block;
     }
 
-    .btn {
-      padding: 10px 22px;
-      border-radius: 999px;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn.primary { background: var(--accent); color: var(--btn-text); }
-    .btn.secondary { background: var(--btn-secondary-bg); color: var(--text); border: 1px solid var(--line); }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-
-    .status {
-      font-size: 13px;
-      padding: 12px 18px;
-      border-radius: 10px;
+    .json-closing-bracket-collapsed {
       display: none;
-      animation: fadeIn 0.3s ease;
     }
 
-    .status.error {
-      display: block;
-      background: rgba(220, 53, 69, 0.08);
-      color: var(--error);
-      border: 1px solid rgba(220, 53, 69, 0.15);
+    .json-collapsible.collapsed > .json-node-header .json-closing-bracket-collapsed {
+      display: inline;
+    }
+
+    /* 语法高亮着色 */
+    .json-key { color: var(--berry); font-weight: 600; }
+    .json-string { color: var(--teal); }
+    .json-string-link {
+      color: var(--teal);
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      cursor: pointer;
+    }
+    .json-string-link:hover {
+      text-decoration-style: solid;
+      color: var(--accent);
+    }
+    .json-number { color: var(--mustard); font-weight: 600; }
+    .json-boolean { color: var(--accent); font-weight: 700; }
+    .json-null { color: var(--muted); font-style: italic; opacity: 0.85; }
+    .json-punct { color: var(--muted); opacity: 0.9; }
+
+    /* 空状态提示 */
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 12px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .empty-state svg {
+      opacity: 0.35;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    /* 语法错误提示横幅 */
+    .error-banner {
+      background: rgba(220, 38, 38, 0.08);
+      border-top: 1px solid rgba(220, 38, 38, 0.2);
+      color: #dc2626;
+      padding: 10px 16px;
+      font-size: 13px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    [data-theme="dark"] .error-banner {
+      background: rgba(239, 68, 68, 0.15);
+      border-top-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
     }
 
     .error-excerpt {
-      margin-top: 8px;
-      padding: 10px 14px;
+      padding: 6px 10px;
       background: rgba(0, 0, 0, 0.04);
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
       overflow-x: auto;
       white-space: pre;
     }
 
-    .error-excerpt .highlight { background: var(--error); color: white; padding: 0px 4px; border-radius: 3px; font-weight: bold; }
+    .error-excerpt .highlight {
+      background: #dc2626;
+      color: #fff;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+
+    /* 复制轻提示 */
+    .toast-tip {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast-tip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .top-navbar {
+        padding: 0 12px;
+      }
+      .app-title h1 {
+        font-size: 16px;
+      }
+      .app-title .tag {
+        display: none;
+      }
+      .workspace {
+        flex-direction: column !important;
+        padding: 8px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
+
+  <!-- 顶部导航与工具栏 -->
+  <header class="top-navbar">
+    <div class="nav-left">
       <a href="../index.html" class="back-link">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         返回首页
       </a>
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <h1>JSON 格式化 & 语法检查</h1>
-          <p>支持多层级折叠展开、实时行号显示与语法高亮。</p>
+      <div class="app-title">
+        <h1>JSON 格式化 & 校验工具</h1>
+        <span class="tag">实时语法校验 / 树形虚线折叠</span>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <!-- 示例数据 -->
+      <button class="btn" onclick="loadSampleData()" title="载入测试用的 JSON 示例">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>示例数据</span>
+      </button>
+
+      <!-- 格式化主按钮 -->
+      <button id="runBtn" class="btn btn-primary" onclick="formatJSON()" title="快捷键: Ctrl + Enter">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <span>格式化 (Beautify)</span>
+      </button>
+
+      <!-- 布局切换 -->
+      <div class="segmented-control">
+        <button id="btnLayoutH" class="seg-btn active" onclick="setLayout('horizontal')" title="左右并排展示">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+          左右
+        </button>
+        <button id="btnLayoutV" class="seg-btn" onclick="setLayout('vertical')" title="上下堆叠展示">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line></svg>
+          上下
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 工作台分栏区域 -->
+  <main id="workspace" class="workspace layout-horizontal">
+    
+    <!-- 左侧面板：JSON 输入与编辑 -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>原始 JSON 输入</span>
+          <span id="jsonStats" class="badge">0 行 / 0 字符</span>
         </div>
-        <div id="statusTip" style="font-size: 12px; color: var(--muted);"></div>
+        <div class="panel-actions">
+          <button class="action-link" onclick="pasteFromClipboard()" title="从剪贴板粘贴">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            粘贴
+          </button>
+          <button class="action-link" onclick="clearAll()" title="清空输入框与结果">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            清空
+          </button>
+        </div>
       </div>
-    </div>
+      <div class="panel-body">
+        <div class="editor-container">
+          <div id="lineNumbers"></div>
+          <textarea 
+            id="jsonInput" 
+            class="json-textarea" 
+            placeholder="在此输入或粘贴 JSON 字符串...&#10;支持快捷键 Ctrl + Enter 快速格式化"
+            spellcheck="false"
+            oninput="handleInputChange()"
+            onscroll="syncScroll()"
+            onkeydown="handleInputKeyDown(event)"></textarea>
+        </div>
+      </div>
+      <div id="errorArea" class="error-banner"></div>
+    </section>
 
-    <div class="editor-wrapper">
-      <div class="editor-container">
-        <div id="lineNumbers"></div>
-        <textarea id="jsonInput" placeholder="在此粘贴 JSON 字符串..." spellcheck="false" 
-                  oninput="updateLineNumbers()" 
-                  onscroll="syncScroll()"></textarea>
-        <div id="jsonRender" onkeydown="handleRenderKeyDown(event)" tabindex="0" onclick="handleRenderClick(event)"></div>
+    <!-- 右侧面板：解析结果与交互树 -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>解析结果 (Tree View)</span>
+          <span id="resultTypeBadge" class="badge" style="display: none;">已解析</span>
+        </div>
+        <div class="panel-actions">
+          <div id="jsonActions" style="display: none; align-items: center; gap: 4px;">
+            <button class="action-link" onclick="expandAll()" title="展开所有节点">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
+              展开
+            </button>
+            <button class="action-link" onclick="collapseAll()" title="折叠所有子节点">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 11 12 6 7 11"></polyline><polyline points="17 18 12 13 7 18"></polyline></svg>
+              折叠
+            </button>
+            <button class="action-link" onclick="toggleCompress()" title="压缩为单行 JSON">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+              压缩
+            </button>
+            <div class="action-divider"></div>
+          </div>
+          
+          <button class="action-link" onclick="copyPlainResult()" title="复制标准 JSON 内容">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            复制
+          </button>
+        </div>
       </div>
-      
-      <div id="errorMessage" class="status error"></div>
+      <div class="panel-body">
+        <div id="emptyState" class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <p>在左侧输入 JSON 并点击“格式化 (Beautify)”</p>
+        </div>
+        
+        <div id="outputContainer" class="result-container" tabindex="0" onkeydown="handleResultKeyDown(event)" onclick="handleRenderClick(event)">
+          <div id="jsonTreeRender" class="json-tree"></div>
+          <pre id="outputRaw" class="result-raw" style="display: none;"></pre>
+        </div>
+      </div>
+    </section>
 
-      <div class="actions">
-        <button id="formatBtn" class="btn primary" onclick="formatJSON()">格式化 (Beautify)</button>
-        <button id="editBtn" class="btn secondary" style="display:none;" onclick="showEditor()">返回编辑</button>
-        <button class="btn primary" onclick="minifyJSON()">压缩 (Minify)</button>
-        <button class="btn secondary" onclick="copyToClipboard()">复制内容</button>
-        <button class="btn secondary" onclick="clearAll()">清空全页</button>
-      </div>
-    </div>
-  </div>
+  </main>
+
+  <div id="toastTip" class="toast-tip">已复制到剪贴板</div>
 
   <script>
     const input = document.getElementById('jsonInput');
-    const render = document.getElementById('jsonRender');
     const lineNumbers = document.getElementById('lineNumbers');
-    const errorMsg = document.getElementById('errorMessage');
-    const statusTip = document.getElementById('statusTip');
-    const formatBtn = document.getElementById('formatBtn');
-    const editBtn = document.getElementById('editBtn');
+    const treeContainer = document.getElementById('jsonTreeRender');
+    const rawContainer = document.getElementById('outputRaw');
+    const errorArea = document.getElementById('errorArea');
+    const emptyState = document.getElementById('emptyState');
+    const jsonStats = document.getElementById('jsonStats');
+    const jsonActions = document.getElementById('jsonActions');
+    const resultTypeBadge = document.getElementById('resultTypeBadge');
 
-    updateLineNumbers();
+    let parsedJsonData = null;
+    let isCompressed = false;
+
+    // 三角指示器 SVG 图标
+    const TRIANGLE_ICON = `<span class="json-toggle" title="展开/收起"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></span>`;
+
+    // 平台快捷键自动检测 (Mac 显示 ⌘, Win/Linux 显示 Ctrl)
+    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+    const modKey = isMac ? '⌘' : 'Ctrl';
+
+    // 初始化布局记忆
+    (function initLayout() {
+      const runBtn = document.getElementById('runBtn');
+      if (runBtn) runBtn.title = `快捷键: ${modKey} + Enter`;
+      if (input) {
+        input.placeholder = `在此输入或粘贴 JSON 字符串...\n支持快捷键 ${modKey} + Enter 快速格式化`;
+      }
+
+      const savedLayout = localStorage.getItem('json_tool_layout') || 'horizontal';
+      setLayout(savedLayout, false);
+      updateLineNumbers();
+    })();
+
+    function setLayout(mode, save = true) {
+      const ws = document.getElementById('workspace');
+      const btnH = document.getElementById('btnLayoutH');
+      const btnV = document.getElementById('btnLayoutV');
+
+      if (mode === 'vertical') {
+        ws.classList.remove('layout-horizontal');
+        ws.classList.add('layout-vertical');
+        btnV.classList.add('active');
+        btnH.classList.remove('active');
+      } else {
+        ws.classList.remove('layout-vertical');
+        ws.classList.add('layout-horizontal');
+        btnH.classList.add('active');
+        btnV.classList.remove('active');
+      }
+
+      if (save) {
+        localStorage.setItem('json_tool_layout', mode);
+      }
+    }
 
     function updateLineNumbers() {
       const lines = input.value.split('\n').length;
@@ -308,125 +803,301 @@
       lineNumbers.scrollTop = input.scrollTop;
     }
 
-    function formatJSON() {
-      try {
-        const value = input.value.trim();
-        if (!value) return;
-        const obj = JSON.parse(value);
-        
-        // 渲染着色视图
-        render.innerHTML = renderJSON(obj);
-        showRender();
-        
-        // 更新 textarea 内容供后续使用
-        input.value = JSON.stringify(obj, null, 2);
-        
-        hideError();
-        updateLineNumbers();
-        statusTip.textContent = '格式化完成';
-        setTimeout(() => statusTip.textContent = '', 2000);
-      } catch (e) {
-        handleParseError(e, input.value);
-      }
-    }
-
-    function showRender() {
-      input.style.display = 'none';
-      lineNumbers.style.display = 'none';
-      render.style.display = 'block';
-      formatBtn.style.display = 'none';
-      editBtn.style.display = 'inline-flex';
-    }
-
-    function showEditor() {
-      input.style.display = 'block';
-      lineNumbers.style.display = 'block';
-      render.style.display = 'none';
-      formatBtn.style.display = 'inline-flex';
-      editBtn.style.display = 'none';
+    function handleInputChange() {
+      const val = input.value;
+      const lines = val.split('\n').length;
+      const chars = val.length;
+      jsonStats.innerText = `${lines} 行 / ${chars} 字符`;
       updateLineNumbers();
+      hideError();
     }
 
-    function renderJSON(obj, indent = 0) {
-      const spacing = ' '.repeat(indent);
-      const nextSpacing = ' '.repeat(indent + 2);
-      
-      if (obj === null) return '<span class="json-muted">null</span>';
-      if (typeof obj === 'number') return `<span class="json-number">${obj}</span>`;
-      if (typeof obj === 'boolean') return `<span class="json-boolean">${obj}</span>`;
-      if (typeof obj === 'string') return `<span class="json-string">"${escapeHtml(obj)}"</span>`;
-      
-      const isArray = Array.isArray(obj);
-      const openBrace = isArray ? '[' : '{';
-      const closeBrace = isArray ? ']' : '}';
-      const keys = isArray ? obj : Object.keys(obj);
-      
-      if (keys.length === 0) return openBrace + closeBrace;
-      
-      const placeholder = isArray ? `Array(${obj.length})` : `Object(${Object.keys(obj).length})`;
-      let html = `<span class="collapsible-wrapper" data-placeholder="${placeholder}">`;
-      html += `<span class="collapsible"></span>${openBrace}`;
-      html += `<div class="fold-content">`;
-      
-      const items = [];
-      if (isArray) {
-        obj.forEach((val, i) => {
-          items.push(`${renderJSON(val, indent + 2)}`);
-        });
-      } else {
-        Object.keys(obj).forEach(key => {
-          items.push(`<span class="json-key">"${escapeHtml(key)}"</span>: ${renderJSON(obj[key], indent + 2)}`);
-        });
-      }
-      
-      const joinStr = `,\n${' '.repeat(indent + 2)}`;
-      html += `\n${' '.repeat(indent + 2)}` + items.join(joinStr);
-      html += `\n${spacing}</div><span class="close-brace">${closeBrace}</span></span>`;
-      
-      return html;
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    function handleRenderClick(e) {
-      if (e.target.classList.contains('collapsible') || e.target.hasAttribute('data-placeholder')) {
-        const wrapper = e.target.closest('.collapsible-wrapper');
-        if (wrapper) {
-          wrapper.classList.toggle('collapsed');
-          const closeBrace = wrapper.querySelector(':scope > .close-brace');
-          if (wrapper.classList.contains('collapsed')) {
-            closeBrace.setAttribute('data-placeholder', closeBrace.getAttribute('data-placeholder'));
-          }
-        }
+    function handleInputKeyDown(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        formatJSON();
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        input.value = input.value.substring(0, start) + "  " + input.value.substring(end);
+        input.selectionStart = input.selectionEnd = start + 2;
+        handleInputChange();
       }
     }
 
-    function handleRenderKeyDown(e) {
+    function handleResultKeyDown(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
+        const container = parsedJsonData ? treeContainer : rawContainer;
         const selection = window.getSelection();
         const range = document.createRange();
-        range.selectNodeContents(render);
+        range.selectNodeContents(container);
         selection.removeAllRanges();
         selection.addRange(range);
       }
     }
 
-    function minifyJSON() {
+    async function pasteFromClipboard() {
       try {
-        const value = input.value.trim();
-        if (!value) return;
-        const obj = JSON.parse(value);
-        input.value = JSON.stringify(obj);
-        showEditor();
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          input.value = text.trim();
+          handleInputChange();
+          showToast('已从剪贴板粘贴');
+          formatJSON();
+        }
+      } catch (err) {
+        showToast('无法访问剪贴板，请手动粘贴');
+      }
+    }
+
+    function clearAll() {
+      input.value = '';
+      handleInputChange();
+      parsedJsonData = null;
+      treeContainer.innerHTML = '';
+      rawContainer.textContent = '';
+      treeContainer.style.display = 'none';
+      rawContainer.style.display = 'none';
+      emptyState.style.display = 'flex';
+      jsonActions.style.display = 'none';
+      resultTypeBadge.style.display = 'none';
+      hideError();
+      input.focus();
+    }
+
+    function loadSampleData() {
+      const sample = {
+        "status": 200,
+        "message": "success",
+        "timestamp": 1725076800000,
+        "data": {
+          "total": 2,
+          "page": 1,
+          "records": [
+            {
+              "id": "2093596737346650113",
+              "nickname": "微信用户",
+              "phoneNumber": "13826065400",
+              "isVip": true,
+              "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+              "tags": ["开发者", "SM2", "Web3"],
+              "lastLogin": {
+                "ip": "192.168.5.120",
+                "time": "2026-08-31 14:30:00"
+              },
+              "remark": null
+            },
+            {
+              "id": "2093149116784881665",
+              "nickname": "测试工程师",
+              "phoneNumber": "13509984061",
+              "isVip": false,
+              "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+              "tags": ["QA", "自动化测试"],
+              "lastLogin": {
+                "ip": "192.168.5.156",
+                "time": "2026-08-31 12:15:34"
+              },
+              "remark": null
+            }
+          ]
+        }
+      };
+
+      input.value = JSON.stringify(sample, null, 2);
+      handleInputChange();
+      formatJSON();
+      showToast('已载入示例 JSON 数据');
+    }
+
+    function showToast(msg) {
+      const tip = document.getElementById('toastTip');
+      tip.innerText = msg;
+      tip.classList.add('show');
+      setTimeout(() => tip.classList.remove('show'), 1500);
+    }
+
+    async function copyPlainResult() {
+      let text = "";
+      if (parsedJsonData !== null) {
+        text = isCompressed ? JSON.stringify(parsedJsonData) : JSON.stringify(parsedJsonData, null, 2);
+      } else {
+        text = input.value.trim();
+      }
+
+      if (!text) {
+        showToast('暂无可复制的内容');
+        return;
+      }
+      
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('已复制纯净 JSON 到剪贴板');
+      } catch (err) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('已复制纯净 JSON 到剪贴板');
+      }
+    }
+
+    // --- JSON 树形渲染与多层折叠引擎 ---
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function isHttpUrl(str) {
+      return typeof str === 'string' && /^https?:\/\//i.test(str);
+    }
+
+    function formatValue(val) {
+      if (val === null) return '<span class="json-null">null</span>';
+      if (typeof val === 'number') return `<span class="json-number">${val}</span>`;
+      if (typeof val === 'boolean') return `<span class="json-boolean">${val}</span>`;
+      if (typeof val === 'string') {
+        const escaped = escapeHtml(val);
+        if (isHttpUrl(val)) {
+          return `<span class="json-string">"<a class="json-string-link" href="${escaped}" target="_blank" rel="noopener noreferrer">${escaped}</a>"</span>`;
+        }
+        return `<span class="json-string">"${escaped}"</span>`;
+      }
+      return '';
+    }
+
+    function renderJSONTree(val, key = null, isLast = true) {
+      const isComplex = val !== null && typeof val === 'object';
+      const keyPrefix = key !== null ? `<span class="json-key">"${escapeHtml(key)}"</span><span class="json-punct">: </span>` : '';
+      const comma = isLast ? '' : '<span class="json-punct">,</span>';
+
+      if (!isComplex) {
+        return `<div class="json-row">${keyPrefix}${formatValue(val)}${comma}</div>`;
+      }
+
+      const isArray = Array.isArray(val);
+      const openBrace = isArray ? '[' : '{';
+      const closeBrace = isArray ? ']' : '}';
+      const keys = isArray ? val : Object.keys(val);
+      const count = isArray ? val.length : keys.length;
+
+      if (count === 0) {
+        return `<div class="json-row">${keyPrefix}<span class="json-punct">${openBrace}${closeBrace}</span>${comma}</div>`;
+      }
+
+      const placeholder = isArray ? `Array(${count})` : `Object{${count}}`;
+
+      let html = `<div class="json-node json-collapsible" data-placeholder="${placeholder}">`;
+      
+      // Header 行
+      html += `<div class="json-row json-node-header">`;
+      html += `${TRIANGLE_ICON}`;
+      html += `${keyPrefix}<span class="json-punct">${openBrace}</span>`;
+      html += `<span class="json-placeholder-badge">${placeholder}</span>`;
+      html += `<span class="json-closing-bracket-collapsed json-punct">${closeBrace}${comma}</span>`;
+      html += `</div>`;
+
+      // 展开的子内容（左侧带有虚线）
+      html += `<div class="json-fold-content">`;
+      if (isArray) {
+        val.forEach((item, idx) => {
+          html += renderJSONTree(item, null, idx === val.length - 1);
+        });
+      } else {
+        const objKeys = Object.keys(val);
+        objKeys.forEach((k, idx) => {
+          html += renderJSONTree(val[k], k, idx === objKeys.length - 1);
+        });
+      }
+      html += `</div>`;
+
+      // Footer 闭合行
+      html += `<div class="json-row json-node-footer">`;
+      html += `<span class="json-punct">${closeBrace}</span>${comma}`;
+      html += `</div>`;
+
+      html += `</div>`;
+      return html;
+    }
+
+    // 折叠与展开点击事件捕获
+    function handleRenderClick(e) {
+      const toggle = e.target.closest('.json-toggle');
+      const badge = e.target.closest('.json-placeholder-badge');
+      if (toggle || badge) {
+        const collapsible = (toggle || badge).closest('.json-collapsible');
+        if (collapsible) {
+          collapsible.classList.toggle('collapsed');
+        }
+      }
+    }
+
+    // 全部展开
+    function expandAll() {
+      const collapsibles = document.querySelectorAll('#jsonTreeRender .json-collapsible');
+      collapsibles.forEach(el => el.classList.remove('collapsed'));
+      showToast('已全部展开');
+    }
+
+    // 全部折叠（仅保留最外层）
+    function collapseAll() {
+      const collapsibles = document.querySelectorAll('#jsonTreeRender .json-collapsible');
+      collapsibles.forEach((el, index) => {
+        if (index > 0) { // 保留最外层，折叠所有子节点
+          el.classList.add('collapsed');
+        }
+      });
+      showToast('已折叠所有子节点');
+    }
+
+    // 切换压缩单行
+    function toggleCompress() {
+      if (!parsedJsonData) return;
+      isCompressed = !isCompressed;
+
+      if (isCompressed) {
+        treeContainer.style.display = 'none';
+        rawContainer.style.display = 'block';
+        rawContainer.textContent = JSON.stringify(parsedJsonData);
+        showToast('已压缩为单行');
+      } else {
+        rawContainer.style.display = 'none';
+        treeContainer.style.display = 'block';
+        treeContainer.innerHTML = renderJSONTree(parsedJsonData);
+        showToast('已还原展开视图');
+      }
+    }
+
+    function formatJSON() {
+      const val = input.value.trim();
+      if (!val) {
+        showToast('请先输入 JSON 文本');
+        return;
+      }
+
+      try {
+        const obj = JSON.parse(val);
+        parsedJsonData = obj;
+        isCompressed = false;
+
         hideError();
-        updateLineNumbers();
-        statusTip.textContent = '压缩成功';
-        setTimeout(() => statusTip.textContent = '', 2000);
-      } catch (e) {
-        handleParseError(e, input.value);
+        emptyState.style.display = 'none';
+        treeContainer.innerHTML = renderJSONTree(obj);
+        treeContainer.style.display = 'block';
+        rawContainer.style.display = 'none';
+
+        jsonActions.style.display = 'inline-flex';
+        resultTypeBadge.style.display = 'inline-block';
+        resultTypeBadge.innerText = Array.isArray(obj) ? `Array(${obj.length})` : `Object{${Object.keys(obj).length}}`;
+
+        // 同步美化 textarea 内容
+        input.value = JSON.stringify(obj, null, 2);
+        handleInputChange();
+      } catch (err) {
+        handleParseError(err, input.value);
       }
     }
 
@@ -435,6 +1106,7 @@
       let errorLine = -1;
       let pos = -1;
       let snippet = '';
+
       const posMatch = msg.match(/at position (\d+)/);
       if (posMatch) {
         pos = parseInt(posMatch[1]);
@@ -447,22 +1119,30 @@
         const escapeChar = str => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
         snippet = `${escapeChar(prefix)}<span class="highlight">${escapeChar(char)}</span>${escapeChar(suffix)}`;
       }
+
       const lineMatch = msg.match(/at line (\d+)/);
       if (lineMatch) errorLine = parseInt(lineMatch[1]);
+
       showError(msg, errorLine, pos, snippet);
-      showEditor();
     }
 
     function showError(msg, errorLine, pos, snippet) {
-      let fullMsg = `❌ 语法错误: ${msg}`;
-      if (snippet) fullMsg += `<div class="error-excerpt">${snippet}</div>`;
-      errorMsg.innerHTML = fullMsg;
-      errorMsg.style.display = 'block';
+      let fullMsg = `<div>❌ <strong>语法错误</strong>: ${escapeHtml(msg)}</div>`;
+      if (snippet) {
+        fullMsg += `<div class="error-excerpt">${snippet}</div>`;
+      }
+      errorArea.innerHTML = fullMsg;
+      errorArea.style.display = 'flex';
+
       document.querySelectorAll('#lineNumbers div').forEach(el => el.classList.remove('error-line'));
       if (errorLine > 0) {
         const errorEl = document.getElementById(`ln-${errorLine}`);
-        if (errorEl) errorEl.classList.add('error-line');
+        if (errorEl) {
+          errorEl.classList.add('error-line');
+          errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
+
       if (pos >= 0) {
         input.focus();
         input.setSelectionRange(pos, pos + 1);
@@ -470,37 +1150,9 @@
     }
 
     function hideError() {
-      errorMsg.style.display = 'none';
+      errorArea.style.display = 'none';
       document.querySelectorAll('#lineNumbers div').forEach(el => el.classList.remove('error-line'));
     }
-
-    function copyToClipboard() {
-      const text = input.value;
-      if (!text) return;
-      navigator.clipboard.writeText(text).then(() => {
-        statusTip.textContent = '已复制到剪贴板';
-        setTimeout(() => statusTip.textContent = '', 2000);
-      });
-    }
-
-    function clearAll() {
-      input.value = '';
-      render.innerHTML = '';
-      showEditor();
-      hideError();
-      updateLineNumbers();
-    }
-
-    input.onkeydown = function(e) {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const start = this.selectionStart;
-        const end = this.selectionEnd;
-        this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
-        this.selectionStart = this.selectionEnd = start + 2;
-        updateLineNumbers();
-      }
-    };
   </script>
 </body>
 </html>
