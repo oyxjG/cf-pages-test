@@ -8,198 +8,52 @@
   <script src="../theme.js"></script>
   <script src="sm2_lib.js"></script>
   <style>
-    :root {
-      /* 变量已由 theme.css 提供 */
-    }
-
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: "Avenir Next", "PingFang SC", system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: "Avenir Next", "PingFang SC", system-ui, -apple-system, sans-serif;
       background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
       color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      overflow: hidden;
     }
 
-    .container {
-      width: 100%;
-      max-width: 800px;
+    /* 顶部导航与工具栏 */
+    .top-navbar {
+      height: 56px;
+      min-height: 56px;
       background: var(--paper);
       backdrop-filter: blur(20px);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 40px;
+      border-bottom: 1px solid var(--line);
       display: flex;
-      flex-direction: column;
-      gap: 24px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 16px;
+      z-index: 50;
     }
 
-    header {
-      text-align: center;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 36px;
-      letter-spacing: -0.04em;
-      background: linear-gradient(135deg, var(--accent), #d38d48);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .desc {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 8px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    label {
-      font-weight: 700;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-    }
-
-    textarea {
-      width: 100%;
-      height: 120px;
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: var(--input-bg);
-      font-family: "Fira Code", monospace;
-      font-size: 14px;
-      color: var(--text);
-      resize: vertical;
-      transition: all 0.3s ease;
-      outline: none;
-    }
-
-    textarea:focus {
-      border-color: var(--accent);
-      background: var(--bg-deep, var(--bg));
-      box-shadow: 0 0 0 4px rgba(191, 91, 50, 0.1);
-    }
-
-    .actions {
+    .nav-left {
       display: flex;
       align-items: center;
       gap: 16px;
     }
 
-    button {
-      padding: 14px 32px;
-      border-radius: 99px;
-      background: var(--accent);
-      color: var(--btn-text);
-      border: none;
-      font-weight: 800;
-      font-size: 15px;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    button:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(191, 91, 50, 0.2);
-    }
-
-    button:active { transform: translateY(0); }
-
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    #resultArea {
-      margin-top: 10px;
-      padding: 24px;
-      background: var(--input-bg);
-      border-radius: 18px;
-      border: 1px dashed var(--line);
-      display: none;
-      animation: fadeIn 0.4s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .time-stats {
-      font-size: 12px;
-      color: var(--muted);
-      background: var(--btn-secondary-bg);
-      padding: 4px 10px;
-      border-radius: 99px;
-    }
-
-    #outputPre {
-      margin: 0;
-      font-family: inherit;
-      white-space: pre-wrap;
-      word-break: break-all;
-      font-size: 15px;
-      line-height: 1.6;
-    }
-
-    /* 着色样式 - 适配主题变量 */
-    .json-key { color: var(--berry); font-weight: 700; }
-    .json-string { color: var(--teal); }
-    .json-number { color: var(--mustard); }
-
-    #errorArea {
-      background: rgba(220, 38, 38, 0.05);
-      border: 1px solid rgba(220, 38, 38, 0.2);
-      color: #b91c1c;
-      padding: 16px;
-      border-radius: 12px;
-      font-size: 14px;
-      display: none;
-    }
-
     .back-link {
-      position: absolute;
-      top: 24px;
-      left: 24px;
       text-decoration: none;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
       transition: all 0.2s ease;
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: var(--radius-sm);
       background: transparent;
-      z-index: 100;
     }
 
     .back-link:hover {
@@ -207,19 +61,454 @@
       background: var(--paper-strong);
     }
 
-    .back-link svg {
-      transition: transform 0.2s ease;
+    .app-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
     }
 
-    .back-link:hover svg {
-      transform: translateX(-4px);
+    .app-title h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), #d38d48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .app-title .tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--btn-secondary-bg);
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 工具按钮 */
+    .btn {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--paper);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--btn-text);
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      filter: brightness(1.1);
+      color: var(--btn-text);
+      box-shadow: 0 4px 12px rgba(191, 91, 50, 0.25);
+    }
+
+    .btn-primary:disabled {
+      background: #a8a29e;
+      border-color: #a8a29e;
+      cursor: not-allowed;
+      box-shadow: none;
+      filter: none;
+    }
+
+    /* 布局切换胶囊 */
+    .segmented-control {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .seg-btn:hover {
+      color: var(--text);
+    }
+
+    .seg-btn.active {
+      background: var(--paper-strong);
+      color: var(--accent);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 主工作台区域 */
+    .workspace {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      padding: 12px;
+      gap: 12px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    /* 左右布局（默认） */
+    .workspace.layout-horizontal {
+      flex-direction: row;
+    }
+
+    /* 上下布局 */
+    .workspace.layout-vertical {
+      flex-direction: column;
+    }
+
+    /* 面板结构 */
+    .panel {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      height: 42px;
+      min-height: 42px;
+      padding: 0 16px;
+      background: var(--paper-strong);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--input-bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .action-link {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+
+    .action-link:hover {
+      color: var(--accent);
+      background: var(--btn-secondary-bg);
+    }
+
+    .action-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--line);
+      margin: 0 2px;
+    }
+
+    .panel-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--input-bg);
+    }
+
+    /* 输入区文本框 */
+    .cipher-textarea {
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      border: none;
+      background: transparent;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .cipher-textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    /* 结果展示区 */
+    .result-container {
+      width: 100%;
+      height: 100%;
+      padding: 16px 20px;
+      overflow: auto;
+      outline: none;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .result-raw {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: inherit;
+    }
+
+    /* JSON 树形渲染与折叠体系 */
+    .json-tree {
+      display: block;
+      white-space: pre;
+      font-family: "Fira Code", "Consolas", monospace;
+    }
+
+    .json-key { color: var(--berry); font-weight: 600; }
+    .json-string { color: var(--teal); word-break: break-all; }
+    .json-string-link {
+      color: var(--teal);
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      cursor: pointer;
+    }
+    .json-string-link:hover {
+      text-decoration-style: solid;
+      color: var(--accent);
+    }
+    .json-number { color: var(--mustard); }
+    .json-boolean { color: var(--accent); font-weight: 600; }
+    .json-null { color: var(--muted); font-style: italic; opacity: 0.8; }
+    .json-punct { color: var(--muted); }
+
+    /* 折叠节点容器 */
+    .json-collapsible {
+      display: inline;
+    }
+
+    /* 折叠按钮 */
+    .json-toggle {
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      background: rgba(84, 66, 49, 0.08);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      margin-right: 5px;
+      font-size: 11px;
+      line-height: 1;
+      color: var(--muted);
+      transition: all 0.15s ease;
+      vertical-align: 1px;
+    }
+
+    .json-toggle:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+
+    .json-toggle::before {
+      content: "-";
+      font-weight: 700;
+    }
+
+    .json-collapsible.collapsed > .json-toggle::before {
+      content: "+";
+    }
+
+    .json-fold-content {
+      display: inline;
+    }
+
+    .json-collapsible.collapsed > .json-fold-content {
+      display: none;
+    }
+
+    /* 折叠提示胶囊 */
+    .json-collapsible.collapsed::after {
+      content: " " attr(data-placeholder) " ";
+      display: inline-block;
+      background: rgba(191, 91, 50, 0.12);
+      color: var(--accent);
+      padding: 0 7px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin: 0 4px;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      vertical-align: middle;
+      font-weight: 500;
+      border: 1px dashed rgba(191, 91, 50, 0.3);
+    }
+
+    .json-collapsible.collapsed:hover::after {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* 空状态提示 */
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 12px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .empty-state svg {
+      opacity: 0.35;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    /* 错误提示横幅 */
+    .error-banner {
+      background: rgba(220, 38, 38, 0.08);
+      border-top: 1px solid rgba(220, 38, 38, 0.2);
+      color: #dc2626;
+      padding: 10px 16px;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    [data-theme="dark"] .error-banner {
+      background: rgba(239, 68, 68, 0.15);
+      border-top-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    /* 耗时徽章 */
+    .time-badge {
+      font-size: 12px;
+      color: var(--teal);
+      background: var(--input-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      font-family: monospace;
+      display: none;
+    }
+
+    /* 复制轻提示 */
+    .toast-tip {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast-tip.show {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* Loading Spinner */
     .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -227,54 +516,145 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .top-navbar {
+        padding: 0 12px;
+      }
+      .app-title h1 {
+        font-size: 16px;
+      }
+      .app-title .tag {
+        display: none;
+      }
+      .workspace {
+        flex-direction: column !important;
+        padding: 8px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <a href="../index.html" class="back-link">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-    返回首页
-  </a>
-
-  <div class="container">
-    <header>
-      <h1>SM2 国密解密工具</h1>
-      <p class="desc">专为国密标准设计，支持高性能异步解密与结果可视化</p>
-    </header>
-
-    <div class="field">
-      <label>待解密密文 (Hex 格式)</label>
-      <textarea id="cipherInput" placeholder="请输入 04 开头的十六进制密文..."></textarea>
+  <!-- 顶部导航与工具栏 -->
+  <header class="top-navbar">
+    <div class="nav-left">
+      <a href="../index.html" class="back-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        返回首页
+      </a>
+      <div class="app-title">
+        <h1>SM2 国密解密工具</h1>
+        <span class="tag">国密标准 SM2 / 异步 Worker</span>
+      </div>
     </div>
 
-    <div class="actions">
-      <button id="runBtn" onclick="handleDecrypt()">
+    <div class="nav-right">
+      <span id="timeStats" class="time-badge"></span>
+
+      <!-- 执行解密主按钮 -->
+      <button id="runBtn" class="btn btn-primary" onclick="handleDecrypt()" title="快捷键: Ctrl + Enter">
         <div id="loader" class="spinner"></div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
         <span>执行解密</span>
       </button>
-      <div id="statusText" style="color: var(--muted); font-size: 13px;"></div>
+
+      <!-- 布局切换 -->
+      <div class="segmented-control">
+        <button id="btnLayoutH" class="seg-btn active" onclick="setLayout('horizontal')" title="左右并排展示">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+          左右
+        </button>
+        <button id="btnLayoutV" class="seg-btn" onclick="setLayout('vertical')" title="上下堆叠展示">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line></svg>
+          上下
+        </button>
+      </div>
     </div>
+  </header>
 
-    <div id="errorArea"></div>
-
-    <div id="resultArea">
-      <div class="result-header">
-        <label>解密明文结果</label>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span id="copyTip" style="font-size: 12px; color: var(--accent); opacity: 0; transition: opacity 0.3s;">已复制</span>
-          <span id="timeStats" class="time-stats"></span>
-          <button onclick="copyPlainResult()" style="padding: 6px 14px; font-size: 12px; border-radius: 8px; background: rgba(84, 66, 49, 0.08); color: var(--text); box-shadow: none;">复制结果</button>
+  <!-- 工作台分栏区域 -->
+  <main id="workspace" class="workspace layout-horizontal">
+    
+    <!-- 左侧面板：待解密密文输入 -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>待解密密文 (HEX)</span>
+          <span id="cipherCount" class="badge">0 字符</span>
+        </div>
+        <div class="panel-actions">
+          <button class="action-link" onclick="pasteFromClipboard()" title="从剪贴板粘贴">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            粘贴
+          </button>
+          <button class="action-link" onclick="clearInput()" title="清空输入框">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            清空
+          </button>
         </div>
       </div>
-      <div id="outputContainer" 
-           tabindex="0"
-           onkeydown="handleResultKeyDown(event)"
-           style="background: var(--bg-deep, var(--bg)); padding: 20px; border-radius: 12px; border: 1px solid var(--line); max-height: 400px; overflow-y: auto; outline: none; position: relative; transition: border-color 0.2s;">
-        <pre id="outputPre"></pre>
+      <div class="panel-body">
+        <textarea 
+          id="cipherInput" 
+          class="cipher-textarea" 
+          placeholder="请输入或粘贴 04 开头的十六进制 SM2 密文...&#10;支持快捷键 Ctrl + Enter 快速解密"
+          oninput="handleInputChange()"
+          onkeydown="handleInputKeyDown(event)"></textarea>
       </div>
-    </div>
-  </div>
+      <div id="errorArea" class="error-banner"></div>
+    </section>
 
+    <!-- 右侧面板：解密明文结果 -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>解密明文结果</span>
+          <span id="resultTypeBadge" class="badge" style="display: none;">JSON</span>
+        </div>
+        <div class="panel-actions">
+          <!-- JSON 专属功能按钮 -->
+          <div id="jsonActions" style="display: none; align-items: center; gap: 4px;">
+            <button class="action-link" onclick="expandAll()" title="展开所有节点">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
+              展开
+            </button>
+            <button class="action-link" onclick="collapseAll()" title="折叠所有节点">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 11 12 6 7 11"></polyline><polyline points="17 18 12 13 7 18"></polyline></svg>
+              折叠
+            </button>
+            <button class="action-link" onclick="toggleCompress()" title="压缩为单行 JSON">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+              压缩
+            </button>
+            <div class="action-divider"></div>
+          </div>
+          
+          <button class="action-link" onclick="copyPlainResult()" title="复制明文结果">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            复制
+          </button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="emptyState" class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <p>在左侧输入密文并点击“执行解密”</p>
+        </div>
+        
+        <div id="outputContainer" class="result-container" tabindex="0" onkeydown="handleResultKeyDown(event)" onclick="handleRenderClick(event)">
+          <!-- JSON 树形渲染容器 或 纯文本展示 -->
+          <div id="jsonTreeRender" class="json-tree"></div>
+          <pre id="outputRaw" class="result-raw" style="display: none;"></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toastTip" class="toast-tip">已复制到剪贴板</div>
+
+  <!-- Worker 脚本定义 -->
   <script id="worker-code" type="javascript/worker">
     self.onmessage = function(e) {
       const { cipher, privKey, libCode } = e.data;
@@ -301,29 +681,107 @@
 
   <script>
     const DEFAULT_PRIV_KEY = "4e8e840cf91fbd024c6c47cecd86bcd1e13b27f6eeeba833e65a3929ba883e6a";
+    let parsedJsonData = null;
+    let rawPlainResult = "";
+    let isCompressed = false;
+
+    // 初始化布局记忆
+    (function initLayout() {
+      const savedLayout = localStorage.getItem('sm2_tool_layout') || 'horizontal';
+      setLayout(savedLayout, false);
+    })();
+
+    function setLayout(mode, save = true) {
+      const ws = document.getElementById('workspace');
+      const btnH = document.getElementById('btnLayoutH');
+      const btnV = document.getElementById('btnLayoutV');
+
+      if (mode === 'vertical') {
+        ws.classList.remove('layout-horizontal');
+        ws.classList.add('layout-vertical');
+        btnV.classList.add('active');
+        btnH.classList.remove('active');
+      } else {
+        ws.classList.remove('layout-vertical');
+        ws.classList.add('layout-horizontal');
+        btnH.classList.add('active');
+        btnV.classList.remove('active');
+      }
+
+      if (save) {
+        localStorage.setItem('sm2_tool_layout', mode);
+      }
+    }
+
+    function handleInputChange() {
+      const input = document.getElementById('cipherInput').value;
+      const count = input.replace(/\s+/g, '').length;
+      document.getElementById('cipherCount').innerText = `${count} 字符`;
+    }
+
+    function handleInputKeyDown(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleDecrypt();
+      }
+    }
 
     function handleResultKeyDown(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
-        const outputPre = document.getElementById('outputPre');
+        const container = parsedJsonData ? document.getElementById('jsonTreeRender') : document.getElementById('outputRaw');
         const selection = window.getSelection();
         const range = document.createRange();
-        range.selectNodeContents(outputPre);
+        range.selectNodeContents(container);
         selection.removeAllRanges();
         selection.addRange(range);
       }
     }
 
+    async function pasteFromClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          const inputEl = document.getElementById('cipherInput');
+          inputEl.value = text.trim();
+          handleInputChange();
+          showToast('已从剪贴板粘贴');
+        }
+      } catch (err) {
+        showToast('无法访问剪贴板，请手动粘贴');
+      }
+    }
+
+    function clearInput() {
+      document.getElementById('cipherInput').value = '';
+      handleInputChange();
+      document.getElementById('errorArea').style.display = 'none';
+      document.getElementById('cipherInput').focus();
+    }
+
+    function showToast(msg) {
+      const tip = document.getElementById('toastTip');
+      tip.innerText = msg;
+      tip.classList.add('show');
+      setTimeout(() => tip.classList.remove('show'), 1500);
+    }
+
     async function copyPlainResult() {
-      const output = document.getElementById('outputPre');
-      const tip = document.getElementById('copyTip');
-      const text = output.innerText;
-      if (!text) return;
+      let text = "";
+      if (parsedJsonData !== null) {
+        text = isCompressed ? JSON.stringify(parsedJsonData) : JSON.stringify(parsedJsonData, null, 2);
+      } else {
+        text = rawPlainResult;
+      }
+
+      if (!text) {
+        showToast('暂无解密内容可复制');
+        return;
+      }
       
       try {
         await navigator.clipboard.writeText(text);
-        tip.style.opacity = 1;
-        setTimeout(() => tip.style.opacity = 0, 1500);
+        showToast('已复制纯净内容到剪贴板');
       } catch (err) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -331,27 +789,140 @@
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        tip.style.opacity = 1;
-        setTimeout(() => tip.style.opacity = 0, 1500);
+        showToast('已复制纯净内容到剪贴板');
+      }
+    }
+
+    // --- JSON 树形渲染与多层折叠引擎 ---
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function isHttpUrl(str) {
+      return typeof str === 'string' && /^https?:\/\//i.test(str);
+    }
+
+    function renderJSONTree(obj, indent = 0) {
+      const spacing = '  '.repeat(indent);
+      const nextSpacing = '  '.repeat(indent + 1);
+
+      if (obj === null) return '<span class="json-null">null</span>';
+      if (typeof obj === 'number') return `<span class="json-number">${obj}</span>`;
+      if (typeof obj === 'boolean') return `<span class="json-boolean">${obj}</span>`;
+      if (typeof obj === 'string') {
+        const escaped = escapeHtml(obj);
+        if (isHttpUrl(obj)) {
+          return `<span class="json-string">"<a class="json-string-link" href="${escaped}" target="_blank" rel="noopener noreferrer">${escaped}</a>"</span>`;
+        }
+        return `<span class="json-string">"${escaped}"</span>`;
+      }
+
+      const isArray = Array.isArray(obj);
+      const openBrace = isArray ? '[' : '{';
+      const closeBrace = isArray ? ']' : '}';
+      const keys = isArray ? obj : Object.keys(obj);
+
+      if (keys.length === 0) {
+        return `<span class="json-punct">${openBrace}${closeBrace}</span>`;
+      }
+
+      const placeholder = isArray ? `Array(${obj.length})` : `Object{${Object.keys(obj).length}}`;
+      
+      let html = `<span class="json-collapsible" data-placeholder="${placeholder}">`;
+      html += `<span class="json-toggle" title="展开/收起"></span><span class="json-punct">${openBrace}</span>`;
+      html += `<div class="json-fold-content">\n`;
+
+      const items = [];
+      if (isArray) {
+        obj.forEach((val) => {
+          items.push(`${nextSpacing}${renderJSONTree(val, indent + 1)}`);
+        });
+      } else {
+        Object.keys(obj).forEach(key => {
+          const keyHtml = `<span class="json-key">"${escapeHtml(key)}"</span><span class="json-punct">: </span>`;
+          items.push(`${nextSpacing}${keyHtml}${renderJSONTree(obj[key], indent + 1)}`);
+        });
+      }
+
+      html += items.join('<span class="json-punct">,</span>\n');
+      html += `\n${spacing}</div><span class="json-punct">${closeBrace}</span></span>`;
+
+      return html;
+    }
+
+    // 折叠与展开点击事件捕获
+    function handleRenderClick(e) {
+      if (e.target.classList.contains('json-toggle') || e.target.classList.contains('json-collapsible')) {
+        const collapsible = e.target.closest('.json-collapsible');
+        if (collapsible) {
+          collapsible.classList.toggle('collapsed');
+        }
+      }
+    }
+
+    // 全部展开
+    function expandAll() {
+      const collapsibles = document.querySelectorAll('#jsonTreeRender .json-collapsible');
+      collapsibles.forEach(el => el.classList.remove('collapsed'));
+      showToast('已全部展开');
+    }
+
+    // 全部折叠（仅保留根层级）
+    function collapseAll() {
+      const collapsibles = document.querySelectorAll('#jsonTreeRender .json-collapsible');
+      collapsibles.forEach((el, index) => {
+        if (index > 0) { // 保留最外层，折叠所有子节点
+          el.classList.add('collapsed');
+        }
+      });
+      showToast('已折叠所有子节点');
+    }
+
+    // 切换压缩单行
+    function toggleCompress() {
+      if (!parsedJsonData) return;
+      isCompressed = !isCompressed;
+      const treeContainer = document.getElementById('jsonTreeRender');
+      const rawContainer = document.getElementById('outputRaw');
+
+      if (isCompressed) {
+        treeContainer.style.display = 'none';
+        rawContainer.style.display = 'block';
+        rawContainer.textContent = JSON.stringify(parsedJsonData);
+        showToast('已压缩为单行');
+      } else {
+        rawContainer.style.display = 'none';
+        treeContainer.style.display = 'block';
+        treeContainer.innerHTML = renderJSONTree(parsedJsonData);
+        showToast('已还原展开视图');
       }
     }
 
     async function handleDecrypt() {
-      const input = document.getElementById('cipherInput').value.trim();
+      let input = document.getElementById('cipherInput').value.trim();
       const btn = document.getElementById('runBtn');
       const loader = document.getElementById('loader');
-      const resArea = document.getElementById('resultArea');
       const errArea = document.getElementById('errorArea');
-      const output = document.getElementById('outputPre');
+      const emptyState = document.getElementById('emptyState');
+      const treeContainer = document.getElementById('jsonTreeRender');
+      const rawContainer = document.getElementById('outputRaw');
       const stats = document.getElementById('timeStats');
+      const jsonBadge = document.getElementById('resultTypeBadge');
+      const jsonActions = document.getElementById('jsonActions');
 
-      if (!input) return;
+      if (!input) {
+        showError("请输入待解密的十六进制密文");
+        return;
+      }
+
+      // 去除空格和换行
+      input = input.replace(/\s+/g, '');
 
       // Reset UI
       errArea.style.display = 'none';
-      resArea.style.display = 'none';
       btn.disabled = true;
       loader.style.display = 'block';
+      isCompressed = false;
 
       try {
           // 处理 04 前缀
@@ -371,14 +942,27 @@
             loader.style.display = 'none';
 
             if (res.success) {
-              resArea.style.display = 'block';
+              emptyState.style.display = 'none';
+              stats.style.display = 'inline-block';
               stats.innerText = `耗时: ${res.time}ms`;
+              rawPlainResult = res.data;
               
               try {
-                const json = JSON.parse(res.data);
-                output.innerHTML = formatJSON(json);
-              } catch (e) {
-                output.textContent = res.data;
+                parsedJsonData = JSON.parse(res.data);
+                treeContainer.innerHTML = renderJSONTree(parsedJsonData);
+                treeContainer.style.display = 'block';
+                rawContainer.style.display = 'none';
+                
+                jsonBadge.style.display = 'inline-block';
+                jsonActions.style.display = 'inline-flex';
+              } catch (err) {
+                parsedJsonData = null;
+                rawContainer.textContent = res.data;
+                rawContainer.style.display = 'block';
+                treeContainer.style.display = 'none';
+                
+                jsonBadge.style.display = 'none';
+                jsonActions.style.display = 'none';
               }
             } else {
               showError("解密失败: " + res.error);
@@ -389,7 +973,7 @@
           worker.onerror = (e) => {
             btn.disabled = false;
             loader.style.display = 'none';
-            showError("Worker 线程异常，请检查密文格式。");
+            showError("Worker 线程异常，请检查密文格式是否合法。");
             worker.terminate();
           };
 
@@ -405,23 +989,7 @@
     function showError(msg) {
       const area = document.getElementById('errorArea');
       area.innerText = msg;
-      area.style.display = 'block';
-    }
-
-    function formatJSON(obj) {
-      let json = JSON.stringify(obj, null, 4);
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        let cls = 'json-number';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'json-key';
-          } else {
-            cls = 'json-string';
-          }
-        }
-        return '<span class="' + cls + '">' + match + '</span>';
-      });
+      area.style.display = 'flex';
     }
   </script>
 </body>
