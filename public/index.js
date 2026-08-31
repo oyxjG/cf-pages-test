@@ -833,6 +833,10 @@
         const grid = document.getElementById('launchpadGrid');
         const filterTabs = document.getElementById('launchpadFilterTabs');
         const triggerBtn = document.getElementById('launchpadTriggerBtn');
+        const heroTriggerBtn = document.getElementById('heroLaunchpadBtn');
+
+        if (!overlay) return;
+
         const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth <= 768;
         const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
         const modKey = isMac ? '⌘' : 'Ctrl';
