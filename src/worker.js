@@ -286,11 +286,30 @@ export default {
           const body = await parseJsonSafe(request);
           if (!body) return json({ ok: false, msg: "Invalid JSON body" }, 400);
 
-          const favoritesStr = JSON.stringify(Array.isArray(body.favorites) ? body.favorites : []);
-          const recentStr = JSON.stringify(Array.isArray(body.recentTools) ? body.recentTools : []);
-          const settingsStr = JSON.stringify(typeof body.customSettings === 'object' ? body.customSettings : {});
-
           try {
+            // 先查询已有配置以支持增量合并
+            const existingRow = await db.prepare(
+              "SELECT favorites, recent_tools, custom_settings FROM user_preferences WHERE user_id = ?"
+            ).bind(userId).first();
+
+            let favorites = existingRow?.favorites ? JSON.parse(existingRow.favorites) : [];
+            let recentTools = existingRow?.recent_tools ? JSON.parse(existingRow.recent_tools) : [];
+            let customSettings = existingRow?.custom_settings ? JSON.parse(existingRow.custom_settings) : {};
+
+            if (Array.isArray(body.favorites)) {
+              favorites = body.favorites;
+            }
+            if (Array.isArray(body.recentTools)) {
+              recentTools = body.recentTools;
+            }
+            if (typeof body.customSettings === 'object' && body.customSettings !== null) {
+              customSettings = { ...customSettings, ...body.customSettings };
+            }
+
+            const favoritesStr = JSON.stringify(favorites);
+            const recentStr = JSON.stringify(recentTools);
+            const settingsStr = JSON.stringify(customSettings);
+
             await db.prepare(`
               INSERT INTO user_preferences (user_id, favorites, recent_tools, custom_settings, updated_at)
               VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
@@ -301,7 +320,11 @@ export default {
                 updated_at = datetime('now', 'localtime')
             `).bind(userId, favoritesStr, recentStr, settingsStr).run();
 
-            return json({ ok: true, msg: "偏好设置保存成功" });
+            return json({
+              ok: true,
+              msg: "偏好设置保存成功",
+              data: { favorites, recentTools, customSettings }
+            });
           } catch (err) {
             return json({ ok: false, msg: err.message }, 500);
           }

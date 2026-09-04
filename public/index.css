@@ -298,13 +298,60 @@ body {
 }
 
 .bookmarks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.75rem;
+}
+
+.bookmarks-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .bookmarks-title {
     font-size: 0.92rem;
     font-weight: 700;
     color: var(--text);
+}
+
+.bookmarks-badge {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.45rem;
+    background: var(--line);
+    color: var(--muted);
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.bookmarks-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.bm-action-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.bm-action-btn:hover {
+    background: var(--input-bg);
+    color: var(--accent);
+}
+
+.bookmarks-card.is-managing #manageBookmarksBtn {
+    background: var(--accent);
+    color: #fff;
 }
 
 .bookmarks-grid {
@@ -314,6 +361,7 @@ body {
 }
 
 .bm-link {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -326,6 +374,7 @@ body {
     font-size: 0.82rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .bm-link:hover {
@@ -337,12 +386,63 @@ body {
 
 .bm-icon {
     font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.bm-favicon {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: contain;
 }
 
 .bm-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+}
+
+/* 管理模式样式 */
+.bookmarks-card.is-managing .bm-link {
+    border-style: dashed;
+    border-color: var(--accent);
+    animation: bmPulse 2s infinite ease-in-out;
+}
+
+.bookmarks-card.is-managing .bm-link:hover {
+    background: var(--input-bg);
+    border-color: var(--accent);
+}
+
+.bm-edit-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--accent);
+    color: #fff;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.bookmarks-card.is-managing .bm-edit-badge {
+    display: flex;
+}
+
+@keyframes bmPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.015); }
 }
 
 /* 导航栏 */
@@ -1384,6 +1484,272 @@ body {
 
 .memo-h-btn.del:hover {
     color: #e74c3c;
+}
+
+/* ==========================================================================
+   书签新增与编辑 Modal 弹窗
+   ========================================================================== */
+.bm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 1rem;
+}
+
+.bm-modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.bm-modal-card {
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg, 20px);
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: bmModalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bmModalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.bm-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.bm-modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+}
+
+.bm-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.2rem;
+    transition: color 0.2s;
+}
+
+.bm-modal-close:hover {
+    color: var(--text);
+}
+
+.bm-modal-body {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bm-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.bm-form-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.bm-form-group input[type="text"] {
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.88rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.bm-form-group input[type="text"]:focus {
+    border-color: var(--accent);
+}
+
+.bm-icon-selector {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--input-bg);
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+}
+
+.bm-icon-preview-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bm-icon-preview {
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bm-icon-preview img {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.bm-icon-types {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.bm-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.bm-radio-label input {
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+.bm-emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.4rem;
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.6rem;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.bm-emoji-opt {
+    font-size: 1.25rem;
+    text-align: center;
+    padding: 0.3rem 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+
+.bm-emoji-opt:hover {
+    background: var(--paper-strong);
+    transform: scale(1.15);
+}
+
+.bm-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--line);
+    margin-top: 0.4rem;
+}
+
+.bm-footer-left,
+.bm-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.bm-btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.bm-btn-primary:hover {
+    opacity: 0.9;
+}
+
+.bm-btn-secondary {
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.55rem 1rem;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.bm-btn-secondary:hover {
+    background: var(--paper-strong);
+}
+
+.bm-btn-danger {
+    background: none;
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bm-btn-danger:hover {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: #e74c3c;
+}
+
+.bm-btn-text {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.3rem 0.4rem;
+}
+
+.bm-btn-text:hover {
+    color: var(--accent);
+    text-decoration: underline;
 }
 
 /* ==========================================================================

@@ -103,35 +103,29 @@
                 </section>
 
                 <!-- 常用书签快捷导航 Card -->
-                <section class="panel bookmarks-card">
+                <section class="panel bookmarks-card" id="bookmarksWidget">
                     <div class="bookmarks-header">
-                        <span class="bookmarks-title">常用书签</span>
+                        <div class="bookmarks-title-wrap">
+                            <span class="bookmarks-title">常用书签</span>
+                            <span class="bookmarks-badge" id="bookmarksCount">6</span>
+                        </div>
+                        <div class="bookmarks-actions">
+                            <button class="bm-action-btn" id="addBookmarkBtn" title="添加新书签">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </button>
+                            <button class="bm-action-btn" id="manageBookmarksBtn" title="管理/编辑书签">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <div class="bookmarks-grid">
-                        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="GitHub">
-                            <span class="bm-icon">🐙</span>
-                            <span class="bm-name">GitHub</span>
-                        </a>
-                        <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="ChatGPT">
-                            <span class="bm-icon">🤖</span>
-                            <span class="bm-name">ChatGPT</span>
-                        </a>
-                        <a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="Cloudflare">
-                            <span class="bm-icon">☁️</span>
-                            <span class="bm-name">Cloudflare</span>
-                        </a>
-                        <a href="https://www.v2ex.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="V2EX 创意工作者社区">
-                            <span class="bm-icon">🪐</span>
-                            <span class="bm-name">V2EX</span>
-                        </a>
-                        <a href="https://juejin.cn" target="_blank" rel="noopener noreferrer" class="bm-link" title="稀土掘金">
-                            <span class="bm-icon">💎</span>
-                            <span class="bm-name">稀土掘金</span>
-                        </a>
-                        <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" class="bm-link" title="Gmail 邮箱">
-                            <span class="bm-icon">✉️</span>
-                            <span class="bm-name">邮件中心</span>
-                        </a>
+                    <div class="bookmarks-grid" id="bookmarksGrid">
+                        <!-- 由 JS 动态渲染书签 -->
                     </div>
                 </section>
 
@@ -449,6 +443,76 @@
             <div class="memo-modal-body" id="memoHistoryList">
                 <!-- 由 JS 渲染历史便签 -->
             </div>
+        </div>
+    </div>
+
+    <!-- 书签新增/编辑 Modal 弹窗 -->
+    <div class="bm-modal-overlay" id="bookmarkModalOverlay">
+        <div class="bm-modal-card">
+            <div class="bm-modal-header">
+                <div class="bm-modal-title" id="bmModalTitle">
+                    <span>🔖</span> 添加书签
+                </div>
+                <button class="bm-modal-close" id="bmModalCloseBtn" title="关闭 (Esc)">✕</button>
+            </div>
+            <form class="bm-modal-body" id="bookmarkForm">
+                <input type="hidden" id="bmEditId">
+                <div class="bm-form-group">
+                    <label for="bmNameInput">网站名称</label>
+                    <input type="text" id="bmNameInput" placeholder="例如：GitHub、掘金" maxlength="24" required autocomplete="off">
+                </div>
+                <div class="bm-form-group">
+                    <label for="bmUrlInput">网站链接 (URL)</label>
+                    <input type="text" id="bmUrlInput" placeholder="例如：github.com 或 https://..." required autocomplete="off">
+                </div>
+                <div class="bm-form-group">
+                    <label>图标展示</label>
+                    <div class="bm-icon-selector">
+                        <div class="bm-icon-preview-wrap">
+                            <div class="bm-icon-preview" id="bmIconPreview">🌐</div>
+                        </div>
+                        <div class="bm-icon-types">
+                            <label class="bm-radio-label">
+                                <input type="radio" name="bmIconMode" value="auto" checked>
+                                <span>自动获取站点 Favicon</span>
+                            </label>
+                            <label class="bm-radio-label">
+                                <input type="radio" name="bmIconMode" value="emoji">
+                                <span>自选 Emoji</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- 快捷 Emoji 选择面板 -->
+                    <div class="bm-emoji-picker" id="bmEmojiPicker" style="display: none;">
+                        <span class="bm-emoji-opt">🌐</span>
+                        <span class="bm-emoji-opt">💻</span>
+                        <span class="bm-emoji-opt">🤖</span>
+                        <span class="bm-emoji-opt">☁️</span>
+                        <span class="bm-emoji-opt">📚</span>
+                        <span class="bm-emoji-opt">🚀</span>
+                        <span class="bm-emoji-opt">🎨</span>
+                        <span class="bm-emoji-opt">🛠️</span>
+                        <span class="bm-emoji-opt">💬</span>
+                        <span class="bm-emoji-opt">🎮</span>
+                        <span class="bm-emoji-opt">🎵</span>
+                        <span class="bm-emoji-opt">✉️</span>
+                        <span class="bm-emoji-opt">💎</span>
+                        <span class="bm-emoji-opt">🪐</span>
+                        <span class="bm-emoji-opt">🐙</span>
+                        <span class="bm-emoji-opt">📌</span>
+                    </div>
+                </div>
+                <div class="bm-modal-footer">
+                    <div class="bm-footer-left">
+                        <button type="button" class="bm-btn-danger" id="bmDeleteBtn" style="display: none;">删除</button>
+                        <button type="button" class="bm-btn-text" id="bmResetDefaultBtn">恢复默认</button>
+                    </div>
+                    <div class="bm-footer-right">
+                        <button type="button" class="bm-btn-secondary" id="bmCancelBtn">取消</button>
+                        <button type="submit" class="bm-btn-primary" id="bmSaveBtn">保存</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 

@@ -933,6 +933,343 @@
         });
     }
 
+    // ==========================================================================
+    // 12. 常用书签自定义与管理模块 (Custom Bookmarks)
+    // ==========================================================================
+    function initBookmarks() {
+        const DEFAULT_BOOKMARKS = [
+            { id: 'bm_github', name: 'GitHub', url: 'https://github.com', iconType: 'emoji', icon: '🐙' },
+            { id: 'bm_chatgpt', name: 'ChatGPT', url: 'https://chatgpt.com', iconType: 'emoji', icon: '🤖' },
+            { id: 'bm_cloudflare', name: 'Cloudflare', url: 'https://dash.cloudflare.com', iconType: 'emoji', icon: '☁️' },
+            { id: 'bm_v2ex', name: 'V2EX', url: 'https://www.v2ex.com', iconType: 'emoji', icon: '🪐' },
+            { id: 'bm_juejin', name: '稀土掘金', url: 'https://juejin.cn', iconType: 'emoji', icon: '💎' },
+            { id: 'bm_gmail', name: '邮件中心', url: 'https://mail.google.com', iconType: 'emoji', icon: '✉️' }
+        ];
+
+        const bookmarksWidget = document.getElementById('bookmarksWidget');
+        const bookmarksGrid = document.getElementById('bookmarksGrid');
+        const bookmarksCount = document.getElementById('bookmarksCount');
+        const addBookmarkBtn = document.getElementById('addBookmarkBtn');
+        const manageBookmarksBtn = document.getElementById('manageBookmarksBtn');
+
+        // Modal 相关元素
+        const modalOverlay = document.getElementById('bookmarkModalOverlay');
+        const modalCloseBtn = document.getElementById('bmModalCloseBtn');
+        const modalTitle = document.getElementById('bmModalTitle');
+        const bookmarkForm = document.getElementById('bookmarkForm');
+        const editIdInput = document.getElementById('bmEditId');
+        const nameInput = document.getElementById('bmNameInput');
+        const urlInput = document.getElementById('bmUrlInput');
+        const iconPreview = document.getElementById('bmIconPreview');
+        const emojiPicker = document.getElementById('bmEmojiPicker');
+        const deleteBtn = document.getElementById('bmDeleteBtn');
+        const resetDefaultBtn = document.getElementById('bmResetDefaultBtn');
+        const cancelBtn = document.getElementById('bmCancelBtn');
+
+        if (!bookmarksGrid) return;
+
+        let bookmarks = [];
+        let isManaging = false;
+        let selectedEmoji = '🌐';
+
+        // 1. 数据加载
+        function loadBookmarks() {
+            try {
+                const stored = localStorage.getItem('garden_bookmarks');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        bookmarks = parsed;
+                    }
+                }
+            } catch (e) {}
+
+            if (!bookmarks || bookmarks.length === 0) {
+                bookmarks = [...DEFAULT_BOOKMARKS];
+                localStorage.setItem('garden_bookmarks', JSON.stringify(bookmarks));
+            }
+
+            renderBookmarks();
+
+            // 若用户登录，拉取云端偏好设置
+            if (userToken) {
+                fetch('/api/user/preferences', {
+                    headers: { 'Authorization': `Bearer ${userToken}` }
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.ok && res.data?.customSettings?.bookmarks) {
+                        const cloudBms = res.data.customSettings.bookmarks;
+                        if (Array.isArray(cloudBms) && cloudBms.length > 0) {
+                            bookmarks = cloudBms;
+                            localStorage.setItem('garden_bookmarks', JSON.stringify(bookmarks));
+                            renderBookmarks();
+                        }
+                    }
+                })
+                .catch(err => console.warn('Sync cloud bookmarks error:', err));
+            }
+        }
+
+        // 2. 数据保存（本地 + 云端双向同步）
+        function saveBookmarks() {
+            localStorage.setItem('garden_bookmarks', JSON.stringify(bookmarks));
+            renderBookmarks();
+
+            if (userToken) {
+                fetch('/api/user/preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userToken}`
+                    },
+                    body: JSON.stringify({
+                        customSettings: { bookmarks }
+                    })
+                }).catch(err => console.error('Cloud sync failed:', err));
+            }
+        }
+
+        // 辅助工具：提取 URL 域名
+        function getDomain(rawUrl) {
+            let fullUrl = rawUrl.trim();
+            if (!/^https?:\/\//i.test(fullUrl)) {
+                fullUrl = 'https://' + fullUrl;
+            }
+            try {
+                return new URL(fullUrl).hostname;
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // 辅助工具：获取 Favicon 地址
+        function getFaviconUrl(domain) {
+            if (!domain) return '';
+            return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+        }
+
+        // 3. 渲染书签网格
+        function renderBookmarks() {
+            bookmarksGrid.innerHTML = '';
+            if (bookmarksCount) bookmarksCount.textContent = bookmarks.length;
+
+            if (bookmarks.length === 0) {
+                bookmarksGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 1rem 0; color: var(--muted); font-size: 0.8rem;">
+                        暂无书签，点击上方 ➕ 快速添加
+                    </div>
+                `;
+                return;
+            }
+
+            bookmarks.forEach(bm => {
+                const item = document.createElement('a');
+                item.className = 'bm-link';
+                item.href = bm.url;
+                item.target = '_blank';
+                item.rel = 'noopener noreferrer';
+                item.title = `${bm.name} (${bm.url})`;
+
+                let iconHtml = '';
+                if (bm.iconType === 'auto') {
+                    const domain = getDomain(bm.url);
+                    const favUrl = getFaviconUrl(domain);
+                    iconHtml = `
+                        <span class="bm-icon">
+                            <img class="bm-favicon" src="${favUrl}" alt="" onerror="this.onerror=null; this.outerHTML='<span>🌐</span>';">
+                        </span>
+                    `;
+                } else {
+                    iconHtml = `<span class="bm-icon">${bm.icon || '🔖'}</span>`;
+                }
+
+                item.innerHTML = `
+                    ${iconHtml}
+                    <span class="bm-name">${escapeHtml(bm.name)}</span>
+                    <span class="bm-edit-badge" title="编辑书签">✎</span>
+                `;
+
+                item.addEventListener('click', (e) => {
+                    if (isManaging) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openModal(bm.id);
+                    }
+                });
+
+                bookmarksGrid.appendChild(item);
+            });
+        }
+
+        // 4. Modal 弹窗逻辑
+        function openModal(bmId = null) {
+            bookmarkForm.reset();
+            const modeRadios = document.querySelectorAll('input[name="bmIconMode"]');
+
+            if (bmId) {
+                // 编辑模式
+                const current = bookmarks.find(b => b.id === bmId);
+                if (!current) return;
+
+                if (modalTitle) modalTitle.innerHTML = '<span>✏️</span> 编辑书签';
+                editIdInput.value = current.id;
+                nameInput.value = current.name;
+                urlInput.value = current.url;
+                selectedEmoji = current.icon || '🌐';
+
+                const mode = current.iconType || 'auto';
+                modeRadios.forEach(r => r.checked = (r.value === mode));
+                emojiPicker.style.display = mode === 'emoji' ? 'grid' : 'none';
+
+                if (deleteBtn) deleteBtn.style.display = 'block';
+            } else {
+                // 添加模式
+                if (modalTitle) modalTitle.innerHTML = '<span>🔖</span> 添加书签';
+                editIdInput.value = '';
+                selectedEmoji = '🌐';
+                modeRadios.forEach(r => r.checked = (r.value === 'auto'));
+                emojiPicker.style.display = 'none';
+
+                if (deleteBtn) deleteBtn.style.display = 'none';
+            }
+
+            updateIconPreview();
+            modalOverlay?.classList.add('open');
+            setTimeout(() => nameInput?.focus(), 50);
+        }
+
+        function closeModal() {
+            modalOverlay?.classList.remove('open');
+        }
+
+        function updateIconPreview() {
+            const mode = document.querySelector('input[name="bmIconMode"]:checked')?.value || 'auto';
+            if (mode === 'auto') {
+                const domain = getDomain(urlInput.value);
+                if (domain) {
+                    const favUrl = getFaviconUrl(domain);
+                    iconPreview.innerHTML = `<img src="${favUrl}" alt="" onerror="this.onerror=null; this.parentElement.textContent='🌐';">`;
+                } else {
+                    iconPreview.textContent = '🌐';
+                }
+            } else {
+                iconPreview.textContent = selectedEmoji;
+            }
+        }
+
+        // 5. 事件监听绑定
+        addBookmarkBtn?.addEventListener('click', () => openModal(null));
+
+        manageBookmarksBtn?.addEventListener('click', () => {
+            isManaging = !isManaging;
+            bookmarksWidget?.classList.toggle('is-managing', isManaging);
+            manageBookmarksBtn.title = isManaging ? '完成编辑' : '管理/编辑书签';
+        });
+
+        modalCloseBtn?.addEventListener('click', closeModal);
+        cancelBtn?.addEventListener('click', closeModal);
+        modalOverlay?.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay?.classList.contains('open')) {
+                closeModal();
+            }
+        });
+
+        // 单选框切换
+        document.querySelectorAll('input[name="bmIconMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const mode = e.target.value;
+                emojiPicker.style.display = mode === 'emoji' ? 'grid' : 'none';
+                updateIconPreview();
+            });
+        });
+
+        // 实时根据 URL 更新预览
+        urlInput?.addEventListener('input', () => {
+            const mode = document.querySelector('input[name="bmIconMode"]:checked')?.value;
+            if (mode === 'auto') updateIconPreview();
+        });
+
+        // Emoji 点击选择
+        emojiPicker?.addEventListener('click', (e) => {
+            const opt = e.target.closest('.bm-emoji-opt');
+            if (!opt) return;
+            selectedEmoji = opt.textContent.trim();
+            updateIconPreview();
+        });
+
+        // 表单保存
+        bookmarkForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+            let url = urlInput.value.trim();
+
+            if (!name || !url) {
+                alert('请完整填写名称与链接');
+                return;
+            }
+
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+
+            const iconMode = document.querySelector('input[name="bmIconMode"]:checked')?.value || 'auto';
+            const editId = editIdInput.value;
+
+            if (editId) {
+                // 编辑现有书签
+                const idx = bookmarks.findIndex(b => b.id === editId);
+                if (idx !== -1) {
+                    bookmarks[idx] = {
+                        ...bookmarks[idx],
+                        name,
+                        url,
+                        iconType: iconMode,
+                        icon: iconMode === 'emoji' ? selectedEmoji : null
+                    };
+                }
+            } else {
+                // 新建书签
+                bookmarks.push({
+                    id: 'bm_' + Date.now(),
+                    name,
+                    url,
+                    iconType: iconMode,
+                    icon: iconMode === 'emoji' ? selectedEmoji : null
+                });
+            }
+
+            saveBookmarks();
+            closeModal();
+        });
+
+        // 删除书签
+        deleteBtn?.addEventListener('click', () => {
+            const editId = editIdInput.value;
+            if (!editId) return;
+            if (!confirm('确定要删除此书签吗？')) return;
+
+            bookmarks = bookmarks.filter(b => b.id !== editId);
+            saveBookmarks();
+            closeModal();
+        });
+
+        // 恢复默认预设
+        resetDefaultBtn?.addEventListener('click', () => {
+            if (!confirm('确定恢复系统默认的 6 个常用书签吗？现有书签将被覆盖。')) return;
+            bookmarks = [...DEFAULT_BOOKMARKS];
+            saveBookmarks();
+            closeModal();
+        });
+
+        // 初始化加载
+        loadBookmarks();
+    }
+
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -942,6 +1279,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         initProfile();
         initClock();
+        initBookmarks();
         initQuickMemo();
         initTimePulse();
         initDailyQuote();
