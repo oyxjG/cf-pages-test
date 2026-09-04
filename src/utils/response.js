@@ -14,3 +14,8 @@ export function notFound() {
 export function methodNotAllowed() {
   return json({ ok: false, msg: "Method Not Allowed" }, 405);
 }
+
+export function parseJsonSafe(request) {
+  return request.json().catch(() => null);
+}
+
