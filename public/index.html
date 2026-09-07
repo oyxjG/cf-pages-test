@@ -283,10 +283,21 @@
                             </div>
                         </article>
 
-                        <!-- 卡片 2: 日常习惯打卡 (Daily Rituals - 全新上线) -->
+                        <!-- 卡片 2: 日常习惯打卡 (Daily Rituals - 云端持久化 & 热力图) -->
                         <article class="card tall habit-card" id="habit-panel">
                             <div class="accent-strip"></div>
-                            <div class="eyebrow">Daily Rituals</div>
+                            <div class="eyebrow" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Daily Rituals</span>
+                                <div class="habit-actions-top">
+                                    <button id="open-heatmap-btn" class="habit-icon-btn" title="查看习惯打卡贡献热力图">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                        <span>热力图</span>
+                                    </button>
+                                    <button id="open-add-habit-btn" class="habit-icon-btn" title="添加自定义习惯">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    </button>
+                                </div>
+                            </div>
                             <div class="habit-header">
                                 <h4>习惯打卡</h4>
                                 <span class="habit-rate" id="habit-rate">0/5 完成</span>
@@ -296,6 +307,18 @@
                             <div class="habit-list" id="habit-list">
                                 <!-- 由 JS 渲染打卡项 -->
                             </div>
+
+                            <!-- 迷你打卡热力条 (近 28 天) -->
+                            <div class="habit-mini-heatmap-wrap" id="habit-mini-heatmap-wrap" title="点击查看完整打卡热力图">
+                                <div class="mini-heatmap-label">
+                                    <span>近 4 周节奏</span>
+                                    <span class="mini-heatmap-stats" id="mini-heatmap-stats">加载中...</span>
+                                </div>
+                                <div class="mini-heatmap-grid" id="mini-heatmap-grid">
+                                    <!-- 由 JS 渲染 28 个小方块 -->
+                                </div>
+                            </div>
+
                             <div class="habit-footer">
                                 <span id="habit-streak-tip">🔥 坚持打卡中</span>
                             </div>
@@ -515,6 +538,116 @@
             </form>
         </div>
     </div>
+
+    <!-- 习惯打卡全景热力图弹窗 Modal -->
+    <div id="habit-heatmap-modal" class="habit-modal-backdrop" style="display: none;">
+        <div class="habit-modal-dialog heatmap-dialog">
+            <div class="habit-modal-header">
+                <div class="habit-modal-title">
+                    <span class="icon">📊</span>
+                    <div>
+                        <h3>习惯打卡贡献热力图</h3>
+                        <p class="muted" style="font-size: 0.8rem; margin: 0;">记录时间与坚持的印记，每一格都见证自律与成长</p>
+                    </div>
+                </div>
+                <button type="button" class="habit-modal-close" id="close-heatmap-btn">&times;</button>
+            </div>
+
+            <div class="habit-modal-body">
+                <!-- 核心成就看板 -->
+                <div class="heatmap-stats-grid">
+                    <div class="heatmap-stat-card">
+                        <span class="stat-label">总打卡次数</span>
+                        <span class="stat-value" id="hm-total-checkins">0</span>
+                    </div>
+                    <div class="heatmap-stat-card">
+                        <span class="stat-label">打卡活跃天数</span>
+                        <span class="stat-value" id="hm-active-days">0</span>
+                    </div>
+                    <div class="heatmap-stat-card">
+                        <span class="stat-label">当前连续打卡</span>
+                        <span class="stat-value highlight" id="hm-current-streak">0 天</span>
+                    </div>
+                    <div class="heatmap-stat-card">
+                        <span class="stat-label">历史最高连击</span>
+                        <span class="stat-value highlight" id="hm-max-streak">0 天</span>
+                    </div>
+                </div>
+
+                <!-- 热力图主视图容器 -->
+                <div class="heatmap-matrix-scroll">
+                    <div class="heatmap-matrix-container" id="heatmapMatrix">
+                        <!-- 由 JS 渲染月份栏、星期列与 7xN 的网格方块 -->
+                    </div>
+                </div>
+
+                <!-- 图例说明与底部提示 -->
+                <div class="heatmap-legend-row">
+                    <span class="muted" style="font-size: 0.78rem;">展示最近半年的打卡足迹</span>
+                    <div class="heatmap-legend">
+                        <span>少</span>
+                        <span class="legend-cell level-0"></span>
+                        <span class="legend-cell level-1"></span>
+                        <span class="legend-cell level-2"></span>
+                        <span class="legend-cell level-3"></span>
+                        <span class="legend-cell level-4"></span>
+                        <span>多</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加自定义习惯弹窗 Modal -->
+    <div id="habit-add-modal" class="habit-modal-backdrop" style="display: none;">
+        <div class="habit-modal-dialog">
+            <div class="habit-modal-header">
+                <div class="habit-modal-title">
+                    <span class="icon">✨</span>
+                    <div>
+                        <h3>添加自定义习惯</h3>
+                        <p class="muted" style="font-size: 0.8rem; margin: 0;">设定新的微习惯，开启自律新节奏</p>
+                    </div>
+                </div>
+                <button type="button" class="habit-modal-close" id="close-add-habit-btn">&times;</button>
+            </div>
+            <form id="add-habit-form" class="habit-modal-body">
+                <div class="habit-form-group">
+                    <label>习惯名称</label>
+                    <input type="text" id="habit-name-input" class="habit-input" placeholder="例如：背 20 个单词、冥想 10 分钟..." required maxlength="40" />
+                </div>
+                <div class="habit-form-group">
+                    <label>选择专属图标</label>
+                    <div class="habit-emoji-picker" id="habitEmojiPicker">
+                        <span class="habit-emoji-opt active">✨</span>
+                        <span class="habit-emoji-opt">💧</span>
+                        <span class="habit-emoji-opt">🏃</span>
+                        <span class="habit-emoji-opt">📖</span>
+                        <span class="habit-emoji-opt">🌙</span>
+                        <span class="habit-emoji-opt">💻</span>
+                        <span class="habit-emoji-opt">🧘</span>
+                        <span class="habit-emoji-opt">🥗</span>
+                        <span class="habit-emoji-opt">🎸</span>
+                        <span class="habit-emoji-opt">✍️</span>
+                        <span class="habit-emoji-opt">🎯</span>
+                        <span class="habit-emoji-opt">☀️</span>
+                        <span class="habit-emoji-opt">☕</span>
+                        <span class="habit-emoji-opt">🍎</span>
+                        <span class="habit-emoji-opt">🌿</span>
+                        <span class="habit-emoji-opt">🚲</span>
+                    </div>
+                    <input type="hidden" id="habit-icon-val" value="✨" />
+                </div>
+                <div class="habit-modal-footer">
+                    <button type="button" class="habit-btn-secondary" id="cancel-add-habit-btn">取消</button>
+                    <button type="submit" class="habit-btn-primary">确认添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 热力图悬停 Tooltip 浮动气泡 -->
+    <div id="heatmap-tooltip" class="heatmap-tooltip" style="display: none;"></div>
 
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
     <script src="index.js"></script>

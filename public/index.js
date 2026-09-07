@@ -638,78 +638,538 @@
     // 9. 日常习惯打卡 (Daily Rituals)
     // ==========================================================================
     function initDailyHabits() {
-        const DEFAULT_HABITS = [
-            { id: 'water', name: '喝足八杯水 (2000ml)', icon: '💧' },
-            { id: 'exercise', name: '运动健身 30 分钟', icon: '🏃' },
-            { id: 'reading', name: '深度阅读一章节', icon: '📖' },
-            { id: 'early', name: '早起早睡有节律', icon: '🌙' },
-            { id: 'focus', name: '心流专注 2 小时', icon: '💻' }
+        const DEFAULT_PRESET_HABITS = [
+            { id: 'water', name: '喝足八杯水 (2000ml)', icon: '💧', sortOrder: 1 },
+            { id: 'exercise', name: '运动健身 30 分钟', icon: '🏃', sortOrder: 2 },
+            { id: 'reading', name: '深度阅读一章节', icon: '📖', sortOrder: 3 },
+            { id: 'early', name: '早起早睡有节律', icon: '🌙', sortOrder: 4 },
+            { id: 'focus', name: '心流专注 2 小时', icon: '💻', sortOrder: 5 }
         ];
 
-        const todayKey = new Date().toISOString().slice(0, 10);
-        let habitState = JSON.parse(localStorage.getItem('daily_habits') || '{}');
-        if (habitState.lastDate !== todayKey) {
-            habitState.lastDate = todayKey;
-            habitState.todayDone = [];
-            if (!habitState.streaks) habitState.streaks = {};
-            localStorage.setItem('daily_habits', JSON.stringify(habitState));
+        // 本地时间格式化 YYYY-MM-DD
+        function getTodayKey() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
+        const todayKey = getTodayKey();
+        let habits = [];
+        let todayDone = [];
+        let heatmapData = {};
+        let heatmapStats = { totalCheckIns: 0, activeDays: 0, currentStreak: 0, maxStreak: 0 };
+
+        // 读取本地缓存状态
+        let localState = JSON.parse(localStorage.getItem('daily_habits') || '{}');
+        if (localState.lastDate !== todayKey) {
+            localState.lastDate = todayKey;
+            localState.todayDone = [];
+            localStorage.setItem('daily_habits', JSON.stringify(localState));
+        }
+
+        habits = localState.habits || DEFAULT_PRESET_HABITS;
+        todayDone = localState.todayDone || [];
+        let checkinHistory = localState.history || {}; // { "2026-09-07": ["water", "reading"] }
+
+        // DOM 元素引用
         const habitList = document.getElementById('habit-list');
         const habitRate = document.getElementById('habit-rate');
         const habitStreakTip = document.getElementById('habit-streak-tip');
+        const miniGrid = document.getElementById('mini-heatmap-grid');
+        const miniStats = document.getElementById('mini-heatmap-stats');
+        const miniWrap = document.getElementById('habit-mini-heatmap-wrap');
 
+        const openHeatmapBtn = document.getElementById('open-heatmap-btn');
+        const openAddHabitBtn = document.getElementById('open-add-habit-btn');
+        const heatmapModal = document.getElementById('habit-heatmap-modal');
+        const closeHeatmapBtn = document.getElementById('close-heatmap-btn');
+        const heatmapMatrix = document.getElementById('heatmapMatrix');
+        const tooltip = document.getElementById('heatmap-tooltip');
+
+        const addHabitModal = document.getElementById('habit-add-modal');
+        const closeAddHabitBtn = document.getElementById('close-add-habit-btn');
+        const cancelAddHabitBtn = document.getElementById('cancel-add-habit-btn');
+        const addHabitForm = document.getElementById('add-habit-form');
+        const habitNameInput = document.getElementById('habit-name-input');
+        const habitIconVal = document.getElementById('habit-icon-val');
+        const emojiPicker = document.getElementById('habitEmojiPicker');
+
+        // 1. 获取云端习惯与打卡列表
+        async function fetchCloudHabits() {
+            if (!userToken) return;
+            try {
+                const res = await fetch('/api/habits', {
+                    headers: { 'Authorization': `Bearer ${userToken}` }
+                });
+                const json = await res.json();
+                if (json.ok && json.data) {
+                    habits = json.data.habits || [];
+                    todayDone = json.data.todayDone || [];
+                    saveLocalState();
+                    renderHabits();
+                }
+            } catch (e) {
+                console.error('获取云端习惯失败:', e);
+            }
+        }
+
+        // 2. 获取云端热力图数据
+        async function fetchCloudHeatmap() {
+            if (!userToken) {
+                renderHeatmaps();
+                return;
+            }
+            try {
+                const res = await fetch('/api/habits/heatmap?days=182', {
+                    headers: { 'Authorization': `Bearer ${userToken}` }
+                });
+                const json = await res.json();
+                if (json.ok && json.data) {
+                    heatmapData = json.data.heatmap || {};
+                    heatmapStats = json.data.stats || heatmapStats;
+                    renderHeatmaps();
+                }
+            } catch (e) {
+                console.error('获取热力图数据失败:', e);
+                renderHeatmaps();
+            }
+        }
+
+        // 保存本地状态兜底
+        function saveLocalState() {
+            localState.habits = habits;
+            localState.todayDone = todayDone;
+            localState.lastDate = todayKey;
+            localState.history = checkinHistory;
+            localStorage.setItem('daily_habits', JSON.stringify(localState));
+        }
+
+        // 3. 渲染习惯卡片列表
         function renderHabits() {
             if (!habitList) return;
             habitList.innerHTML = '';
 
-            const doneList = habitState.todayDone || [];
-            if (habitRate) habitRate.textContent = `${doneList.length}/${DEFAULT_HABITS.length} 完成`;
+            const total = habits.length;
+            const doneCount = todayDone.length;
+            if (habitRate) habitRate.textContent = `${doneCount}/${total} 完成`;
 
             let maxStreak = 0;
-            DEFAULT_HABITS.forEach(h => {
-                const s = habitState.streaks?.[h.id] || 0;
-                if (s > maxStreak) maxStreak = s;
+            habits.forEach(h => {
+                if ((h.streak || 0) > maxStreak) maxStreak = h.streak;
             });
+
             if (habitStreakTip) {
-                habitStreakTip.textContent = maxStreak > 0 ? `🔥 连续坚持第 ${maxStreak} 天` : '✨ 点击习惯一键打卡';
+                if (doneCount === total && total > 0) {
+                    habitStreakTip.textContent = `🎉 今日所有习惯全部达成！连续坚持 ${maxStreak} 天`;
+                } else {
+                    habitStreakTip.textContent = maxStreak > 0 ? `🔥 连续坚持第 ${maxStreak} 天` : '✨ 点击习惯一键打卡';
+                }
             }
 
-            DEFAULT_HABITS.forEach(habit => {
-                const isDone = doneList.includes(habit.id);
-                const streak = habitState.streaks?.[habit.id] || 0;
+            if (habits.length === 0) {
+                habitList.innerHTML = '<div style="text-align:center; padding: 1.2rem; color:var(--muted); font-size:0.85rem;">暂无习惯，点击右上角「+」开启自律之旅</div>';
+                return;
+            }
+
+            habits.forEach(habit => {
+                const isDone = todayDone.includes(habit.id);
+                const streak = habit.streak || 0;
 
                 const item = document.createElement('div');
                 item.className = `habit-item ${isDone ? 'done' : ''}`;
                 item.innerHTML = `
                     <div class="habit-item-info">
-                        <span class="habit-icon">${habit.icon}</span>
+                        <span class="habit-icon">${habit.icon || '✨'}</span>
                         <div>
                             <div class="habit-name">${habit.name}</div>
                             <div class="habit-streak">${streak > 0 ? `已连击 ${streak} 天` : '今日待完成'}</div>
                         </div>
                     </div>
-                    <div class="habit-check">${isDone ? '✓' : ''}</div>
+                    <div class="habit-item-right">
+                        <div class="habit-check">${isDone ? '✓' : ''}</div>
+                        <button class="habit-delete-btn" title="删除此习惯" data-id="${habit.id}">&times;</button>
+                    </div>
                 `;
 
+                // 点击删除
+                const delBtn = item.querySelector('.habit-delete-btn');
+                delBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    confirmDeleteHabit(habit);
+                });
+
+                // 点击打卡 / 取消打卡
                 item.addEventListener('click', () => {
-                    if (isDone) {
-                        habitState.todayDone = habitState.todayDone.filter(id => id !== habit.id);
-                        if (habitState.streaks[habit.id] > 0) habitState.streaks[habit.id]--;
-                    } else {
-                        habitState.todayDone.push(habit.id);
-                        habitState.streaks[habit.id] = (habitState.streaks[habit.id] || 0) + 1;
-                    }
-                    localStorage.setItem('daily_habits', JSON.stringify(habitState));
-                    renderHabits();
+                    toggleHabitCheck(habit);
                 });
 
                 habitList.appendChild(item);
             });
         }
 
+        // 4. 切换打卡
+        async function toggleHabitCheck(habit) {
+            const isDone = todayDone.includes(habit.id);
+            // 乐观更新
+            if (isDone) {
+                todayDone = todayDone.filter(id => id !== habit.id);
+                if (habit.streak && habit.streak > 0) habit.streak--;
+                if (checkinHistory[todayKey]) {
+                    checkinHistory[todayKey] = checkinHistory[todayKey].filter(id => id !== habit.id);
+                }
+            } else {
+                todayDone.push(habit.id);
+                habit.streak = (habit.streak || 0) + 1;
+                if (!checkinHistory[todayKey]) checkinHistory[todayKey] = [];
+                if (!checkinHistory[todayKey].includes(habit.id)) {
+                    checkinHistory[todayKey].push(habit.id);
+                }
+            }
+
+            saveLocalState();
+            renderHabits();
+            renderHeatmaps();
+
+            if (!userToken) return;
+
+            try {
+                const res = await fetch('/api/habits/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userToken}`
+                    },
+                    body: JSON.stringify({ habitId: habit.id, date: todayKey })
+                });
+                const json = await res.json();
+                if (json.ok && json.data) {
+                    todayDone = json.data.todayDone || todayDone;
+                    habit.streak = json.data.habitStreak;
+                    saveLocalState();
+                    renderHabits();
+                    fetchCloudHeatmap();
+                }
+            } catch (e) {
+                console.error('云端打卡同步失败:', e);
+            }
+        }
+
+        // 5. 删除习惯
+        async function confirmDeleteHabit(habit) {
+            if (!confirm(`确定要删除习惯「${habit.name}」吗？历史打卡记录将一并清除。`)) return;
+
+            habits = habits.filter(h => h.id !== habit.id);
+            todayDone = todayDone.filter(id => id !== habit.id);
+            saveLocalState();
+            renderHabits();
+            renderHeatmaps();
+
+            if (!userToken) return;
+            try {
+                await fetch(`/api/habits?id=${encodeURIComponent(habit.id)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${userToken}` }
+                });
+                fetchCloudHeatmap();
+            } catch (e) {
+                console.error('删除习惯失败:', e);
+            }
+        }
+
+        // 6. 渲染热力图（迷你条 + 全景矩阵）
+        function renderHeatmaps() {
+            renderMiniHeatmap();
+            renderFullHeatmap();
+        }
+
+        // 6.1 迷你热力条（近 28 天）
+        function renderMiniHeatmap() {
+            if (!miniGrid) return;
+            miniGrid.innerHTML = '';
+
+            const daysCount = 28;
+            let activeDays28 = 0;
+            const now = new Date();
+
+            for (let i = daysCount - 1; i >= 0; i--) {
+                const d = new Date(now.getTime() - i * 86400000);
+                const dateStr = d.toISOString().slice(0, 10);
+
+                let level = 0;
+                let count = 0;
+
+                if (heatmapData[dateStr]) {
+                    level = heatmapData[dateStr].level || 0;
+                    count = heatmapData[dateStr].count || 0;
+                } else if (checkinHistory[dateStr]) {
+                    count = checkinHistory[dateStr].length;
+                    const total = habits.length || 5;
+                    const ratio = count / total;
+                    if (ratio >= 0.8) level = 4;
+                    else if (ratio >= 0.5) level = 3;
+                    else if (ratio >= 0.25) level = 2;
+                    else if (count > 0) level = 1;
+                }
+
+                if (count > 0) activeDays28++;
+
+                const cell = document.createElement('div');
+                cell.className = `mini-heatmap-cell level-${level}`;
+                cell.title = `${dateStr}: 完成 ${count} 项习惯`;
+                miniGrid.appendChild(cell);
+            }
+
+            if (miniStats) {
+                miniStats.textContent = `近4周打卡 ${activeDays28} 天`;
+            }
+        }
+
+        // 6.2 全景打卡贡献矩阵 (近 26 周 / 182 天)
+        function renderFullHeatmap() {
+            if (!heatmapMatrix) return;
+            heatmapMatrix.innerHTML = '';
+
+            // 更新顶部成就数据看板
+            document.getElementById('hm-total-checkins').textContent = heatmapStats.totalCheckIns || 0;
+            document.getElementById('hm-active-days').textContent = `${heatmapStats.activeDays || 0} 天`;
+            document.getElementById('hm-current-streak').textContent = `${heatmapStats.currentStreak || 0} 天`;
+            document.getElementById('hm-max-streak').textContent = `${heatmapStats.maxStreak || 0} 天`;
+
+            // 构建矩阵：26 周，横向排列
+            const weeksCount = 26;
+            const today = new Date();
+            const dayOfWeek = (today.getDay() + 6) % 7; // 0: 周一, 6: 周日
+
+            // 确定结束日期与起始日期（对齐周日）
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + (6 - dayOfWeek));
+
+            const startDate = new Date(endDate);
+            startDate.setDate(endDate.getDate() - (weeksCount * 7 - 1));
+
+            // 月份标签栏
+            const monthsRow = document.createElement('div');
+            monthsRow.className = 'heatmap-months-row';
+            
+            let lastMonth = -1;
+            for (let w = 0; w < weeksCount; w++) {
+                const weekDate = new Date(startDate.getTime() + w * 7 * 86400000);
+                const month = weekDate.getMonth() + 1;
+                if (month !== lastMonth) {
+                    const label = document.createElement('div');
+                    label.className = 'heatmap-month-label';
+                    label.style.left = `${w * 15}px`;
+                    label.textContent = `${month}月`;
+                    monthsRow.appendChild(label);
+                    lastMonth = month;
+                }
+            }
+            heatmapMatrix.appendChild(monthsRow);
+
+            // 主体网格：左侧星期列 + 右侧方块列
+            const gridBody = document.createElement('div');
+            gridBody.className = 'heatmap-grid-body';
+
+            const weekdaysCol = document.createElement('div');
+            weekdaysCol.className = 'heatmap-weekdays-col';
+            weekdaysCol.innerHTML = `<span>一</span><span>三</span><span>五</span><span>日</span>`;
+            gridBody.appendChild(weekdaysCol);
+
+            const weeksTrack = document.createElement('div');
+            weeksTrack.className = 'heatmap-weeks-track';
+
+            const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+            const weekdayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+            for (let w = 0; w < weeksCount; w++) {
+                const weekCol = document.createElement('div');
+                weekCol.className = 'heatmap-week-column';
+
+                for (let d = 0; d < 7; d++) {
+                    const cellDate = new Date(startDate.getTime() + (w * 7 + d) * 86400000);
+                    const dateStr = cellDate.toISOString().slice(0, 10);
+                    const isFuture = cellDate > today;
+
+                    let level = 0;
+                    let count = 0;
+
+                    if (!isFuture) {
+                        if (heatmapData[dateStr]) {
+                            level = heatmapData[dateStr].level || 0;
+                            count = heatmapData[dateStr].count || 0;
+                        } else if (checkinHistory[dateStr]) {
+                            count = checkinHistory[dateStr].length;
+                            const total = habits.length || 5;
+                            const ratio = count / total;
+                            if (ratio >= 0.8) level = 4;
+                            else if (ratio >= 0.5) level = 3;
+                            else if (ratio >= 0.25) level = 2;
+                            else if (count > 0) level = 1;
+                        }
+                    }
+
+                    const cell = document.createElement('div');
+                    cell.className = `heatmap-cell level-${level}`;
+                    if (isFuture) {
+                        cell.style.opacity = '0.15';
+                        cell.style.pointerEvents = 'none';
+                    }
+
+                    // Tooltip 交互
+                    cell.addEventListener('mouseenter', (e) => {
+                        if (isFuture || !tooltip) return;
+                        const weekdayStr = weekdayNames[d];
+                        const text = count > 0 
+                            ? `<strong>${dateStr} (${weekdayStr})</strong><br/>已达成 ${count} 项习惯打卡`
+                            : `<strong>${dateStr} (${weekdayStr})</strong><br/>当日无打卡记录`;
+                        tooltip.innerHTML = text;
+                        tooltip.style.display = 'block';
+
+                        const rect = cell.getBoundingClientRect();
+                        tooltip.style.left = `${rect.left + rect.width / 2}px`;
+                        tooltip.style.top = `${rect.top - 6}px`;
+                    });
+
+                    cell.addEventListener('mouseleave', () => {
+                        if (tooltip) tooltip.style.display = 'none';
+                    });
+
+                    weekCol.appendChild(cell);
+                }
+                weeksTrack.appendChild(weekCol);
+            }
+
+            gridBody.appendChild(weeksTrack);
+            heatmapMatrix.appendChild(gridBody);
+        }
+
+        // 7. 模态框交互绑定
+        if (openHeatmapBtn && heatmapModal) {
+            openHeatmapBtn.addEventListener('click', () => {
+                heatmapModal.style.display = 'flex';
+                fetchCloudHeatmap();
+            });
+        }
+        if (miniWrap && heatmapModal) {
+            miniWrap.addEventListener('click', () => {
+                heatmapModal.style.display = 'flex';
+                fetchCloudHeatmap();
+            });
+        }
+        if (closeHeatmapBtn && heatmapModal) {
+            closeHeatmapBtn.addEventListener('click', () => {
+                heatmapModal.style.display = 'none';
+            });
+        }
+        if (heatmapModal) {
+            heatmapModal.addEventListener('click', (e) => {
+                if (e.target === heatmapModal) heatmapModal.style.display = 'none';
+            });
+        }
+
+        // 添加习惯模态框
+        if (openAddHabitBtn && addHabitModal) {
+            openAddHabitBtn.addEventListener('click', () => {
+                addHabitModal.style.display = 'flex';
+                if (habitNameInput) {
+                    habitNameInput.value = '';
+                    habitNameInput.focus();
+                }
+            });
+        }
+        if (closeAddHabitBtn && addHabitModal) {
+            closeAddHabitBtn.addEventListener('click', () => {
+                addHabitModal.style.display = 'none';
+            });
+        }
+        if (cancelAddHabitBtn && addHabitModal) {
+            cancelAddHabitBtn.addEventListener('click', () => {
+                addHabitModal.style.display = 'none';
+            });
+        }
+        if (addHabitModal) {
+            addHabitModal.addEventListener('click', (e) => {
+                if (e.target === addHabitModal) addHabitModal.style.display = 'none';
+            });
+        }
+
+        // Emoji 选择器点击
+        if (emojiPicker) {
+            emojiPicker.querySelectorAll('.habit-emoji-opt').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    emojiPicker.querySelectorAll('.habit-emoji-opt').forEach(o => o.classList.remove('active'));
+                    opt.classList.add('active');
+                    if (habitIconVal) habitIconVal.value = opt.textContent.trim();
+                });
+            });
+        }
+
+        // 提交添加习惯表单
+        if (addHabitForm) {
+            addHabitForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = habitNameInput.value.trim();
+                const icon = habitIconVal ? habitIconVal.value : '✨';
+                if (!name) return;
+
+                const newHabit = {
+                    id: `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                    name,
+                    icon,
+                    sortOrder: habits.length + 1,
+                    streak: 0
+                };
+
+                habits.push(newHabit);
+                saveLocalState();
+                renderHabits();
+                renderHeatmaps();
+                addHabitModal.style.display = 'none';
+
+                if (userToken) {
+                    try {
+                        const res = await fetch('/api/habits', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${userToken}`
+                            },
+                            body: JSON.stringify(newHabit)
+                        });
+                        const json = await res.json();
+                        if (json.ok && json.data) {
+                            newHabit.id = json.data.id;
+                            saveLocalState();
+                            renderHabits();
+                        }
+                    } catch (err) {
+                        console.error('添加自定义习惯同步失败:', err);
+                    }
+                }
+            });
+        }
+
+        // ESC 关闭弹窗
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (heatmapModal) heatmapModal.style.display = 'none';
+                if (addHabitModal) addHabitModal.style.display = 'none';
+            }
+        });
+
+        // 初始化渲染
         renderHabits();
+        renderHeatmaps();
+
+        // 加载云端数据
+        if (userToken) {
+            fetchCloudHabits();
+            fetchCloudHeatmap();
+        }
     }
+
 
     // ==========================================================================
     // 10. 故事花园 (Story Oasis) - 动态数据加载与沉浸式阅读联动
