@@ -1739,6 +1739,7 @@
     // 12. PWA 客户端驱动、安装提示与离线网络感知
     // ==========================================================================
     function initPWA() {
+        const installBanner = document.getElementById('pwa-install-banner');
         const installBtn = document.getElementById('pwa-install-btn');
         const statusBar = document.getElementById('network-status-bar');
         const statusIcon = document.getElementById('network-status-icon');
@@ -1765,9 +1766,9 @@
             e.preventDefault();
             deferredPrompt = e;
 
-            // 显示我们精心设计的「安装桌面应用」按钮
-            if (installBtn) {
-                installBtn.style.display = 'inline-flex';
+            // 显示名片卡片底部的「安装桌面客户端」横幅 (方案 2)
+            if (installBanner) {
+                installBanner.style.display = 'flex';
             }
         });
 
@@ -1781,7 +1782,7 @@
 
             if (choiceResult.outcome === 'accepted') {
                 console.log('[PWA] 用户接受安装数字花园客户端');
-                installBtn.style.display = 'none';
+                if (installBanner) installBanner.style.display = 'none';
             } else {
                 console.log('[PWA] 用户暂缓安装');
             }
@@ -1791,7 +1792,7 @@
         // 监听应用安装完成事件
         window.addEventListener('appinstalled', () => {
             console.log('[PWA] 数字花园已成功安装到本地');
-            if (installBtn) installBtn.style.display = 'none';
+            if (installBanner) installBanner.style.display = 'none';
             deferredPrompt = null;
         });
 

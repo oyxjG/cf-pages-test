@@ -2309,33 +2309,75 @@ body {
     to { transform: translateY(0); opacity: 1; }
 }
 
-/* PWA 安装到桌面按钮 */
-.pwa-btn {
-    background: var(--input-bg);
+/* PWA 名片底部轻量安装横幅 (方案 2) */
+.pwa-install-banner {
+    margin-top: 0.9rem;
+    padding: 9px 12px;
+    border-radius: 12px;
     border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--accent) 6%, var(--input-bg));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.pwa-install-banner:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--paper-strong));
+}
+
+.pwa-banner-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.pwa-banner-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.pwa-banner-title {
+    font-size: 0.78rem;
+    font-weight: 700;
     color: var(--text);
-    padding: 0 10px;
-    height: 34px;
-    border-radius: var(--radius-sm);
-    font-size: 0.82rem;
+    line-height: 1.2;
+}
+
+.pwa-banner-sub {
+    font-size: 0.68rem;
+    color: var(--muted);
+    line-height: 1.2;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pwa-banner-btn {
+    background: var(--accent);
+    color: var(--btn-text);
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.2s;
-    user-select: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(191, 91, 50, 0.2);
 }
 
-.pwa-btn:hover {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: var(--paper-strong);
+.pwa-banner-btn:hover {
+    filter: brightness(1.1);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(191, 91, 50, 0.15);
+    box-shadow: 0 4px 12px rgba(191, 91, 50, 0.3);
 }
 
-.pwa-btn:active {
+.pwa-banner-btn:active {
     transform: scale(0.96);
 }
 
@@ -2356,9 +2398,10 @@ body {
         user-select: auto;
     }
 
-    /* 隐藏不再需要的安装按钮 */
-    #pwa-install-btn {
+    /* 独立客户端模式下隐藏安装横幅 */
+    #pwa-install-banner {
         display: none !important;
     }
 }
+
 

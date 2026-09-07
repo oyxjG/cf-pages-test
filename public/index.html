@@ -36,16 +36,6 @@
                     <div class="profile-header">
                         <div class="badge">Digital Garden</div>
                         <div class="profile-actions">
-                            <!-- PWA 安装到桌面按钮 (未安装时自动出现) -->
-                            <button id="pwa-install-btn" class="theme-btn pwa-btn" title="安装为独立桌面/手机应用" style="display: none;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                <span>安装</span>
-                            </button>
-
                             <button id="theme-toggle" class="theme-btn" title="切换深色模式">
                                 <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2">
@@ -76,7 +66,22 @@
                     <div class="profile-footer" id="profileAuthRow">
                         <!-- 由 JS 渲染登录/退出入口 -->
                     </div>
+
+                    <!-- 方案2：名片卡片底部轻量安装条带 (未安装时自动呈现) -->
+                    <div id="pwa-install-banner" class="pwa-install-banner" style="display: none;">
+                        <div class="pwa-banner-info">
+                            <span class="pwa-banner-icon">💻</span>
+                            <div>
+                                <div class="pwa-banner-title">安装桌面客户端</div>
+                                <div class="pwa-banner-sub">无边框独立窗口 · 离线可用</div>
+                            </div>
+                        </div>
+                        <button id="pwa-install-btn" class="pwa-banner-btn" type="button">
+                            安装
+                        </button>
+                    </div>
                 </section>
+
 
                 <!-- 实时时钟 Card -->
                 <section class="panel clock-card">
