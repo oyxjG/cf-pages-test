@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a2018"/>
+      <stop offset="50%" stop-color="#191410"/>
+      <stop offset="100%" stop-color="#0e0a08"/>
+    </linearGradient>
+    <linearGradient id="accentGrad512" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#bf5b32"/>
+      <stop offset="50%" stop-color="#e07a5f"/>
+      <stop offset="100%" stop-color="#f2cc8f"/>
+    </linearGradient>
+    <linearGradient id="leafGrad512" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1b5e53"/>
+      <stop offset="60%" stop-color="#2d786c"/>
+      <stop offset="100%" stop-color="#81b29a"/>
+    </linearGradient>
+    <filter id="glow512" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad512)"/>
+  <rect width="504" height="504" x="4" y="4" rx="124" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="3"/>
+  <g opacity="0.15" stroke="#f2cc8f" stroke-width="1.5" stroke-dasharray="4 8">
+    <circle cx="256" cy="256" r="170" fill="none"/>
+    <circle cx="256" cy="256" r="110" fill="none"/>
+  </g>
+  <g transform="translate(0, 10)">
+    <path d="M 256 360 C 210 320 150 250 160 170 C 190 160 250 190 256 250 Z" fill="url(#accentGrad512)" filter="url(#glow512)"/>
+    <path d="M 256 360 C 300 310 360 260 350 180 C 320 170 260 200 256 260 Z" fill="url(#leafGrad512)" opacity="0.92"/>
+    <path d="M 256 390 L 256 210 M 256 310 Q 220 270 190 230 M 256 280 Q 290 240 320 210" fill="none" stroke="#fffdfa" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+    <circle cx="256" cy="140" r="14" fill="#f2cc8f" filter="url(#glow512)"/>
+    <circle cx="256" cy="140" r="7" fill="#ffffff"/>
+  </g>
+</svg>

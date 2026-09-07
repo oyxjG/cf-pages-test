@@ -2272,3 +2272,93 @@ body {
         font-size: 1.6rem;
     }
 }
+
+/* ==========================================================================
+   PWA 客户端化与网络状态感知样式
+   ========================================================================== */
+
+/* 顶部网络离线/在线状态通知条 */
+.network-status-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    padding: 8px 16px;
+    background: rgba(191, 91, 50, 0.95);
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: statusBarSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    letter-spacing: 0.02em;
+}
+
+.network-status-bar.online {
+    background: rgba(45, 120, 108, 0.95);
+}
+
+@keyframes statusBarSlideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* PWA 安装到桌面按钮 */
+.pwa-btn {
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 0 10px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.pwa-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--paper-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(191, 91, 50, 0.15);
+}
+
+.pwa-btn:active {
+    transform: scale(0.96);
+}
+
+/* PWA 独立桌面窗口模式适配 (Standalone App Mode) */
+@media (display-mode: standalone) {
+    body {
+        padding-top: max(1.5rem, env(safe-area-inset-top));
+        padding-left: max(1.5rem, env(safe-area-inset-left));
+        padding-right: max(1.5rem, env(safe-area-inset-right));
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* 允许文本输入区自由选择文本 */
+    input, textarea, [contenteditable="true"] {
+        -webkit-user-select: auto;
+        user-select: auto;
+    }
+
+    /* 隐藏不再需要的安装按钮 */
+    #pwa-install-btn {
+        display: none !important;
+    }
+}
+

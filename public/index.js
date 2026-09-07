@@ -1735,6 +1735,105 @@
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
+    // ==========================================================================
+    // 12. PWA 客户端驱动、安装提示与离线网络感知
+    // ==========================================================================
+    function initPWA() {
+        const installBtn = document.getElementById('pwa-install-btn');
+        const statusBar = document.getElementById('network-status-bar');
+        const statusIcon = document.getElementById('network-status-icon');
+        const statusText = document.getElementById('network-status-text');
+        let deferredPrompt = null;
+        let statusTimeout = null;
+
+        // 1. 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('[PWA] Service Worker 成功注册，范围:', registration.scope);
+                    })
+                    .catch((err) => {
+                        console.warn('[PWA] Service Worker 注册失败:', err);
+                    });
+            });
+        }
+
+        // 2. 监听 PWA 安装提示事件 (beforeinstallprompt)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 阻止浏览器默认粗糙的自动弹窗
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // 显示我们精心设计的「安装桌面应用」按钮
+            if (installBtn) {
+                installBtn.style.display = 'inline-flex';
+            }
+        });
+
+        // 用户点击安装按钮
+        installBtn?.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+
+            // 呼出原生应用安装提示
+            deferredPrompt.prompt();
+            const choiceResult = await deferredPrompt.userChoice;
+
+            if (choiceResult.outcome === 'accepted') {
+                console.log('[PWA] 用户接受安装数字花园客户端');
+                installBtn.style.display = 'none';
+            } else {
+                console.log('[PWA] 用户暂缓安装');
+            }
+            deferredPrompt = null;
+        });
+
+        // 监听应用安装完成事件
+        window.addEventListener('appinstalled', () => {
+            console.log('[PWA] 数字花园已成功安装到本地');
+            if (installBtn) installBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // 3. 网络离线 / 在线状态感知
+        function updateNetworkStatus(isOnline) {
+            if (!statusBar) return;
+            clearTimeout(statusTimeout);
+
+            if (!isOnline) {
+                // 断网通知
+                statusBar.className = 'network-status-bar';
+                if (statusIcon) statusIcon.textContent = '⚡';
+                if (statusText) statusText.textContent = '当前处于离线模式，本地数据与小工具依然完全可用';
+                statusBar.style.display = 'flex';
+            } else {
+                // 恢复在线通知
+                statusBar.className = 'network-status-bar online';
+                if (statusIcon) statusIcon.textContent = '🟢';
+                if (statusText) statusText.textContent = '网络已恢复连接，正在与云端自动同步...';
+                statusBar.style.display = 'flex';
+
+                // 2.5 秒后平滑隐藏恢复通知
+                statusTimeout = setTimeout(() => {
+                    statusBar.style.display = 'none';
+                }, 2500);
+
+                // 触发数据双向静默同步
+                if (typeof window.__syncCloudData === 'function') {
+                    window.__syncCloudData();
+                }
+            }
+        }
+
+        window.addEventListener('offline', () => updateNetworkStatus(false));
+        window.addEventListener('online', () => updateNetworkStatus(true));
+
+        // 页面打开时如果已处于离线，立即提示
+        if (!navigator.onLine) {
+            updateNetworkStatus(false);
+        }
+    }
+
     // 初始化驱动
     document.addEventListener('DOMContentLoaded', () => {
         initProfile();
@@ -1747,5 +1846,7 @@
         initDailyHabits();
         initStoryOasis();
         initLaunchpad();
+        initPWA();
     });
 })();
+
