@@ -3,7 +3,7 @@
  * 离线优先与多策略分层缓存引擎
  */
 
-const CACHE_VERSION = 'digital-garden-v1.0.1';
+const CACHE_VERSION = 'digital-garden-v1.0.2';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -17,6 +17,7 @@ const PRECACHE_ASSETS = [
   '/index.js',
   '/manifest.json',
   '/favicon.svg',
+  '/favicon.ico',
   '/tasks.html',
   '/tasks.js',
   '/story.html',

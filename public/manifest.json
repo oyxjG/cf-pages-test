@@ -1,9 +1,9 @@
 {
-  "id": "/",
+  "id": "/?source=pwa",
   "name": "数字花园 - 个人聚合面板 & 效率工坊",
   "short_name": "数字花园",
   "description": "专属于个人的生活节奏管理、习惯打卡、故事心流与本地效率工具矩阵",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": [
@@ -20,12 +20,6 @@
     "lifestyle"
   ],
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
@@ -45,22 +39,10 @@
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-192.svg",
-      "sizes": "192x192",
+      "src": "/favicon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-maskable.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -69,28 +51,28 @@
       "short_name": "待办",
       "description": "查看与管理今日待办任务清单",
       "url": "/tasks.html",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "习惯打卡",
       "short_name": "打卡",
       "description": "快速记录今日习惯打卡与热力图",
       "url": "/#habit-panel",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "效率工坊",
       "short_name": "工具箱",
       "description": "打开精选本地私密效率工具矩阵",
       "url": "/#tools",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Markdown 编辑预览",
       "short_name": "Markdown",
       "description": "打开支持 LaTeX 与 Mermaid 的编辑预览工具",
       "url": "/tool/markdown_tool.html",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
