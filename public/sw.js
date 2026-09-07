@@ -1,9 +1,10 @@
 /**
  * 数字花园 (Digital Garden) - Service Worker
  * 离线优先与多策略分层缓存引擎
+ * 适配 Cloudflare Pages 干净 URL (Clean URLs) 与双轨自适应路由
  */
 
-const CACHE_VERSION = 'digital-garden-v1.0.3';
+const CACHE_VERSION = 'digital-garden-v1.0.4';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -70,21 +71,30 @@ const PRECACHE_ASSETS = [
   '/icons/icon-maskable.svg'
 ];
 
-// 1. 安装阶段：预缓存全部核心资源与工具
+// 1. 安装阶段：预缓存全部核心资源与工具 (双轨键值写入：带 .html 与不带 .html 均写入缓存)
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      // 容错预缓存，确保所有资源批量预取
-      return Promise.allSettled(
-        PRECACHE_ASSETS.map((url) => 
-          fetch(url, { cache: 'no-cache' })
-            .then((res) => {
-              if (res.ok) return cache.put(url, res);
-            })
-            .catch((err) => {
-              console.warn(`[SW] Precache failed for ${url}:`, err);
-            })
-        )
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      // 并发预缓存所有资产
+      await Promise.allSettled(
+        PRECACHE_ASSETS.map(async (url) => {
+          try {
+            const res = await fetch(url, { cache: 'no-cache' });
+            if (res && res.ok) {
+              // 1. 存入标准 key
+              await cache.put(url, res.clone());
+
+              // 2. 如果是 .html 页面，冗余写入无后缀的 Clean URL key（如 /tool/sm2_tool）
+              // 彻底兼容 Cloudflare Pages 自动重定向机制
+              if (url.endsWith('.html')) {
+                const cleanKey = url.slice(0, -5);
+                await cache.put(cleanKey, res.clone());
+              }
+            }
+          } catch (err) {
+            console.warn(`[SW] Precache failed for ${url}:`, err);
+          }
+        })
       );
     }).then(() => self.skipWaiting())
   );
@@ -119,77 +129,99 @@ self.addEventListener('fetch', (event) => {
   // 策略 A: API 请求 (/api/*) - 优先网络 (Network-First)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // 只读 GET 接口成功后在运行时缓存备份一份
-          if (response.ok && request.method === 'GET') {
-            const clone = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
+      (async () => {
+        try {
+          const response = await fetch(request);
+          if (response && response.ok) {
+            const cache = await caches.open(RUNTIME_CACHE);
+            cache.put(request, response.clone());
           }
           return response;
-        })
-        .catch(async () => {
-          // 断网时尝试从运行时缓存返回旧数据
+        } catch (err) {
           const cached = await caches.match(request);
-          if (cached) {
-            return cached;
-          }
-          // 彻底断网且无缓存时返回友好 JSON 响应
+          if (cached) return cached;
+
           return new Response(
             JSON.stringify({
               ok: false,
               offline: true,
-              msg: '当前处于离线状态，操作已保存在本地，稍后恢复联网后自动同步。'
+              msg: '当前处于离线状态，操作已保存在本地，恢复联网后将自动同步。'
             }),
             {
               headers: { 'Content-Type': 'application/json; charset=utf-8' },
               status: 200
             }
           );
-        })
+        }
+      })()
     );
     return;
   }
 
-  // 策略 B: HTML 页面导航 (Navigation) - 优先网络，离线平滑回退到缓存
+  // 策略 B: HTML 页面导航 (Navigation) - 优先网络，离线平滑双轨自适应匹配
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+      (async () => {
+        try {
+          // 联网时优先网络加载，并在后台更新缓存
+          const networkResponse = await fetch(request);
+          if (networkResponse && networkResponse.ok) {
+            const cache = await caches.open(STATIC_CACHE);
+            cache.put(request, networkResponse.clone());
+            // 冗余更新带/不带 .html 的对偶键
+            if (url.pathname.endsWith('.html')) {
+              cache.put(url.pathname.slice(0, -5), networkResponse.clone());
+            } else if (!url.pathname.includes('.')) {
+              cache.put(url.pathname + '.html', networkResponse.clone());
+            }
           }
-          return response;
-        })
-        .catch(async () => {
-          // 1. 精确匹配当前导航 URL（已预缓存所有工具页面）
-          const cached = await caches.match(request);
+          return networkResponse;
+        } catch (err) {
+          // 彻底断网：进入强大的双轨自适应离线匹配
+          const pathname = url.pathname;
+
+          // (1) 原始请求匹配 (忽略 Query 参数)
+          let cached = await caches.match(request, { ignoreSearch: true });
           if (cached) return cached;
 
-          // 2. 如果请求带参数或哈希，尝试按 pathname 再次匹配
-          const pathCached = await caches.match(url.pathname);
-          if (pathCached) return pathCached;
+          // (2) 路径精确匹配
+          cached = await caches.match(pathname, { ignoreSearch: true });
+          if (cached) return cached;
 
-          // 3. 仅对根路径或无后缀主站路径回退到首页
-          if (url.pathname === '/' || !url.pathname.includes('.')) {
-            const indexFallback = await caches.match('/index.html');
-            if (indexFallback) return indexFallback;
+          // (3) 双向扩展名自适应补偿匹配 (完美解决 Clean URL / Canonicalization 问题)
+          if (!pathname.endsWith('.html') && !pathname.includes('.')) {
+            // 请求为 /tool/sm2_tool -> 尝试匹配 /tool/sm2_tool.html
+            cached = await caches.match(pathname + '.html', { ignoreSearch: true });
+            if (cached) return cached;
+          } else if (pathname.endsWith('.html')) {
+            // 请求为 /tool/sm2_tool.html -> 尝试匹配 /tool/sm2_tool
+            cached = await caches.match(pathname.slice(0, -5), { ignoreSearch: true });
+            if (cached) return cached;
           }
 
-          // 4. 离线专属温馨提示（避免张冠李戴返回首页破坏单页工具）
+          // (4) 根路径回退首页
+          if (pathname === '/' || pathname === '/index.html' || pathname === '') {
+            cached = await caches.match('/index.html') || await caches.match('/');
+            if (cached) return cached;
+          }
+
+          // (5) 兜底友好离线提示页（返回 HTTP 200，绝不让浏览器抛出 ERR_FAILED）
           return new Response(
-            `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>离线提醒</title><style>body{font-family:-apple-system,sans-serif;text-align:center;padding:60px 20px;background:#faf6f0;color:#2c2c2c;}h2{color:#bf5b32;}a{display:inline-block;margin-top:20px;color:#bf5b32;font-weight:bold;text-decoration:none;}</style></head><body><h2>🌱 该页面暂未完成离线缓存</h2><p>请在恢复联网后访问一次，系统将自动离线缓存。</p><a href="/">返回首页</a></body></html>`,
-            { headers: { 'Content-Type': 'text/html; charset=utf-8' }, status: 200 }
+            `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>离线提醒</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#faf6f0;color:#2d2d2d;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;padding:20px;box-sizing:border-box;text-align:center;} .box{background:#fff;border-radius:16px;padding:36px 28px;box-shadow:0 10px 30px rgba(0,0,0,0.06);max-width:420px;width:100%;} h2{color:#bf5b32;margin-top:0;} a{display:inline-block;margin-top:20px;padding:10px 22px;background:#bf5b32;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;}</style></head><body><div class="box"><h2>🌱 该页面暂未离线缓存</h2><p>当前处于无网络模式，该页面在断网前未完成预加载。请在恢复网络后刷新一次即可永久离线使用。</p><a href="/">返回数字花园首页</a></div></body></html>`,
+            {
+              status: 200,
+              headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            }
           );
-        })
+        }
+      })()
     );
     return;
   }
 
   // 策略 C: 静态资产 (CSS / JS / 图片 / 字体 / 音频) - 缓存优先 + 后台更新 (Stale-While-Revalidate)
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
       // 后台异步向网络发起请求更新缓存 (Revalidate)
       const fetchPromise = fetch(request)
         .then((networkResponse) => {
