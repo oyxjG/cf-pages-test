@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="../theme.css">
   <script src="../theme.js"></script>
   <!-- KaTeX CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+  <link rel="stylesheet" href="/vendor/katex.min.css" />
   <!-- Highlight.js Theme (Auto switched via JS) -->
-  <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link id="hljs-theme" rel="stylesheet" href="/vendor/github.min.css" />
   <style>
     body {
       margin: 0;
@@ -725,12 +725,12 @@
     <span>保存成功</span>
   </div>
 
-  <!-- Load Markdown Dependencies from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Load Markdown Dependencies from Local Vendor -->
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/vendor/highlight.min.js"></script>
+  <script src="/vendor/katex.min.js"></script>
+  <script src="/vendor/mermaid.min.js"></script>
+  <script src="/vendor/html2canvas.min.js"></script>
 
   <script>
     // 默认初始示例文档
@@ -774,16 +774,16 @@
 
 ## 📊 表格展示与任务清单
 
-| 功能组件 | CDN 依赖项 | 运行环境 | 状态 |
+| 功能组件 | 依赖组件 | 运行环境 | 状态 |
 | :--- | :--- | :--- | :--- |
-| Markdown 编译 | Marked.js | 纯客户端 | ✅ 已接入 |
-| 代码语法高亮 | Highlight.js | 纯客户端 | ✅ 已接入 |
-| 数学公式渲染 | KaTeX | 纯客户端 | ✅ 已接入 |
-| 流程图表绘制 | Mermaid.js | 纯客户端 | ✅ 已接入 |
+| Markdown 编译 | Marked.js | 纯本地离线 | ✅ 已本地化 |
+| 代码语法高亮 | Highlight.js | 纯本地离线 | ✅ 已本地化 |
+| 数学公式渲染 | KaTeX | 纯本地离线 | ✅ 已本地化 |
+| 流程图表绘制 | Mermaid.js | 纯本地离线 | ✅ 已本地化 |
 
 - [x] 支持自动草稿保存
 - [x] 支持外部 Markdown 文件拖入读取
-- [ ] 准备对接 Cloudflare 后端进行云同步 (准备中)
+- [x] 100% 离线可用，无外部网络依赖
 `;
 
     // 核心参数与状态变量
@@ -809,9 +809,9 @@
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const themeLink = document.getElementById('hljs-theme');
       if (isDark) {
-        themeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css";
+        themeLink.href = "/vendor/github-dark.min.css";
       } else {
-        themeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css";
+        themeLink.href = "/vendor/github.min.css";
       }
       // 重新渲染 Mermaid 主题
       mermaid.initialize({
@@ -826,8 +826,8 @@
       // 切换一次主题以适配当前系统
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       document.getElementById('hljs-theme').href = isDark ? 
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" : 
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css";
+        "/vendor/github-dark.min.css" : 
+        "/vendor/github.min.css";
 
       // 读取 LocalStorage 草稿，若无则使用默认初始示例
       const savedDraft = localStorage.getItem('markdown_editor_draft');
