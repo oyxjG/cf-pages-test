@@ -147,6 +147,35 @@
       color: var(--text);
     }
 
+    /* 实时响应开关 */
+    .live-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      height: 32px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .live-toggle-label:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .live-toggle-label input[type="checkbox"] {
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin: 0;
+    }
+
     .select-dropdown {
       height: 32px;
       padding: 0 8px;
@@ -525,11 +554,17 @@
     </div>
 
     <div class="nav-center">
+      <!-- 实时响应开关 -->
+      <label class="live-toggle-label" title="开启后，打字或粘贴内容将即时自动转换 (带 150ms 智能防抖)">
+        <input type="checkbox" id="liveToggle" checked />
+        <span>⚡ 实时响应</span>
+      </label>
+
       <button class="btn btn-primary" id="btnEncode" title="执行 Base64 编码 (Ctrl + Enter)">
-        <span>⚡ 编码 (Encode)</span>
+        <span>编码 (Encode)</span>
       </button>
       <button class="btn" id="btnDecode" title="执行 Base64 解码 (Ctrl + Shift + Enter)">
-        <span>🔓 解码 (Decode)</span>
+        <span>解码 (Decode)</span>
       </button>
       <button class="btn" id="btnSwap" title="将结果与输入内容左右互换">
         <span>⇄ 互换</span>
@@ -709,9 +744,12 @@
       const pipeToJson = document.getElementById('pipeToJson');
       const pipeToDiff = document.getElementById('pipeToDiff');
       const toastTip = document.getElementById('toastTip');
+      const liveToggle = document.getElementById('liveToggle');
 
       let currentFile = null;
       let currentFileDataUrl = '';
+      let liveTimer = null;
+      let lastManualDirection = null; // 'encode' | 'decode' | null
 
       // 2. UTF-8 健壮 Base64 编解码实现 (支持复杂中文与 Emoji)
       function utf8ToBase64(str) {
@@ -774,14 +812,14 @@
       }
 
       // 3. 执行编码
-      function doEncode() {
+      function doEncode(isSilent = false) {
         const text = sourceInput.value;
         const mode = modeSelect.value;
         const wrap = wrapSelect.value;
 
         if (!text && !currentFileDataUrl) {
-          showToast('⚠️ 请先输入文本或拖入文件');
-          return;
+          if (!isSilent) showToast('⚠️ 请先输入文本或拖入文件');
+          return false;
         }
 
         const t0 = performance.now();
@@ -789,7 +827,6 @@
           let output = '';
           if (currentFileDataUrl) {
             output = currentFileDataUrl;
-            // 若用户选择只取纯 base64
             if (mode === 'url_safe') {
               output = output.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
             }
@@ -809,19 +846,21 @@
           inspectImage(output);
           updateStats();
           saveDraft();
+          return true;
         } catch (e) {
-          updateStatus(false, `编码失败: ${e.message}`);
+          if (!isSilent) updateStatus(false, `编码失败: ${e.message}`);
+          return false;
         }
       }
 
       // 4. 执行解码
-      function doDecode() {
+      function doDecode(isSilent = false) {
         let text = sourceInput.value.trim();
         const mode = modeSelect.value;
 
         if (!text) {
-          showToast('⚠️ 请输入需要解码的 Base64 字符串');
-          return;
+          if (!isSilent) showToast('⚠️ 请输入需要解码的 Base64 字符串');
+          return false;
         }
 
         const t0 = performance.now();
@@ -830,14 +869,12 @@
           if (mode === 'hex') {
             output = hexToString(text);
           } else {
-            // 如果带有 data:image/...;base64, 前缀，先行剥离
             let rawB64 = text;
             if (rawB64.includes('base64,')) {
               rawB64 = rawB64.split('base64,')[1];
             }
             rawB64 = rawB64.replace(/[\r\n\s]/g, '');
 
-            // 如果是 URL-Safe，还原为标准
             if (mode === 'url_safe' || (rawB64.includes('-') || rawB64.includes('_'))) {
               rawB64 = rawB64.replace(/-/g, '+').replace(/_/g, '/');
               while (rawB64.length % 4) {
@@ -851,11 +888,70 @@
           resultOutput.value = output;
           const cost = (performance.now() - t0).toFixed(1);
           updateStatus(true, `解码成功 (${cost}ms)`);
-          inspectImage(text); // 传入原 Base64 尝试看是否为图片
+          inspectImage(text);
           updateStats();
           saveDraft();
+          return true;
         } catch (e) {
-          updateStatus(false, `解码失败: 非法 Base64 编码或内容损坏`);
+          if (!isSilent) updateStatus(false, `解码失败: 非法 Base64 编码或内容损坏`);
+          return false;
+        }
+      }
+
+      // 实时响应调度 (150ms 智能防抖)
+      function scheduleLiveTransform() {
+        if (!liveToggle.checked) return;
+        clearTimeout(liveTimer);
+        liveTimer = setTimeout(() => {
+          performSmartLiveTransform();
+        }, 150);
+      }
+
+      // 智能探测输入是否是合法的 Base64 密文
+      function isLikelyBase64(str) {
+        const trimmed = str.trim();
+        if (!trimmed) return false;
+        if (trimmed.startsWith('data:image/')) return true;
+        // 如果包含汉字、空格、换行、或明显不是 Base64 的标点，则判定为普通原文
+        if (/[\u4e00-\u9fa5\r\n\{\}\[\]\":<>]/.test(trimmed)) return false;
+        if (/\s/.test(trimmed)) return false;
+        // 纯字母数字与合法符号
+        const clean = trimmed.replace(/=+$/, '');
+        return /^[A-Za-z0-9+/_-]+$/.test(clean) && clean.length >= 4;
+      }
+
+      // 执行智能实时转换
+      function performSmartLiveTransform() {
+        const text = sourceInput.value;
+        if (!text && !currentFileDataUrl) {
+          resultOutput.value = '';
+          updateStats();
+          inspectImage('');
+          return;
+        }
+
+        // 大文本保护 (>300KB)
+        if (text.length > 300000) {
+          updateStatus(true, '⚡ 文本较大 (>300KB)，已暂停实时转换，请手动点击');
+          return;
+        }
+
+        // 优先遵循用户明确点击过的意图
+        if (lastManualDirection === 'encode') {
+          doEncode(true);
+        } else if (lastManualDirection === 'decode') {
+          const ok = doDecode(true);
+          if (!ok) doEncode(true);
+        } else {
+          // 自动双向嗅探
+          if (isLikelyBase64(text)) {
+            const ok = doDecode(true);
+            if (!ok) {
+              doEncode(true);
+            }
+          } else {
+            doEncode(true);
+          }
         }
       }
 
@@ -983,8 +1079,16 @@
       }
 
       // 10. 事件绑定
-      btnEncode.addEventListener('click', doEncode);
-      btnDecode.addEventListener('click', doDecode);
+      btnEncode.addEventListener('click', () => {
+        lastManualDirection = 'encode';
+        doEncode();
+      });
+
+      btnDecode.addEventListener('click', () => {
+        lastManualDirection = 'decode';
+        doDecode();
+      });
+
       btnSwap.addEventListener('click', swapContent);
 
       btnClear.addEventListener('click', () => {
@@ -992,6 +1096,7 @@
         resultOutput.value = '';
         currentFile = null;
         currentFileDataUrl = '';
+        lastManualDirection = null;
         fileLoadedBanner.style.display = 'none';
         imageInspector.classList.remove('show');
         updateStats();
@@ -1003,7 +1108,10 @@
         sourceInput.value = '';
         currentFile = null;
         currentFileDataUrl = '';
+        lastManualDirection = null;
         fileLoadedBanner.style.display = 'none';
+        resultOutput.value = '';
+        imageInspector.classList.remove('show');
         updateStats();
       });
 
@@ -1013,6 +1121,7 @@
           sourceInput.value = text;
           updateStats();
           showToast('已从剪贴板粘贴');
+          scheduleLiveTransform();
         } catch (e) {
           sourceInput.focus();
           showToast('请直接按 Ctrl+V 粘贴');
@@ -1022,6 +1131,7 @@
       btnSample.addEventListener('click', () => {
         sourceInput.value = `{\n  "project": "Digital Garden",\n  "version": "v3.0",\n  "greeting": "你好，世界！🌍 Hello Base64"\n}`;
         currentFileDataUrl = '';
+        lastManualDirection = 'encode';
         fileLoadedBanner.style.display = 'none';
         doEncode();
         showToast('已载入示例并执行编码');
@@ -1048,8 +1158,10 @@
       btnRemoveFile.addEventListener('click', () => {
         currentFile = null;
         currentFileDataUrl = '';
+        lastManualDirection = null;
         fileLoadedBanner.style.display = 'none';
         sourceInput.value = '';
+        resultOutput.value = '';
         updateStats();
       });
 
@@ -1129,10 +1241,29 @@
         }
       });
 
-      // 实时统计监听
+      // 实时响应与统计监听
       sourceInput.addEventListener('input', () => {
         updateStats();
         inspectImage(sourceInput.value);
+        scheduleLiveTransform();
+      });
+
+      modeSelect.addEventListener('change', () => {
+        scheduleLiveTransform();
+      });
+
+      wrapSelect.addEventListener('change', () => {
+        scheduleLiveTransform();
+      });
+
+      liveToggle.addEventListener('change', () => {
+        localStorage.setItem('base64_live_toggle', liveToggle.checked ? 'true' : 'false');
+        if (liveToggle.checked) {
+          scheduleLiveTransform();
+          showToast('⚡ 实时转换已开启');
+        } else {
+          showToast('已关闭实时转换，请手动点击');
+        }
       });
 
       // 键盘快捷键监听
@@ -1140,8 +1271,10 @@
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
           e.preventDefault();
           if (e.shiftKey) {
+            lastManualDirection = 'decode';
             doDecode();
           } else {
+            lastManualDirection = 'encode';
             doEncode();
           }
         }
@@ -1169,8 +1302,15 @@
         window.location.href = '/tool/diff_tool.html';
       });
 
-      // 初始化
+      // 初始化：恢复草稿与实时开关配置
+      const savedLive = localStorage.getItem('base64_live_toggle');
+      if (savedLive !== null) {
+        liveToggle.checked = savedLive === 'true';
+      }
       loadDraft();
+      if (sourceInput.value) {
+        scheduleLiveTransform();
+      }
     })();
   </script>
 </body>
