@@ -50,10 +50,13 @@
         }
     });
 
-    // 4. 自动装载工具箱无缝切换抽屉 (排除登录/注册等鉴权独立页)
+    // 4. 自动装载工具箱无缝切换抽屉 (仅在 /tool/ 与 /game/ 子页面生效，首页保持原生全屏 Launchpad)
     const currentPath = window.location.pathname.toLowerCase();
+    const isIndexPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/index.html');
     const isAuthPage = currentPath.endsWith('/login.html') || currentPath.endsWith('/register.html');
-    if (!isAuthPage) {
+    const isToolOrGamePage = currentPath.includes('/tool/') || currentPath.includes('/game/');
+
+    if (isToolOrGamePage && !isIndexPage && !isAuthPage) {
         // 自动注入 tool-switcher.css
         if (!document.querySelector('link[href*="tool-switcher.css"]')) {
             const link = document.createElement('link');

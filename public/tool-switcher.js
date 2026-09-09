@@ -3,6 +3,14 @@
  * 纯原生 JS 模块，开箱即用，自动挂载
  */
 (function () {
+    // 严格环境检测：仅在 /tool/ 与 /game/ 子页面生效；首页已拥有原生全屏 Launchpad，坚决不初始化或拦截快捷键
+    const currentPath = window.location.pathname.toLowerCase();
+    const isToolOrGame = currentPath.includes('/tool/') || currentPath.includes('/game/');
+    const isIndex = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/index.html');
+    if (!isToolOrGame || isIndex) {
+        return;
+    }
+
     // 1. 全量工具与游戏元数据
     const ALL_TOOLS = [
         // 开发者工具
@@ -54,9 +62,6 @@
     let listContainerEl = null;
     let countBadgeEl = null;
     let filterTabsEl = null;
-
-    // 当前页面路径匹配
-    const currentPath = window.location.pathname.toLowerCase();
 
     // 2. 初始化抽屉 DOM 结构
     function initDrawerDOM() {
