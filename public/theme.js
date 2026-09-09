@@ -49,4 +49,26 @@
             });
         }
     });
+
+    // 4. 自动装载工具箱无缝切换抽屉 (排除登录/注册等鉴权独立页)
+    const currentPath = window.location.pathname.toLowerCase();
+    const isAuthPage = currentPath.endsWith('/login.html') || currentPath.endsWith('/register.html');
+    if (!isAuthPage) {
+        // 自动注入 tool-switcher.css
+        if (!document.querySelector('link[href*="tool-switcher.css"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = '/tool-switcher.css';
+            document.head.appendChild(link);
+        }
+
+        // 自动注入 tool-switcher.js
+        if (!document.querySelector('script[src*="tool-switcher.js"]')) {
+            const script = document.createElement('script');
+            script.src = '/tool-switcher.js';
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+    }
 })();
+

@@ -1,0 +1,600 @@
+/* ==========================================================================
+   Tool Switcher Drawer (工具箱全局无缝切换抽屉)
+   支持 100vh 毛玻璃滑入、深浅色自适应、键盘快捷导航
+   ========================================================================== */
+
+/* 1. 遮罩层 */
+.ts-drawer-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 12, 10, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ts-drawer-mask.ts-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 2. 抽屉面板主体 */
+.ts-drawer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 440px;
+    max-width: 90vw;
+    height: 100vh;
+    background: var(--paper-strong);
+    border-left: 1px solid var(--line);
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.25);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+    color: var(--text);
+}
+
+.ts-drawer-panel.ts-open {
+    transform: translateX(0);
+}
+
+/* 3. 抽屉头部 */
+.ts-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+    background: var(--paper);
+}
+
+.ts-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ts-title-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.ts-title-text {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+
+.ts-count-badge {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: var(--line);
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.ts-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ts-shortcut-hint {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.ts-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: var(--muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ts-close-btn:hover {
+    background: var(--line);
+    color: var(--text);
+}
+
+/* 4. 搜索与筛选区 */
+.ts-search-wrapper {
+    padding: 14px 22px 10px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+}
+
+.ts-search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ts-search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--muted);
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.ts-search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 36px 0 34px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.ts-search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.ts-search-clear {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    display: none;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.ts-search-clear.ts-visible {
+    display: block;
+}
+
+/* 分类 Tab 按钮 */
+.ts-filter-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+}
+
+.ts-filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.ts-tab-btn {
+    border: 1px solid var(--line);
+    background: var(--input-bg);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.ts-tab-btn:hover {
+    color: var(--text);
+    border-color: var(--muted);
+}
+
+.ts-tab-btn.ts-active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+
+/* 5. 抽屉内容列表区 */
+.ts-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    scrollbar-width: thin;
+}
+
+.ts-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ts-list-container::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 3px;
+}
+
+/* 空状态 */
+.ts-empty-state {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* 工具卡片项 */
+.ts-tool-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ts-tool-item:hover,
+.ts-tool-item.ts-keyboard-active {
+    background: color-mix(in srgb, var(--accent) 8%, var(--paper));
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* 当前工具高亮样式 */
+.ts-tool-item.ts-current {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+}
+
+.ts-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.ts-tool-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ts-tool-row-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ts-tool-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ts-badge-current {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.ts-tool-desc {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ts-arrow-icon {
+    color: var(--muted);
+    font-size: 14px;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.ts-tool-item:hover .ts-arrow-icon,
+.ts-tool-item.ts-keyboard-active .ts-arrow-icon {
+    opacity: 1;
+    color: var(--accent);
+    transform: translateX(3px);
+}
+
+/* 6. 底部提示栏 */
+.ts-footer {
+    padding: 10px 20px;
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.ts-footer kbd {
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 11px;
+}
+
+/* 7. 页面顶部挂载的触发器样式 (突出显示) */
+.ts-nav-trigger-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ts-nav-trigger-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+    background: linear-gradient(135deg, var(--paper-strong) 0%, color-mix(in srgb, var(--accent) 8%, var(--paper-strong)) 100%);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.ts-nav-trigger-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--paper-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.ts-nav-trigger-btn kbd {
+    font-size: 10px;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* 呼吸亮点 */
+.ts-pulse-dot {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background: #e74c3c;
+    border-radius: 50%;
+    box-shadow: 0 0 0 rgba(231, 76, 60, 0.7);
+    animation: tsPulse 2s infinite;
+}
+
+@keyframes tsPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(231, 76, 60, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    }
+}
+
+/* 首次功能引导气泡 (Feature Onboarding Popover) */
+.ts-tip-bubble {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 280px;
+    background: var(--paper-strong);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    z-index: 99990;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: tsBounceIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ts-tip-bubble::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 24px;
+    width: 10px;
+    height: 10px;
+    background: var(--paper-strong);
+    border-top: 1px solid var(--accent);
+    border-left: 1px solid var(--accent);
+    transform: rotate(45deg);
+}
+
+.ts-tip-bubble-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.ts-tip-bubble-body {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.ts-tip-bubble-body kbd {
+    background: var(--line);
+    border: 1px solid var(--line);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.ts-tip-bubble-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.ts-tip-btn-action {
+    border: none;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.ts-tip-btn-action:hover {
+    opacity: 0.9;
+}
+
+.ts-tip-btn-dismiss {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 6px;
+}
+
+.ts-tip-btn-dismiss:hover {
+    color: var(--text);
+}
+
+@keyframes tsBounceIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 8. 无导航栏页面的右下角悬浮胶囊触发按钮 */
+.ts-floating-trigger {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    height: 42px;
+    padding: 0 16px 0 14px;
+    border-radius: 99px;
+    background: var(--paper-strong);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 99990;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--text);
+    user-select: none;
+}
+
+.ts-floating-trigger:hover {
+    transform: scale(1.05) translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.ts-floating-trigger kbd {
+    font-size: 10px;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+    .ts-drawer-panel {
+        width: 100vw;
+        max-width: 100vw;
+    }
+    .ts-shortcut-hint,
+    .ts-footer {
+        display: none;
+    }
+    .ts-tip-bubble {
+        right: -10px;
+        width: calc(100vw - 32px);
+    }
+}
+
