@@ -354,11 +354,11 @@
 
         const hasSeenHint = localStorage.getItem('ts_switcher_hint_seen') === 'true';
 
-        // 检查页面是否有顶部导航栏
-        const navbar = document.querySelector('.top-navbar') || document.querySelector('.navbar');
+        // 检查页面是否有顶部导航栏 (兼容 .top-navbar, .navbar, .workbench-header)
+        const navbar = document.querySelector('.top-navbar') || document.querySelector('.navbar') || document.querySelector('.workbench-header');
         if (navbar) {
-            // 优先挂载在 .nav-right，其次在 navbar 末尾
-            const targetContainer = navbar.querySelector('.nav-right') || navbar;
+            // 优先挂载在 .nav-right 或 .header-right 或 .header-actions，其次在 navbar 末尾
+            const targetContainer = navbar.querySelector('.nav-right') || navbar.querySelector('.header-right') || navbar.querySelector('.header-actions') || navbar;
             
             // 避免重复添加
             if (!document.getElementById('tsNavTriggerWrapper')) {
