@@ -1,570 +1,1582 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
-    <title>二维码极客工具 - 生成与解析</title>
-    <link rel="stylesheet" href="../theme.css">
-    <script src="../theme.js"></script>
-    <!-- 本地托管二维码生成与解析库 -->
-    <script src="/vendor/qrcode.min.js"></script>
-    <script src="/vendor/jsQR.min.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
+  <title>二维码工坊 - 沉浸式工作台</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme.js"></script>
+  <!-- 本地托管二维码生成与解析库 -->
+  <script src="/vendor/qrcode.min.js"></script>
+  <script src="/vendor/jsQR.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        :root {
-            /* 基础变量由 theme.css 提供 */
-        }
+    body {
+      height: 100vh;
+      overflow: hidden;
+      font-family: "JetBrains Mono", "Fira Code", "SF Pro Display", "PingFang SC", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(42, 157, 143, 0.08), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(224, 122, 95, 0.08), transparent 25%),
+        linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 45%, var(--grad-end) 100%);
+      display: flex;
+      flex-direction: column;
+    }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at top left, rgba(224, 122, 95, 0.08), transparent 26%),
-                radial-gradient(circle at 88% 12%, rgba(129, 178, 154, 0.08), transparent 22%),
-                linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 45%, var(--grad-end) 100%);
-            padding: 40px 20px;
-            display: block;
-        }
+    /* 顶部导航 (56px) */
+    .workbench-header {
+      height: 56px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      z-index: 30;
+    }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-        }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-        .card {
-            background: var(--paper);
-            border: 1px solid var(--line);
-            backdrop-filter: blur(16px);
-            box-shadow: var(--shadow);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      transition: all 0.2s ease;
+    }
 
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 32px;
-        }
+    .back-btn:hover {
+      color: var(--teal);
+      border-color: var(--teal);
+      transform: translateX(-2px);
+    }
 
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-            padding: 0 16px;
-            border-radius: 12px;
-            background: var(--paper-strong);
-            color: var(--text);
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    .tool-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .back-link:hover {
-            transform: translateY(-2px);
-            color: var(--accent);
-        }
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(42, 157, 143, 0.12);
+      color: var(--teal);
+      border: 1px solid rgba(42, 157, 143, 0.25);
+    }
 
-        .back-link svg {
-            transition: transform 0.2s ease;
-        }
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .back-link:hover svg {
-            transform: translateX(-4px);
-        }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
 
-        .section-title {
-            font-size: 24px;
-            font-weight: 800;
-            margin: 0 0 24px 0;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    .nav-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
 
-        .tools-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-        }
+    .nav-btn.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
 
-        @media (max-width: 768px) {
-            .tools-grid { grid-template-columns: 1fr; }
-        }
+    .nav-btn.primary:hover {
+      background: #238276;
+    }
 
-        .tool-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding: 0;
-        }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .panel-label {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    /* 主工作区双栏 */
+    .workbench-main {
+      flex: 1;
+      height: calc(100vh - 56px - 32px);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      overflow: hidden;
+    }
 
-        textarea {
-            width: 100%;
-            height: 100px;
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--line);
-            background: var(--input-bg);
-            font-family: inherit;
-            font-size: 14px;
-            color: var(--text);
-            resize: none;
-            outline: none;
-            transition: all 0.2s;
-        }
+    /* 左栏：内容模板与样式定制 */
+    .col-config {
+      height: 100%;
+      border-right: 1px solid var(--line);
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: var(--bg);
+    }
 
-        textarea:focus {
-            border-color: var(--teal);
-            background: var(--bg-deep, var(--bg));
-            box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.1);
-        }
+    .panel-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
 
-        .btn {
-            padding: 12px 24px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            height: 46px;
-        }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+    }
 
-        .btn-primary {
-            background: var(--teal);
-            color: var(--btn-text);
-            box-shadow: 0 4px 12px rgba(45, 120, 108, 0.2);
-        }
+    .panel-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.1);
-        }
+    /* 场景模板 Tabs */
+    .template-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--paper-strong);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
 
-        .btn-secondary {
-            background: var(--btn-secondary-bg);
-            color: var(--text);
-            border: 1px solid var(--line);
-        }
+    .template-tab-btn {
+      flex: 1;
+      min-width: 75px;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
 
-        .btn-secondary:hover {
-            background: var(--paper-strong);
-            border-color: var(--teal);
-        }
+    .template-tab-btn:hover {
+      color: var(--text);
+    }
 
-        .result-area {
-            height: 240px;
-            background: var(--input-bg);
-            border: 1px dashed var(--line);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 20px;
-            overflow: hidden;
-        }
+    .template-tab-btn.active {
+      background: var(--paper);
+      color: var(--teal);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
 
-        #qrCanvas {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            background: white; /* 二维码通常需要白色背景以保证识别率 */
-            padding: 10px;
-        }
+    .template-form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-        .placeholder-text {
-            color: var(--muted);
-            font-size: 14px;
-            text-align: center;
-        }
+    .template-form.active {
+      display: flex;
+    }
 
-        /* 文件上传 */
-        .file-upload-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100px;
-        }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-        .file-upload-wrapper .btn-secondary {
-            height: 100%;
-            border-style: dashed;
-            flex-direction: column;
-            gap: 12px;
-        }
+    .form-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
 
-        .file-upload-wrapper input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
+    .form-input, .form-textarea, .form-select {
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 12.5px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
 
-        /* 历史记录部分 */
-        .history-section {
-            margin-top: 32px;
-        }
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
 
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.15);
+    }
 
-        .history-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 13px;
-            color: var(--muted);
-        }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
 
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 16px;
-        }
+    /* 视觉样式定制网格 */
+    .style-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
 
-        .history-item {
-            background: var(--paper-strong);
-            padding: 16px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--line);
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .history-item:hover {
-            transform: translateY(-2px);
-            border-color: var(--teal);
-            box-shadow: var(--shadow);
-        }
+    .color-input-preview {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      padding: 0;
+      cursor: pointer;
+      background: transparent;
+      outline: none;
+    }
 
-        .history-item::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--teal);
-        }
+    .preset-colors-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
 
-        .history-item.type-parse::before {
-            background: var(--mustard);
-        }
+    .preset-color-pill {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
+      transition: all 0.15s;
+    }
 
-        .history-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
+    .preset-color-pill:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
 
-        .history-content {
-            font-size: 13px;
-            line-height: 1.5;
-            word-break: break-all;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+    /* Logo 上传区域 */
+    .logo-upload-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: var(--input-bg);
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-sm);
+    }
 
-        .badge {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
-        .badge-gen { background: rgba(45, 120, 108, 0.1); color: var(--teal); }
-        .badge-parse { background: rgba(202, 157, 58, 0.1); color: var(--mustard); }
+    .logo-thumb-wrapper {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
 
-        .toast {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--text);
-            color: var(--bg);
-            padding: 12px 24px;
-            border-radius: 99px;
-            font-size: 14px;
-            font-weight: 600;
-            opacity: 0;
-            transition: all 0.3s;
-            pointer-events: none;
-            z-index: 1000;
-        }
+    .logo-thumb-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
 
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-    </style>
+    /* 右栏：实时大盘与解码 */
+    .col-preview {
+      height: 100%;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: var(--bg);
+    }
+
+    /* 二维码展示大卡片 */
+    .qr-showcase-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+    }
+
+    .canvas-stage {
+      padding: 16px;
+      border-radius: 12px;
+      background: repeating-conic-gradient(#e5e7eb 0% 25%, #ffffff 0% 50%) 50% / 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    #qrCanvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
+
+    .export-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* 多源解码靶场 */
+    .decoder-drop-zone {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius-sm);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--input-bg);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .decoder-drop-zone:hover, .decoder-drop-zone.dragover {
+      border-color: var(--teal);
+      background: rgba(42, 157, 143, 0.05);
+    }
+
+    .decoder-drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .decode-result-box {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+    }
+
+    .decode-result-box.show {
+      display: flex;
+    }
+
+    .decode-tag-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .decode-text-content {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text);
+      word-break: break-all;
+      background: var(--bg);
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      max-height: 110px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    /* 历史抽屉 */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 420px;
+      height: 100vh;
+      background: var(--paper);
+      border-left: 1px solid var(--line);
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .drawer-panel.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-card {
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .history-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-1px);
+    }
+
+    .history-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .history-type-badge {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+    .badge-gen { background: rgba(42, 157, 143, 0.15); color: var(--teal); }
+    .badge-parse { background: rgba(224, 122, 95, 0.15); color: var(--accent); }
+
+    .history-text {
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* 底部状态栏 (32px) */
+    .workbench-status-bar {
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      font-size: 11.5px;
+      color: var(--muted);
+      z-index: 10;
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-item strong {
+      color: var(--text);
+    }
+
+    /* 全局 Toast */
+    .toast {
+      position: fixed;
+      bottom: 42px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1024px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .workbench-main {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+      .col-config {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+        height: auto;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header-nav">
-            <a href="../index.html" class="back-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                返回首页
-            </a>
-        </div>
 
-        <div class="card">
-            <h1 class="section-title">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                二维码极客工具
-            </h1>
-
-            <div class="tools-grid">
-                <!-- 生成面板 -->
-                <div class="tool-panel" id="gen-tab">
-                    <div class="panel-label">✨ 生成二维码</div>
-                    <textarea id="gen-text" placeholder="📝 输入你想生成的文本或网址..."></textarea>
-                    <button class="btn btn-primary" onclick="generateQR()">开始生成</button>
-                    <div class="result-area" id="gen-result">
-                        <div class="placeholder-text" id="gen-placeholder">生成的二维码将展示在此处</div>
-                        <canvas id="qrCanvas" style="display:none;"></canvas>
-                    </div>
-                </div>
-
-                <!-- 解析面板 -->
-                <div class="tool-panel" id="parse-tab">
-                    <div class="panel-label">🔍 解析二维码</div>
-                    <div class="file-upload-wrapper">
-                        <button class="btn btn-secondary">📁 选择图片或 Ctrl+V 粘贴</button>
-                        <input type="file" id="upload-img" accept="image/*" onchange="parseImage(event)">
-                    </div>
-                    <div style="height: 46px;"></div> <!-- 占位符，对齐左侧按钮 -->
-                    <div class="result-area" id="parse-result">
-                        <div class="placeholder-text" id="parse-placeholder">解析结果将展示在此处</div>
-                        <div id="parse-text-result" style="display:none; width:100%; height:100%; flex-direction:column; gap:12px;">
-                            <textarea id="parsed-content" readonly style="flex:1; font-size:13px;"></textarea>
-                            <button class="btn btn-primary" onclick="copyParsed()" style="height:36px; font-size:13px;">复制结果</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 历史记录面板 -->
-        <div class="card history-section">
-            <div class="history-header">
-                <h2 style="font-size:18px; margin:0;">📜 最近使用记录</h2>
-                <div class="history-controls">
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="checkbox" id="history-opt-in"> 本地保存
-                    </label>
-                    <button onclick="clearHistory()" style="background:none; border:none; color:var(--berry); cursor:pointer; font-weight:600;">清空</button>
-                </div>
-            </div>
-            <ul class="history-list" id="history-list">
-                <!-- 历史项由 JS 注入 -->
-            </ul>
-        </div>
+  <!-- 顶部导航栏 (56px) -->
+  <header class="workbench-header">
+    <div class="header-left">
+      <a href="../index.html" class="back-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>返回</span>
+      </a>
+      <div class="tool-title">
+        <span>二维码工坊</span>
+        <span class="badge-pill">QRCode Studio v2.0</span>
+      </div>
     </div>
 
-    <div class="toast" id="toast">已复制</div>
-    <canvas id="processCanvas" style="display:none;"></canvas>
+    <div class="header-center">
+      <label class="nav-btn" style="cursor: pointer;" title="开启输入时自动重新绘制二维码">
+        <input type="checkbox" id="liveModeToggle" checked onchange="toggleLiveMode()">
+        <span>⚡ 实时生成</span>
+      </label>
 
-    <script>
-        const HISTORY_STORAGE_KEY = 'qr-history';
-        const HISTORY_OPT_IN_KEY = 'qr-history-opt-in';
-        const MAX_HISTORY = 30;
-        const historyOptInEl = document.getElementById('history-opt-in');
+      <button class="nav-btn" onclick="copyQrImage()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <span>复制图片</span>
+      </button>
 
-        const isHistoryEnabled = () => localStorage.getItem(HISTORY_OPT_IN_KEY) === '1';
-        let historyData = isHistoryEnabled() ? readStoredHistory() : [];
+      <button class="nav-btn primary" onclick="downloadPng(512)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>保存 PNG</span>
+      </button>
 
-        historyOptInEl.checked = isHistoryEnabled();
+      <button class="nav-btn" onclick="downloadSvg()">
+        <span>矢量 SVG</span>
+      </button>
 
-        function readStoredHistory() {
-            try {
-                const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
-                return raw ? JSON.parse(raw) : [];
-            } catch (e) { return []; }
+      <button class="nav-btn" onclick="openHistoryDrawer()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>历史记录</span>
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button class="nav-btn" onclick="resetCurrentForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span>清空</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主工作区双栏 -->
+  <main class="workbench-main">
+
+    <!-- 左栏：内容模板与视觉样式定制器 -->
+    <div class="col-config">
+
+      <!-- 卡片 1: 场景化内容模板 -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>二维码内容模板</span>
+          </span>
+          <span id="contentCharsCount" style="font-size: 11px; color: var(--muted);">0 字符</span>
+        </div>
+
+        <!-- 模板 Tabs -->
+        <div class="template-tabs">
+          <button class="template-tab-btn active" onclick="switchTemplate('text')">🔗 网址/文本</button>
+          <button class="template-tab-btn" onclick="switchTemplate('wifi')">📶 WiFi 连接</button>
+          <button class="template-tab-btn" onclick="switchTemplate('vcard')">📇 电子名片</button>
+          <button class="template-tab-btn" onclick="switchTemplate('mail')">✉️ 邮件</button>
+          <button class="template-tab-btn" onclick="switchTemplate('phone')">📞 电话/短信</button>
+        </div>
+
+        <!-- 1. 网址/文本模板 -->
+        <div class="template-form active" id="form-text">
+          <div class="form-group">
+            <label class="form-label">输入网址 (URL) 或任意文本内容：</label>
+            <textarea class="form-textarea" id="in-text" placeholder="例如：https://example.com 或任意长文本..." oninput="onDataChanged()">https://github.com/openai</textarea>
+          </div>
+        </div>
+
+        <!-- 2. WiFi 连接模板 -->
+        <div class="template-form" id="form-wifi">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">网络名称 (SSID)：</label>
+              <input type="text" class="form-input" id="wifi-ssid" placeholder="WiFi 名称..." oninput="onDataChanged()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">加密方式：</label>
+              <select class="form-select" id="wifi-type" onchange="onDataChanged()">
+                <option value="WPA">WPA/WPA2 (推荐)</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">无密码 (开放网络)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Wi-Fi 密码：</label>
+            <input type="text" class="form-input" id="wifi-pass" placeholder="输入无线密码..." oninput="onDataChanged()">
+          </div>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); cursor: pointer;">
+            <input type="checkbox" id="wifi-hidden" onchange="onDataChanged()">
+            <span>这是隐藏网络 (Hidden SSID)</span>
+          </label>
+        </div>
+
+        <!-- 3. 电子名片 (vCard) 模板 -->
+        <div class="template-form" id="form-vcard">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">姓名：</label>
+              <input type="text" class="form-input" id="vcard-name" placeholder="例如：张三" oninput="onDataChanged()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">手机号码：</label>
+              <input type="text" class="form-input" id="vcard-phone" placeholder="13800000000" oninput="onDataChanged()">
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">电子邮箱：</label>
+              <input type="text" class="form-input" id="vcard-email" placeholder="user@company.com" oninput="onDataChanged()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">公司单位：</label>
+              <input type="text" class="form-input" id="vcard-org" placeholder="某某科技有限公司" oninput="onDataChanged()">
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">职务/头衔：</label>
+              <input type="text" class="form-input" id="vcard-title" placeholder="技术总监 / 工程师" oninput="onDataChanged()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">个人/主页网站：</label>
+              <input type="text" class="form-input" id="vcard-url" placeholder="https://..." oninput="onDataChanged()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 邮件模板 -->
+        <div class="template-form" id="form-mail">
+          <div class="form-group">
+            <label class="form-label">收件人邮箱：</label>
+            <input type="text" class="form-input" id="mail-to" placeholder="recipient@example.com" oninput="onDataChanged()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">邮件主题：</label>
+            <input type="text" class="form-input" id="mail-subject" placeholder="邮件主题..." oninput="onDataChanged()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">正文内容：</label>
+            <textarea class="form-textarea" id="mail-body" placeholder="预填正文..." oninput="onDataChanged()"></textarea>
+          </div>
+        </div>
+
+        <!-- 5. 电话/短信模板 -->
+        <div class="template-form" id="form-phone">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">模式：</label>
+              <select class="form-select" id="phone-mode" onchange="onDataChanged()">
+                <option value="tel">拨打电话 (tel)</option>
+                <option value="sms">发送短信 (sms)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">电话号码：</label>
+              <input type="text" class="form-input" id="phone-num" placeholder="10086" oninput="onDataChanged()">
+            </div>
+          </div>
+          <div class="form-group" id="sms-body-group" style="display: none;">
+            <label class="form-label">预填短信内容：</label>
+            <textarea class="form-textarea" id="sms-body" placeholder="短信内容..." oninput="onDataChanged()"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- 卡片 2: 视觉外观与 Logo 定制 -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+            <span>视觉风格与 Logo 定制</span>
+          </span>
+        </div>
+
+        <div class="style-grid">
+          <div class="form-group">
+            <label class="form-label">容错级别 (ECC)：</label>
+            <select class="form-select" id="opt-ec-level" onchange="renderQr()">
+              <option value="L">L - 7% (低容错)</option>
+              <option value="M">M - 15% (标准)</option>
+              <option value="Q">Q - 25% (较高)</option>
+              <option value="H" selected>H - 30% (超高容错，嵌Logo必选)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">内边距留白 (Margin)：</label>
+            <select class="form-select" id="opt-margin" onchange="renderQr()">
+              <option value="1">1 格 (超窄边框)</option>
+              <option value="2" selected>2 格 (推荐)</option>
+              <option value="4">4 格 (标准)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">二维码前景色：</label>
+            <div class="color-row">
+              <input type="color" class="color-input-preview" id="color-dark" value="#000000" onchange="renderQr()">
+              <input type="text" class="form-input" id="color-dark-hex" value="#000000" style="width:90px;" oninput="syncColorInput('dark')">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">二维码背景色：</label>
+            <div class="color-row">
+              <input type="color" class="color-input-preview" id="color-light" value="#ffffff" onchange="renderQr()">
+              <input type="text" class="form-input" id="color-light-hex" value="#ffffff" style="width:90px;" oninput="syncColorInput('light')">
+            </div>
+          </div>
+        </div>
+
+        <!-- 8组高雅配色预设 -->
+        <div class="form-group">
+          <label class="form-label">推荐高雅配色预设：</label>
+          <div class="preset-colors-row">
+            <span class="preset-color-pill" onclick="applyPresetColors('#000000', '#ffffff')">经典黑白</span>
+            <span class="preset-color-pill" onclick="applyPresetColors('#2a9d8f', '#ffffff')">典雅青绿</span>
+            <span class="preset-color-pill" onclick="applyPresetColors('#1d3557', '#f1faee')">商务海蓝</span>
+            <span class="preset-color-pill" onclick="applyPresetColors('#e07a5f', '#fefae0')">暖阳橙红</span>
+            <span class="preset-color-pill" onclick="applyPresetColors('#6b21a8', '#faf5ff')">尊贵紫罗兰</span>
+            <span class="preset-color-pill" onclick="applyPresetColors('#0f172a', '#38bdf8')">暗夜冰蓝</span>
+            <span class="preset-color-pill" onclick="applyPresetColors('#000000', 'transparent')">透明底色</span>
+          </div>
+        </div>
+
+        <!-- 中心 Logo 头像上传 -->
+        <div class="form-group">
+          <label class="form-label">嵌入中心 Logo 图标 (可选)：</label>
+          <div class="logo-upload-box">
+            <div class="logo-thumb-wrapper" id="logoThumbWrapper">
+              <span style="font-size: 11px; color: var(--muted);">无</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; gap: 8px;">
+                <label class="nav-btn" style="cursor: pointer; padding: 4px 10px; font-size: 11.5px;">
+                  <span>选择图片</span>
+                  <input type="file" id="logoFileInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
+                </label>
+                <button class="nav-btn" id="removeLogoBtn" style="display:none; padding: 4px 10px; font-size: 11.5px;" onclick="removeLogo()">移除</button>
+              </div>
+              <div style="font-size: 11px; color: var(--muted);">自动居中并带有圆角白色安全边框保护</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 右栏：实时大盘与多源解码靶场 -->
+    <div class="col-preview">
+
+      <!-- 模块 1: 实时高精渲染大盘 -->
+      <section class="qr-showcase-card">
+        <div class="canvas-stage">
+          <canvas id="qrCanvas" width="280" height="280"></canvas>
+        </div>
+
+        <div class="export-btn-group">
+          <button class="nav-btn" onclick="copyQrImage()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>复制图片</span>
+          </button>
+          <button class="nav-btn primary" onclick="downloadPng(512)">
+            <span>保存高清 PNG (512)</span>
+          </button>
+          <button class="nav-btn" onclick="downloadPng(1024)">
+            <span>超清 1024</span>
+          </button>
+          <button class="nav-btn" onclick="downloadSvg()">
+            <span>无损 SVG</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 模块 2: 多源解码靶场 (QR Decoder) -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>多源解码识别靶场 (Decoder)</span>
+          </span>
+        </div>
+
+        <div class="decoder-drop-zone" id="dropZone">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--teal);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text);">拖拽图片到此处，或 Ctrl+V 粘贴截图</div>
+          <div style="font-size: 11px; color: var(--muted);">支持点击选择本地 PNG / JPG / WebP 二维码图片</div>
+          <input type="file" accept="image/*" onchange="handleDecoderFile(event)">
+        </div>
+
+        <!-- 解码结果卡片 -->
+        <div class="decode-result-box" id="decodeResultBox">
+          <div class="decode-tag-row">
+            <span id="decodeTypeBadge" style="color: var(--teal);">识别结果：</span>
+            <div style="display: flex; gap: 6px;">
+              <button class="nav-btn" id="decodeOpenUrlBtn" style="display:none; padding: 2px 6px; font-size: 11px;" onclick="openDecodedUrl()">在新窗口打开</button>
+              <button class="nav-btn" style="padding: 2px 6px; font-size: 11px;" onclick="copyDecodedText()">复制文本</button>
+            </div>
+          </div>
+          <div class="decode-text-content" id="decodeTextContent">--</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 底部状态栏 (32px) -->
+  <footer class="workbench-status-bar">
+    <div class="status-left">
+      <div class="status-item">
+        <span>当前模式:</span>
+        <strong id="bar-mode">网址/文本</strong>
+      </div>
+      <div class="status-item">
+        <span>纠错规格:</span>
+        <strong id="bar-ecc">Level H (30%)</strong>
+      </div>
+      <div class="status-item">
+        <span>计算安全:</span>
+        <strong style="color: var(--teal);">本地纯离线</strong>
+      </div>
+    </div>
+
+    <div class="status-right">
+      <div class="status-item">
+        <span>画布尺寸:</span>
+        <strong id="bar-dim">280 × 280</strong>
+      </div>
+      <div class="status-item">
+        <span>快捷工具抽屉:</span>
+        <kbd style="background: var(--paper-strong); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; font-size: 10px;">Ctrl+K</kbd>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 历史记录侧拉抽屉 -->
+  <div class="drawer-overlay" id="historyDrawerOverlay" onclick="closeHistoryDrawer()"></div>
+  <aside class="drawer-panel" id="historyDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>本地历史记录</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="nav-btn" style="padding: 3px 8px; font-size: 11px;" onclick="clearHistoryRecords()">清空</button>
+        <button class="nav-btn" style="padding: 3px 8px; font-size: 11px;" onclick="closeHistoryDrawer()">关闭</button>
+      </div>
+    </div>
+
+    <div class="drawer-body" id="historyList">
+      <!-- 动态卡片 -->
+    </div>
+  </aside>
+
+  <!-- 全局 Toast -->
+  <div class="toast" id="toast">操作成功</div>
+
+  <!-- 隐藏用于离线解析的 Canvas -->
+  <canvas id="hiddenProcessCanvas" style="display:none;"></canvas>
+
+  <script>
+    // 全局状态
+    let currentTemplate = 'text'; // 'text', 'wifi', 'vcard', 'mail', 'phone'
+    let isLiveMode = true;
+    let logoImageObj = null;
+    let renderDebounceTimer = null;
+    let lastGeneratedPayload = '';
+    const HISTORY_KEY = 'qr_workbench_history';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 监听全局截图粘贴
+      document.addEventListener('paste', handleGlobalPaste);
+
+      // 监听拖拽事件
+      setupDragDrop();
+
+      // 初次渲染
+      renderQr();
+    });
+
+    // 切换模板
+    function switchTemplate(tpl) {
+      currentTemplate = tpl;
+      document.querySelectorAll('.template-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(tpl));
+      });
+      document.querySelectorAll('.template-form').forEach(f => {
+        f.classList.toggle('active', f.id === `form-${tpl}`);
+      });
+
+      const modeMap = {
+        'text': '网址/文本',
+        'wifi': 'WiFi 连接',
+        'vcard': '电子名片',
+        'mail': '邮件协议',
+        'phone': '电话/短信'
+      };
+      document.getElementById('bar-mode').textContent = modeMap[tpl] || tpl;
+
+      onDataChanged();
+    }
+
+    // 组装当前各模板的标准化格式字符串
+    function assemblePayload() {
+      switch (currentTemplate) {
+        case 'text':
+          return document.getElementById('in-text').value.trim() || 'https://github.com';
+
+        case 'wifi':
+          const ssid = document.getElementById('wifi-ssid').value.trim() || 'MyWiFi';
+          const pass = document.getElementById('wifi-pass').value.trim();
+          const type = document.getElementById('wifi-type').value;
+          const hidden = document.getElementById('wifi-hidden').checked;
+          // 标准格式：WIFI:T:WPA;S:MySSID;P:MyPass;H:true;;
+          return `WIFI:T:${type};S:${escapeWifi(ssid)};P:${escapeWifi(pass)};H:${hidden ? 'true' : 'false'};;`;
+
+        case 'vcard':
+          const name = document.getElementById('vcard-name').value.trim() || '张三';
+          const phone = document.getElementById('vcard-phone').value.trim();
+          const email = document.getElementById('vcard-email').value.trim();
+          const org = document.getElementById('vcard-org').value.trim();
+          const title = document.getElementById('vcard-title').value.trim();
+          const url = document.getElementById('vcard-url').value.trim();
+
+          let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:${name};;;;`;
+          if (org) vcard += `\nORG:${org}`;
+          if (title) vcard += `\nTITLE:${title}`;
+          if (phone) vcard += `\nTEL;TYPE=CELL:${phone}`;
+          if (email) vcard += `\nEMAIL:${email}`;
+          if (url) vcard += `\nURL:${url}`;
+          vcard += '\nEND:VCARD';
+          return vcard;
+
+        case 'mail':
+          const to = document.getElementById('mail-to').value.trim();
+          const subject = document.getElementById('mail-subject').value.trim();
+          const body = document.getElementById('mail-body').value.trim();
+          let mailto = `mailto:${to}`;
+          const params = [];
+          if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+          if (body) params.push(`body=${encodeURIComponent(body)}`);
+          if (params.length > 0) mailto += '?' + params.join('&');
+          return mailto;
+
+        case 'phone':
+          const pMode = document.getElementById('phone-mode').value;
+          const pNum = document.getElementById('phone-num').value.trim() || '10086';
+          const pBody = document.getElementById('sms-body').value.trim();
+          document.getElementById('sms-body-group').style.display = (pMode === 'sms' ? 'flex' : 'none');
+
+          if (pMode === 'sms') {
+            return `smsto:${pNum}:${pBody}`;
+          } else {
+            return `tel:${pNum}`;
+          }
+      }
+      return '';
+    }
+
+    function escapeWifi(str) {
+      return str.replace(/([\\;,:"])/g, '\\$1');
+    }
+
+    // 输入改变触发
+    function onDataChanged() {
+      const payload = assemblePayload();
+      document.getElementById('contentCharsCount').textContent = `${payload.length} 字符`;
+
+      if (isLiveMode) {
+        clearTimeout(renderDebounceTimer);
+        renderDebounceTimer = setTimeout(renderQr, 150);
+      }
+    }
+
+    function toggleLiveMode() {
+      isLiveMode = document.getElementById('liveModeToggle').checked;
+      showToast(isLiveMode ? '已开启实时生成' : '已转为手动触发模式');
+    }
+
+    // 核心渲染 Canvas 函数
+    function renderQr() {
+      const payload = assemblePayload();
+      if (!payload) return;
+
+      lastGeneratedPayload = payload;
+      const canvas = document.getElementById('qrCanvas');
+      const ecLevel = document.getElementById('opt-ec-level').value;
+      const margin = parseInt(document.getElementById('opt-margin').value) || 2;
+      const colorDark = document.getElementById('color-dark-hex').value || '#000000';
+      const colorLight = document.getElementById('color-light-hex').value || '#ffffff';
+
+      document.getElementById('bar-ecc').textContent = `Level ${ecLevel}`;
+
+      // 使用 QRCode.toCanvas
+      const opt = {
+        width: 280,
+        margin: margin,
+        errorCorrectionLevel: ecLevel,
+        color: {
+          dark: colorDark,
+          light: colorLight === 'transparent' ? '#00000000' : colorLight
+        }
+      };
+
+      QRCode.toCanvas(canvas, payload, opt, function(err) {
+        if (err) {
+          showToast('生成二维码出错: ' + err.message);
+          return;
         }
 
-        function persistHistory() {
-            if (isHistoryEnabled()) localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(historyData));
+        // 如果配置了中心 Logo，在 canvas 中心合成绘制
+        if (logoImageObj) {
+          drawLogoOnCanvas(canvas, logoImageObj);
         }
 
-        historyOptInEl.addEventListener('change', function() {
-            if (historyOptInEl.checked) {
-                localStorage.setItem(HISTORY_OPT_IN_KEY, '1');
-                persistHistory();
-                showToast('已启用历史记录');
-            } else {
-                localStorage.removeItem(HISTORY_OPT_IN_KEY);
-                localStorage.removeItem(HISTORY_STORAGE_KEY);
-                historyData = [];
-                renderHistory();
-                showToast('已关闭并清除历史');
-            }
+        // 记录历史
+        recordHistory('gen', payload);
+      });
+    }
+
+    // 绘制居中圆角带有白色底板的 Logo
+    function drawLogoOnCanvas(canvas, img) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Logo 尺寸约为二维码宽度的 20%
+      const logoSize = Math.floor(w * 0.22);
+      const x = (w - logoSize) / 2;
+      const y = (h - logoSize) / 2;
+
+      // 1. 绘制白底圆角卡片作为保护层
+      const padding = 4;
+      const bgX = x - padding;
+      const bgY = y - padding;
+      const bgSize = logoSize + padding * 2;
+      const radius = 6;
+
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.roundRect(bgX, bgY, bgSize, bgSize, radius);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. 绘制 Logo
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, logoSize, logoSize, 4);
+      ctx.clip();
+      ctx.drawImage(img, x, y, logoSize, logoSize);
+      ctx.restore();
+    }
+
+    // 处理 Logo 上传
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          logoImageObj = img;
+          const wrapper = document.getElementById('logoThumbWrapper');
+          wrapper.innerHTML = `<img src="${evt.target.result}" class="logo-thumb-img">`;
+          document.getElementById('removeLogoBtn').style.display = 'inline-flex';
+          renderQr();
+          showToast('已成功嵌入中心 Logo (自动切换至高容错 Level H)');
+          document.getElementById('opt-ec-level').value = 'H';
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeLogo() {
+      logoImageObj = null;
+      document.getElementById('logoThumbWrapper').innerHTML = '<span style="font-size: 11px; color: var(--muted);">无</span>';
+      document.getElementById('removeLogoBtn').style.display = 'none';
+      document.getElementById('logoFileInput').value = '';
+      renderQr();
+      showToast('已移除中心 Logo');
+    }
+
+    // 配色交互
+    function syncColorInput(type) {
+      if (type === 'dark') {
+        const val = document.getElementById('color-dark-hex').value;
+        if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+          document.getElementById('color-dark').value = val;
+        }
+      } else {
+        const val = document.getElementById('color-light-hex').value;
+        if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+          document.getElementById('color-light').value = val;
+        }
+      }
+      renderQr();
+    }
+
+    function applyPresetColors(dark, light) {
+      document.getElementById('color-dark-hex').value = dark;
+      if (dark !== 'transparent') document.getElementById('color-dark').value = dark;
+
+      document.getElementById('color-light-hex').value = light;
+      if (light !== 'transparent') document.getElementById('color-light').value = light;
+
+      renderQr();
+    }
+
+    // 复制图片到剪贴板
+    function copyQrImage() {
+      const canvas = document.getElementById('qrCanvas');
+      canvas.toBlob(function(blob) {
+        if (!blob) return;
+        try {
+          const item = new ClipboardItem({ 'image/png': blob });
+          navigator.clipboard.write([item]).then(() => {
+            showToast('📋 二维码图片已成功复制到系统剪贴板！');
+          }).catch(err => {
+            fallbackCopyDataUrl(canvas);
+          });
+        } catch (e) {
+          fallbackCopyDataUrl(canvas);
+        }
+      });
+    }
+
+    function fallbackCopyDataUrl(canvas) {
+      const dataUrl = canvas.toDataURL('image/png');
+      navigator.clipboard.writeText(dataUrl).then(() => {
+        showToast('已复制图片 DataURL');
+      });
+    }
+
+    // 下载高清 PNG
+    function downloadPng(targetSize = 512) {
+      const payload = assemblePayload();
+      if (!payload) return;
+
+      const ecLevel = document.getElementById('opt-ec-level').value;
+      const margin = parseInt(document.getElementById('opt-margin').value) || 2;
+      const colorDark = document.getElementById('color-dark-hex').value || '#000000';
+      const colorLight = document.getElementById('color-light-hex').value || '#ffffff';
+
+      const tempCanvas = document.createElement('canvas');
+      QRCode.toCanvas(tempCanvas, payload, {
+        width: targetSize,
+        margin: margin,
+        errorCorrectionLevel: ecLevel,
+        color: {
+          dark: colorDark,
+          light: colorLight === 'transparent' ? '#00000000' : colorLight
+        }
+      }, function(err) {
+        if (err) return showToast('导出失败');
+
+        if (logoImageObj) {
+          drawLogoOnCanvas(tempCanvas, logoImageObj);
+        }
+
+        const link = document.createElement('a');
+        link.download = `qrcode_${targetSize}x${targetSize}.png`;
+        link.href = tempCanvas.toDataURL('image/png');
+        link.click();
+        showToast(`已下载 ${targetSize}×${targetSize} 高清 PNG`);
+      });
+    }
+
+    // 导出无损 SVG 矢量图
+    function downloadSvg() {
+      const payload = assemblePayload();
+      if (!payload) return;
+
+      const ecLevel = document.getElementById('opt-ec-level').value;
+      const margin = parseInt(document.getElementById('opt-margin').value) || 2;
+      const colorDark = document.getElementById('color-dark-hex').value || '#000000';
+      const colorLight = document.getElementById('color-light-hex').value || '#ffffff';
+
+      QRCode.toString(payload, {
+        type: 'svg',
+        margin: margin,
+        errorCorrectionLevel: ecLevel,
+        color: {
+          dark: colorDark,
+          light: colorLight === 'transparent' ? '#00000000' : colorLight
+        }
+      }, function(err, svgString) {
+        if (err) return showToast('导出 SVG 失败');
+
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'qrcode_vector.svg';
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        showToast('已导出打印级 SVG 矢量图');
+      });
+    }
+
+    // 多源解析靶场 (Decoder) 逻辑
+    function setupDragDrop() {
+      const zone = document.getElementById('dropZone');
+      ['dragenter', 'dragover'].forEach(name => {
+        zone.addEventListener(name, (e) => {
+          e.preventDefault();
+          zone.classList.add('dragover');
         });
-
-        function generateQR() {
-            const text = document.getElementById('gen-text').value.trim();
-            if (!text) return showToast('请输入内容');
-
-            const canvas = document.getElementById('qrCanvas');
-            QRCode.toCanvas(canvas, text, { 
-                width: 200, 
-                margin: 1, 
-                color: { dark: '#000000', light: '#ffffff' } 
-            }, function (error) {
-                if (error) return showToast('生成失败');
-                canvas.style.display = 'block';
-                document.getElementById('gen-placeholder').style.display = 'none';
-                saveHistory('gen', text);
-            });
-        }
-
-        document.addEventListener('paste', function(e) {
-            const items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    processImageFile(items[i].getAsFile());
-                    return;
-                }
-            }
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        zone.addEventListener(name, (e) => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
         });
-
-        function parseImage(event) {
-            const file = event.target.files[0];
-            if (file) processImageFile(file);
-            event.target.value = '';
+      });
+      zone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          processDecoderFile(file);
         }
+      });
+    }
 
-        function processImageFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('processCanvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    function handleDecoderFile(e) {
+      const file = e.target.files[0];
+      if (file) processDecoderFile(file);
+      e.target.value = '';
+    }
 
-                    if (code && code.data) {
-                        showParsedResult(code.data);
-                        saveHistory('parse', code.data);
-                        showToast('解析成功');
-                    } else {
-                        showToast('未发现二维码');
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+    function handleGlobalPaste(e) {
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          processDecoderFile(file);
+          return;
         }
+      }
+    }
 
-        function showParsedResult(text) {
-            document.getElementById('parse-placeholder').style.display = 'none';
-            document.getElementById('parse-text-result').style.display = 'flex';
-            document.getElementById('parsed-content').value = text;
-        }
+    function processDecoderFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('hiddenProcessCanvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
 
-        function copyParsed() {
-            const text = document.getElementById('parsed-content').value;
-            navigator.clipboard.writeText(text).then(() => showToast('复制成功'));
-        }
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imgData.data, imgData.width, imgData.height);
 
-        function saveHistory(type, content) {
-            if (!isHistoryEnabled()) return;
-            historyData = historyData.filter(item => item.content !== content);
-            historyData.unshift({ type, content, time: new Date().toLocaleString() });
-            if (historyData.length > MAX_HISTORY) historyData.pop();
-            persistHistory();
-            renderHistory();
-        }
+          if (code && code.data) {
+            displayDecodedResult(code.data);
+            recordHistory('parse', code.data);
+            showToast('🎉 二维码解析成功！');
+          } else {
+            showToast('⚠️ 未能在图片中识别出有效二维码');
+          }
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
 
-        function clearHistory() {
-            if(confirm('清空所有记录？')) {
-                historyData = [];
-                localStorage.removeItem(HISTORY_STORAGE_KEY);
-                renderHistory();
-            }
-        }
+    function displayDecodedResult(text) {
+      const box = document.getElementById('decodeResultBox');
+      const textEl = document.getElementById('decodeTextContent');
+      const badge = document.getElementById('decodeTypeBadge');
+      const openBtn = document.getElementById('decodeOpenUrlBtn');
 
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            if (historyData.length === 0) {
-                list.innerHTML = `<li style="grid-column:1/-1; text-align:center; color:var(--muted); padding:40px;">暂无记录</li>`;
-                return;
-            }
-            historyData.forEach(item => {
-                const li = document.createElement('li');
-                li.className = `history-item type-${item.type}`;
-                li.onclick = () => {
-                    if (item.type === 'gen') {
-                        document.getElementById('gen-text').value = item.content;
-                        generateQR();
-                    } else {
-                        showParsedResult(item.content);
-                    }
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
-                li.innerHTML = `
-                    <div class="history-meta">
-                        <span class="badge badge-${item.type === 'gen' ? 'gen' : 'parse'}">${item.type === 'gen' ? '生成' : '解析'}</span>
-                        <span>${item.time}</span>
-                    </div>
-                    <div class="history-content">${item.content}</div>
-                `;
-                list.appendChild(li);
-            });
-        }
+      box.classList.add('show');
+      textEl.textContent = text;
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
+      // 智能识别类型
+      if (/^https?:\/\//i.test(text)) {
+        badge.textContent = '🌐 识别类型: 网址链接 (URL)';
+        openBtn.style.display = 'inline-flex';
+        openBtn.dataset.url = text;
+      } else if (/^WIFI:/i.test(text)) {
+        badge.textContent = '📶 识别类型: WiFi 免密连接配置';
+        openBtn.style.display = 'none';
+      } else if (/^BEGIN:VCARD/i.test(text)) {
+        badge.textContent = '📇 识别类型: 电子名片 (vCard)';
+        openBtn.style.display = 'none';
+      } else {
+        badge.textContent = '📝 识别类型: 纯文本内容';
+        openBtn.style.display = 'none';
+      }
+    }
 
-        renderHistory();
-    </script>
+    function openDecodedUrl() {
+      const url = document.getElementById('decodeOpenUrlBtn').dataset.url;
+      if (url) window.open(url, '_blank');
+    }
+
+    function copyDecodedText() {
+      const text = document.getElementById('decodeTextContent').textContent;
+      if (!text || text === '--') return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制解析结果');
+      });
+    }
+
+    // 历史记录
+    function recordHistory(type, content) {
+      try {
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        history = history.filter(h => h.content !== content);
+        history.unshift({
+          type: type,
+          content: content,
+          time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
+        });
+        if (history.length > 30) history.pop();
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      } catch (e) {}
+    }
+
+    function openHistoryDrawer() {
+      renderHistoryList();
+      document.getElementById('historyDrawerOverlay').classList.add('open');
+      document.getElementById('historyDrawer').classList.add('open');
+    }
+
+    function closeHistoryDrawer() {
+      document.getElementById('historyDrawerOverlay').classList.remove('open');
+      document.getElementById('historyDrawer').classList.remove('open');
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById('historyList');
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      } catch (e) {}
+
+      if (history.length === 0) {
+        container.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--muted);">暂无本地历史记录</div>';
+        return;
+      }
+
+      let html = '';
+      history.forEach(item => {
+        html += `
+          <div class="history-card" onclick="applyHistoryItem('${escapeAttr(item.content)}', '${item.type}')">
+            <div class="history-meta-row">
+              <span class="history-type-badge ${item.type === 'gen' ? 'badge-gen' : 'badge-parse'}">${item.type === 'gen' ? '生成' : '解析'}</span>
+              <span>${item.time}</span>
+            </div>
+            <div class="history-text">${escapeHtml(item.content)}</div>
+          </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function applyHistoryItem(content, type) {
+      if (type === 'gen') {
+        switchTemplate('text');
+        document.getElementById('in-text').value = content;
+        renderQr();
+      } else {
+        displayDecodedResult(content);
+      }
+      closeHistoryDrawer();
+      showToast('已载入该条历史内容');
+    }
+
+    function clearHistoryRecords() {
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistoryList();
+      showToast('已清空历史记录');
+    }
+
+    function resetCurrentForm() {
+      document.getElementById('in-text').value = '';
+      document.getElementById('wifi-ssid').value = '';
+      document.getElementById('wifi-pass').value = '';
+      document.getElementById('vcard-name').value = '';
+      document.getElementById('vcard-phone').value = '';
+      removeLogo();
+      renderQr();
+      showToast('表单已清空');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeAttr(str) {
+      return str.replace(/`/g, '\\`').replace(/\$/g, '\\$').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+  </script>
 </body>
 </html>
