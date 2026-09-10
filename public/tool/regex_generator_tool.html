@@ -3,1102 +3,1683 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>正则表达式可视化生成器 - 高级聚合面板</title>
+  <title>正则积木工坊 - 沉浸式工作台</title>
   <link rel="stylesheet" href="../theme.css">
   <script src="../theme.js"></script>
   <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Avenir Next", "PingFang SC", sans-serif;
-      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
+    * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    .back-link {
-      text-decoration: none;
+    body {
+      height: 100vh;
+      overflow: hidden;
+      font-family: "JetBrains Mono", "Fira Code", "SF Pro Display", "PingFang SC", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(42, 157, 143, 0.08), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(224, 122, 95, 0.08), transparent 25%),
+        linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 45%, var(--grad-end) 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部导航栏 (56px) */
+    .workbench-header {
+      height: 56px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      z-index: 30;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
       color: var(--muted);
-      font-size: 14px;
+      text-decoration: none;
+      font-size: 13px;
       font-weight: 500;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      color: var(--teal);
+      border-color: var(--teal);
+      transform: translateX(-2px);
+    }
+
+    .tool-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(42, 157, 143, 0.12);
+      color: var(--teal);
+      border: 1px solid rgba(42, 157, 143, 0.25);
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s ease;
-      padding: 4px 8px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
       border-radius: var(--radius-sm);
-      background: transparent;
-      margin-left: -8px;
-      z-index: 100;
-    }
-
-    .back-link:hover {
-      color: var(--accent);
+      cursor: pointer;
+      border: 1px solid var(--line);
       background: var(--paper-strong);
+      color: var(--text);
+      transition: all 0.2s ease;
     }
 
-    .back-link svg {
-      transition: transform 0.2s ease;
+    .nav-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
     }
 
-    .back-link:hover svg {
-      transform: translateX(-4px);
+    .nav-btn.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
     }
 
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      background: var(--paper);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--line);
-      margin-top: 20px;
-      box-sizing: border-box;
+    .nav-btn.primary:hover {
+      background: #238276;
     }
 
-    .header {
-      margin-bottom: 24px;
+    .header-right {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 16px;
+      align-items: center;
+      gap: 8px;
     }
 
-    .header h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.02em;
-    }
-
-    .header p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    /* 主布局 */
-    .workspace {
+    /* 主工作区双栏 (高度铺满) */
+    .workbench-main {
+      flex: 1;
+      height: calc(100vh - 56px - 32px);
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 24px;
+      grid-template-columns: 1.15fr 0.85fr;
+      overflow: hidden;
     }
 
-    @media (max-width: 992px) {
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* 左侧配置面板 */
-    .builder-section {
+    /* 左栏：积木链工作区 */
+    .col-builder {
+      height: 100%;
+      border-right: 1px solid var(--line);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      overflow: hidden;
+      background: var(--bg);
     }
 
-    /* 规则列表容器 */
-    .rule-list {
+    .builder-toolbar {
+      height: 42px;
+      flex-shrink: 0;
       display: flex;
-      flex-direction: column;
-      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
     }
 
-    /* 单个规则行样式 */
-    .rule-card {
-      background: var(--btn-secondary-bg);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 16px 20px;
-      position: relative;
+    .builder-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+
+    /* 规则卡片 */
+    .rule-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow);
       transition: all 0.2s;
+      position: relative;
     }
 
     .rule-card:hover {
-      border-color: var(--accent-soft);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+      border-color: var(--teal);
     }
 
-    /* 第一层控制栏：序号、类型选择、输入框和删除按钮 */
+    .rule-card.disabled {
+      opacity: 0.55;
+      filter: grayscale(0.6);
+      background: var(--paper-strong);
+    }
+
     .rule-row-main {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
-    .rule-index {
-      width: 24px;
-      height: 24px;
+    .rule-index-badge {
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      background: var(--accent);
-      color: var(--btn-text);
+      background: var(--teal);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
+      font-size: 11px;
+      font-weight: 700;
       flex-shrink: 0;
     }
 
     .logic-select {
-      width: 70px;
-      padding: 8px 6px;
+      width: 72px;
+      padding: 6px;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--paper);
-      color: var(--text);
-      font-weight: bold;
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
+      color: var(--teal);
+      font-weight: 700;
+      font-size: 12px;
       outline: none;
     }
 
     .type-select {
       flex: 1.2;
-      min-width: 120px;
-      padding: 8px 10px;
+      min-width: 140px;
+      padding: 6px 10px;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--paper);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
       color: var(--text);
-      outline: none;
+      font-size: 12.5px;
       font-weight: 600;
+      outline: none;
+    }
+
+    .type-select:focus, .logic-select:focus, .value-input:focus {
+      border-color: var(--teal);
     }
 
     .value-input {
       flex: 1.5;
-      min-width: 140px;
-      padding: 8px 12px;
+      min-width: 130px;
+      padding: 6px 10px;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--paper);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
       color: var(--text);
+      font-family: inherit;
+      font-size: 12.5px;
       outline: none;
-      font-family: "Fira Code", monospace;
     }
 
-    .value-input:focus {
-      border-color: var(--accent);
+    .rule-actions {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: auto;
     }
 
-    .delete-btn {
+    .icon-btn {
       background: transparent;
       border: none;
       color: var(--muted);
       cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 6px;
-      border-radius: 6px;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
 
-    .delete-btn:hover {
-      background: rgba(140, 73, 100, 0.08);
-      color: var(--berry);
+    .icon-btn:hover {
+      color: var(--text);
+      background: var(--paper-strong);
     }
 
-    /* 第二层控制栏：修饰（排除）和量词（重复次数） */
-    .rule-row-options {
+    .icon-btn.danger:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* 规则参数第二行 (修饰与量词) */
+    .rule-row-sub {
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding-left: 36px;
-      flex-wrap: wrap;
+      gap: 14px;
+      padding-top: 8px;
       border-top: 1px dashed var(--line);
-      padding-top: 10px;
+      font-size: 12px;
+      flex-wrap: wrap;
     }
 
-    .exclude-container {
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text);
+    }
+
+    .quantifier-group {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .exclude-container input {
-      cursor: pointer;
-    }
-
-    .quantifier-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
     }
 
     .quantifier-select {
-      padding: 6px 10px;
+      padding: 4px 8px;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--paper);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
       color: var(--text);
+      font-size: 11.5px;
       outline: none;
     }
 
-    .number-input {
-      width: 50px;
-      padding: 6px 8px;
+    .num-input {
+      width: 46px;
+      padding: 4px 6px;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--paper);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
       color: var(--text);
-      outline: none;
+      font-size: 12px;
       text-align: center;
+      outline: none;
     }
 
-    /* 添加规则虚线框 */
-    .add-rule-btn {
+    /* 添加新规则按钮 */
+    .add-step-btn {
       width: 100%;
       border: 2px dashed var(--line);
       background: transparent;
       border-radius: var(--radius-sm);
-      padding: 14px;
-      font-size: 14px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--muted);
       cursor: pointer;
-      font-weight: bold;
-      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      transition: all 0.2s;
     }
 
-    .add-rule-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(191, 91, 50, 0.02);
+    .add-step-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: rgba(42, 157, 143, 0.04);
     }
 
-    /* 右侧展示面板 */
-    .preview-section {
+    /* 右栏：生成大盘与实时靶场 */
+    .col-preview {
+      height: 100%;
+      overflow-y: auto;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      position: sticky;
-      top: 20px;
+      gap: 14px;
+      background: var(--bg);
     }
 
-    .result-card {
-      background: var(--paper-strong);
+    .preview-card {
+      background: var(--paper);
       border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 24px;
+      border-radius: var(--radius-sm);
       box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .result-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      border-left: 3px solid var(--accent);
-      padding-left: 8px;
-    }
-
-    .regex-display {
-      background: var(--input-bg);
-      border: 1px solid var(--line);
-      border-radius: 8px;
       padding: 16px;
-      font-family: "Fira Code", "Consolas", monospace;
-      font-size: 18px;
-      font-weight: bold;
-      color: var(--accent);
-      word-break: break-all;
-      text-align: center;
-      position: relative;
-    }
-
-    /* 全局开关行 */
-    .global-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      font-size: 13px;
-    }
-
-    .global-option-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--btn-secondary-bg);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 8px 12px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .global-option-item input {
-      cursor: pointer;
-    }
-
-    /* 大白话解析区 */
-    .explainer-card {
-      background: var(--btn-secondary-bg);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    .explainer-list {
+    .preview-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+    }
+
+    .preview-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .regex-big-box {
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--teal);
+      word-break: break-all;
+      text-align: center;
+      user-select: all;
+      letter-spacing: 0.5px;
+    }
+
+    .flags-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .flag-toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .flag-toggle-pill input {
+      display: none;
+    }
+
+    .flag-toggle-pill.active {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+    }
+
+    /* ⚡ 内嵌实时验证靶场 (Live Tester) */
+    .tester-area {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .explainer-step {
+    .tester-input {
+      width: 100%;
+      height: 90px;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    .tester-input:focus {
+      border-color: var(--teal);
+    }
+
+    .tester-status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+    }
+
+    .tester-status-banner.match {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .tester-status-banner.nomatch {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .tester-highlight-preview {
+      max-height: 120px;
+      overflow-y: auto;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .tester-highlight-preview mark {
+      background: rgba(42, 157, 143, 0.3);
+      border-bottom: 2px solid var(--teal);
+      border-radius: 2px;
+      padding: 1px 2px;
+      color: inherit;
+      font-weight: bold;
+    }
+
+    /* 大白话解析列表 */
+    .explainer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .explainer-item {
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.5;
     }
 
     .explainer-step-num {
       width: 18px;
       height: 18px;
-      border-radius: 4px;
-      background: rgba(45, 120, 108, 0.1);
+      border-radius: 50%;
+      background: rgba(42, 157, 143, 0.15);
       color: var(--teal);
-      display: inline-flex;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
-      font-weight: bold;
       flex-shrink: 0;
       margin-top: 2px;
     }
 
-    /* 配方/模板卡片 */
-    .presets-section {
-      background: var(--btn-secondary-bg);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 20px;
-    }
-
-    .presets-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .preset-btn {
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--line);
-      background: var(--paper);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: bold;
-      transition: all 0.2s;
-      text-align: center;
-    }
-
-    .preset-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    /* 底部按钮 */
-    .action-group {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .action-btn {
-      flex: 1;
-      padding: 12px;
-      border-radius: 99px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .action-btn.primary {
-      background: var(--accent);
-      color: var(--btn-text);
-    }
-
-    .action-btn.secondary {
-      background: var(--paper);
-      color: var(--text);
-      border: 1px solid var(--line);
-    }
-
-    .action-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-
-    .toast {
+    /* 抽屉样式 (配方库与多语言代码) */
+    .drawer-overlay {
       position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--paper-strong);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: bold;
-      color: var(--text);
-      z-index: 1000;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 420px;
+      height: 100vh;
+      background: var(--paper);
+      border-left: 1px solid var(--line);
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .drawer-panel.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-title {
+      font-size: 14.5px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .preset-card {
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .preset-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-1px);
+    }
+
+    .preset-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .preset-desc {
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .code-block {
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-family: inherit;
+      font-size: 11.5px;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* 底部状态栏 (32px) */
+    .workbench-status-bar {
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      font-size: 11.5px;
+      color: var(--muted);
+      z-index: 10;
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-item strong {
+      color: var(--text);
+    }
+
+    /* 全局 Toast */
+    .toast {
+      position: fixed;
+      bottom: 42px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
     .toast.show {
+      opacity: 1;
       transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1024px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .workbench-main {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+      .col-builder {
+        height: 520px;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <a href="../index.html" class="back-link">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        返回首页
+
+  <!-- 顶部导航条 (56px) -->
+  <header class="workbench-header">
+    <div class="header-left">
+      <a href="../index.html" class="back-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>返回</span>
       </a>
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <h1>正则表达式可视化生成器</h1>
-          <p>通过组合直观的规则行拼装正则表达式，支持实时中文大白话语义步骤拆解并与测试器闭环互通。</p>
-        </div>
-        <div id="statusTip" style="font-size: 12px; color: var(--muted);"></div>
+      <div class="tool-title">
+        <span>正则积木工坊</span>
+        <span class="badge-pill">Regex Builder v2.0</span>
       </div>
     </div>
 
-    <div class="workspace">
-      <!-- 左侧：可视化规则编辑器 -->
-      <div class="builder-section">
-        <div class="label-title">
-          <span>规则链拼装 (Rule Chain)</span>
-          <span style="font-weight: normal; color: var(--muted); font-size: 12px;">从上至下依次匹配</span>
-        </div>
-        
-        <div class="rule-list" id="ruleList">
-          <!-- 动态渲染 -->
+    <div class="header-center">
+      <button class="nav-btn" onclick="openPresetsDrawer()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>📚 常用配方 (15+)</span>
+      </button>
+
+      <button class="nav-btn" onclick="openCodeDrawer()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        <span>💻 导出调用代码</span>
+      </button>
+
+      <button class="nav-btn primary" onclick="openInRegexStudio()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        <span>🚀 导入高级测试器</span>
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button class="nav-btn" onclick="clearAllRules()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span>清空</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主工作区双栏 -->
+  <main class="workbench-main">
+
+    <!-- 左栏：规则链可视化拼装工坊 -->
+    <div class="col-builder">
+      <div class="builder-toolbar">
+        <span>规则链拼装序列 (RULE STEPS)</span>
+        <span id="step-count-tip" style="font-size: 11.5px; color: var(--muted); font-weight: normal;">共 0 步匹配</span>
+      </div>
+
+      <div class="builder-body">
+        <div id="ruleList" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- 动态卡片 -->
         </div>
 
-        <button class="add-rule-btn" onclick="addRuleRow()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          添加匹配条件 (Add Step)
+        <button class="add-step-btn" onclick="addRuleStep()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>添加匹配条件步 (Add Step)</span>
         </button>
       </div>
+    </div>
 
-      <!-- 右侧：实时生成结果与联动 -->
-      <div class="preview-section">
-        <!-- 正则生成结果卡片 -->
-        <div class="result-card">
-          <div class="result-title">生成的正则表达式</div>
-          <div class="regex-display" id="regexResult">
-            <!-- 实时显示 -->
-          </div>
+    <!-- 右栏：生成大盘、内嵌即时靶场与大白话解释 -->
+    <div class="col-preview">
 
-          <!-- 全局匹配限制配置 -->
-          <div class="global-options">
-            <label class="global-option-item" title="必须以规则链的第一个规则作为字符串开头">
-              <input type="checkbox" id="anchoredStart" onchange="generateRegex()" />
-              <span>匹配开头 ( ^ )</span>
-            </label>
-            <label class="global-option-item" title="必须以规则链的最后一个规则作为字符串结尾">
-              <input type="checkbox" id="anchoredEnd" onchange="generateRegex()" />
-              <span>匹配结尾 ( $ )</span>
-            </label>
-            <label class="global-option-item" title="匹配时不区分英文字母的大小写">
-              <input type="checkbox" id="flagI" onchange="generateRegex()" />
-              <span>忽略大小写 ( i )</span>
-            </label>
-            <label class="global-option-item" title="查找所有匹配项，而非仅在找到第一个后停止">
-              <input type="checkbox" id="flagG" checked onchange="generateRegex()" />
-              <span>全局提取 ( g )</span>
-            </label>
-          </div>
-
-          <!-- 操作按钮组 -->
-          <div class="action-group">
-            <button class="action-btn primary" onclick="copyGeneratedRegex()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              复制正则表达式
-            </button>
-            <button class="action-btn secondary" onclick="openInTester()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              一键导入测试器
-            </button>
-          </div>
+      <!-- 卡片 1: 生成的正则表达式 -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <span class="preview-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>生成的正则表达式</span>
+          </span>
+          <button class="nav-btn" style="padding: 3px 8px; font-size: 11px;" onclick="copyRegexResult()">复制正则</button>
         </div>
 
-        <!-- 步骤大白话语义流程卡 -->
-        <div class="explainer-card">
-          <div class="result-title">中文逻辑语义描述</div>
-          <div class="explainer-list" id="explainerList">
-            <!-- 动态说明 -->
-          </div>
-        </div>
+        <div class="regex-big-box" id="regexResult">/(空)/</div>
 
-        <!-- 快捷配方 -->
-        <div class="presets-section">
-          <div class="result-title">常用可视化配方</div>
-          <div class="presets-grid">
-            <button class="preset-btn" onclick="loadPreset('phone')">📱 手机号提取</button>
-            <button class="preset-btn" onclick="loadPreset('capital_start')">🔠 大写字母开头</button>
-            <button class="preset-btn" onclick="loadPreset('date')">📅 年-月-日日期</button>
-            <button class="preset-btn" onclick="loadPreset('price')">💰 带小数金币值</button>
-          </div>
+        <!-- 修饰符与边界设置胶囊组 -->
+        <div class="flags-pills-row">
+          <span style="font-size: 11.5px; color: var(--muted); margin-right: 4px;">边界与标志：</span>
+          <label class="flag-toggle-pill" id="pill-anchor-start" onclick="toggleAnchor('start')">
+            <input type="checkbox" id="anchoredStart">
+            <span>^ 匹配开头</span>
+          </label>
+          <label class="flag-toggle-pill" id="pill-anchor-end" onclick="toggleAnchor('end')">
+            <input type="checkbox" id="anchoredEnd">
+            <span>$ 匹配结尾</span>
+          </label>
+          <label class="flag-toggle-pill active" id="pill-flag-g" onclick="toggleFlag('g')">
+            <input type="checkbox" id="flagG" checked>
+            <span>g 全局匹配</span>
+          </label>
+          <label class="flag-toggle-pill" id="pill-flag-i" onclick="toggleFlag('i')">
+            <input type="checkbox" id="flagI">
+            <span>i 忽略大小写</span>
+          </label>
+          <label class="flag-toggle-pill" id="pill-flag-m" onclick="toggleFlag('m')">
+            <input type="checkbox" id="flagM">
+            <span>m 多行模式</span>
+          </label>
+          <label class="flag-toggle-pill" id="pill-flag-s" onclick="toggleFlag('s')">
+            <input type="checkbox" id="flagS">
+            <span>s 换行符匹配</span>
+          </label>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- 轻提示弹窗 -->
-  <div id="toast" class="toast">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-    <span id="toastMsg">成功</span>
-  </div>
+      <!-- 卡片 2: ⚡ 内嵌即时验证靶场 (Live Tester) -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <span class="preview-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            <span>⚡ 内嵌即时验证靶场 (Live Tester)</span>
+          </span>
+          <span style="font-size: 11px; color: var(--muted);">修改规则实时反馈</span>
+        </div>
+
+        <div class="tester-area">
+          <textarea class="tester-input" id="testerInput" placeholder="在此输入需要测试验证的样本字符串..." oninput="runLiveTester()"></textarea>
+
+          <div class="tester-status-banner" id="testerStatusBanner">
+            <span id="testerStatusText">输入测试样本以检验规则</span>
+            <span id="testerCountText" style="font-family: inherit;">0 处命中</span>
+          </div>
+
+          <div style="font-size: 11px; font-weight: 600; color: var(--muted);">命中高亮结果：</div>
+          <div class="tester-highlight-preview" id="testerHighlightPreview">--</div>
+        </div>
+      </div>
+
+      <!-- 卡片 3: 大白话语义解释 -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <span class="preview-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>中文逻辑语义流程拆解</span>
+          </span>
+        </div>
+
+        <div class="explainer-list" id="explainerList">
+          <!-- 动态步骤解释 -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 底部状态栏 (32px) -->
+  <footer class="workbench-status-bar">
+    <div class="status-left">
+      <div class="status-item">
+        <span>规则链:</span>
+        <strong id="bar-rules-count">0 步</strong>
+      </div>
+      <div class="status-item">
+        <span>靶场校验:</span>
+        <strong id="bar-tester-status" style="color: var(--teal);">待测</strong>
+      </div>
+      <div class="status-item">
+        <span>语法状态:</span>
+        <strong style="color: var(--teal);">合法构建</strong>
+      </div>
+    </div>
+
+    <div class="status-right">
+      <div class="status-item">
+        <span>正则长度:</span>
+        <strong id="bar-regex-len">0 字符</strong>
+      </div>
+      <div class="status-item">
+        <span>快捷抽屉:</span>
+        <kbd style="background: var(--paper-strong); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; font-size: 10px;">Ctrl+K 切换</kbd>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 常用配方库抽屉 -->
+  <div class="drawer-overlay" id="presetsDrawerOverlay" onclick="closePresetsDrawer()"></div>
+  <aside class="drawer-panel" id="presetsDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>常用可视化正则配方 (15+)</span>
+      </div>
+      <button class="icon-btn" onclick="closePresetsDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="drawer-body" id="presetsList">
+      <!-- 动态配方卡片 -->
+    </div>
+  </aside>
+
+  <!-- 多语言代码导出抽屉 -->
+  <div class="drawer-overlay" id="codeDrawerOverlay" onclick="closeCodeDrawer()"></div>
+  <aside class="drawer-panel" id="codeDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        <span>多语言调用代码速查与导出</span>
+      </div>
+      <button class="icon-btn" onclick="closeCodeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="drawer-body" id="codeSnippetsList">
+      <!-- 动态代码卡片 -->
+    </div>
+  </aside>
+
+  <!-- 全局 Toast -->
+  <div class="toast" id="toast">操作成功</div>
 
   <script>
-    // 缓存容器
-    const ruleListContainer = document.getElementById('ruleList');
-    const regexResult = document.getElementById('regexResult');
-    const explainerList = document.getElementById('explainerList');
-
-    // 全局选项缓存
-    const anchoredStart = document.getElementById('anchoredStart');
-    const anchoredEnd = document.getElementById('anchoredEnd');
-    const flagI = document.getElementById('flagI');
-    const flagG = document.getElementById('flagG');
-
-    // 默认空规则链
+    // 规则链核心数据状态
     let rules = [];
 
-    // 初始化加载
+    // 常用实战配方清单 (15+ 种经典场景)
+    const PRESET_RECIPES = [
+      {
+        id: 'phone_cn',
+        name: '📱 中国大陆手机号',
+        desc: '以 +86(可选) 开头，第二位 1，第三位 3-9，接 9 个数字',
+        sample: '联系人：13812345678 或 +8618600001234，错误格式：12345678901。',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'text', value: '+86', quantifier: 'optional', exclude: false },
+          { logic: 'and', type: 'text', value: '1', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'custom', value: '3-9', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'exact', exactNum: 9, exclude: false }
+        ]
+      },
+      {
+        id: 'email',
+        name: '📧 常用电子邮箱 (Email)',
+        desc: '用户名 (字母数字下划线) + @ + 域名 + 2位以上顶级后缀',
+        sample: '请致信 admin@example.com 或 dev.team@service.org.cn 获取支持。',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'custom', value: 'a-zA-Z0-9._%+-', quantifier: 'one_more', exclude: false },
+          { logic: 'and', type: 'text', value: '@', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'custom', value: 'a-zA-Z0-9.-', quantifier: 'one_more', exclude: false },
+          { logic: 'and', type: 'text', value: '.', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'letters', quantifier: 'range', minNum: 2, maxNum: 10, exclude: false }
+        ]
+      },
+      {
+        id: 'id_card_18',
+        name: '🪪 18位居民身份证号',
+        desc: '17位数字 + 1位数字或大小写字母X',
+        sample: '有效：110101199003072345，11010119900307234X。',
+        anchors: { start: true, end: true },
+        steps: [
+          { logic: 'and', type: 'digits', quantifier: 'exact', exactNum: 17, exclude: false },
+          { logic: 'and', type: 'custom', value: '0-9Xx', quantifier: 'once', exclude: false }
+        ]
+      },
+      {
+        id: 'date_ymd',
+        name: '📅 年-月-日日期格式 (YYYY-MM-DD)',
+        desc: '4位年份 + 减号 + 2位月份 + 减号 + 2位日期',
+        sample: '上线日期：2026-09-10，归档日期：2024-12-31。',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'digits', quantifier: 'exact', exactNum: 4, exclude: false },
+          { logic: 'and', type: 'text', value: '-', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'exact', exactNum: 2, exclude: false },
+          { logic: 'and', type: 'text', value: '-', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'exact', exactNum: 2, exclude: false }
+        ]
+      },
+      {
+        id: 'price_currency',
+        name: '💰 货币金额 (带可选两位小数)',
+        desc: '至少1位整数金额，接可选的句点和1~2位小数',
+        sample: '售价 199 元，折扣价 49.90 元，免运费。',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'digits', quantifier: 'one_more', exclude: false },
+          { logic: 'and', type: 'text', value: '.', quantifier: 'optional', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'range', minNum: 0, maxNum: 2, exclude: false }
+        ]
+      },
+      {
+        id: 'ipv4',
+        name: '🌐 简版 IPv4 地址 (格式验证)',
+        desc: '四组由点号分隔的 1~3 位数字',
+        sample: '内网地址：192.168.1.1，网关：10.0.0.1。',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'digits', quantifier: 'range', minNum: 1, maxNum: 3, exclude: false },
+          { logic: 'and', type: 'text', value: '.', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'range', minNum: 1, maxNum: 3, exclude: false },
+          { logic: 'and', type: 'text', value: '.', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'range', minNum: 1, maxNum: 3, exclude: false },
+          { logic: 'and', type: 'text', value: '.', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'range', minNum: 1, maxNum: 3, exclude: false }
+        ]
+      },
+      {
+        id: 'chinese_chars',
+        name: '🇨🇳 纯中文字符 (汉字)',
+        desc: '连续匹配一个或多个中文汉字',
+        sample: '欢迎访问 开发者工坊 (Developer Studio)！',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'chinese', quantifier: 'one_more', exclude: false }
+        ]
+      },
+      {
+        id: 'url_http',
+        name: '🔗 HTTP/HTTPS 网址前缀',
+        desc: 'http:// 或 https:// 协议开头，接主机域名',
+        sample: '官网网址：https://www.example.com/api?v=1',
+        anchors: { start: false, end: false },
+        steps: [
+          { logic: 'and', type: 'text', value: 'http', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'text', value: 's', quantifier: 'optional', exclude: false },
+          { logic: 'and', type: 'text', value: '://', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'custom', value: 'a-zA-Z0-9.-', quantifier: 'one_more', exclude: false }
+        ]
+      },
+      {
+        id: 'wechat_id',
+        name: '💬 微信号规则',
+        desc: '以字母开头，接 5-19 位字母、数字、下划线或减号',
+        sample: '微信号：wx_user123 或 dev-admin99。',
+        anchors: { start: true, end: true },
+        steps: [
+          { logic: 'and', type: 'letters', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'custom', value: 'a-zA-Z0-9_-', quantifier: 'range', minNum: 5, maxNum: 19, exclude: false }
+        ]
+      },
+      {
+        id: 'postal_code',
+        name: '📮 中国邮政编码 (6位)',
+        desc: '首位 1-9，接 5 位任意数字',
+        sample: '邮编：100000 (北京)，200000 (上海)。',
+        anchors: { start: true, end: true },
+        steps: [
+          { logic: 'and', type: 'custom', value: '1-9', quantifier: 'once', exclude: false },
+          { logic: 'and', type: 'digits', quantifier: 'exact', exactNum: 5, exclude: false }
+        ]
+      }
+    ];
+
+    // 初始化
     window.addEventListener('DOMContentLoaded', () => {
-      // 默认加载一个手机号拼装示例，便于直观展示
-      loadPreset('phone');
+      // 默认载入“手机号”配方，让初次进入即有丰满内容
+      loadPresetRecipe('phone_cn');
+      renderPresetsDrawerList();
     });
 
-    // 添加新的规则行
-    function addRuleRow(ruleObj = null) {
-      const defaultRule = {
-        logic: 'and', // 'and' (且), 'or' (或)
-        type: 'digits', // 'digits', 'letters', 'alphanumeric', 'whitespace', 'any', 'text', 'custom'
+    // 添加新规则步
+    function addRuleStep(customObj = null) {
+      const defaultStep = {
+        logic: 'and', // 'and' 或 'or'
+        type: 'digits', // 'digits', 'letters', 'alphanumeric', 'chinese', 'whitespace', 'boundary', 'any', 'text', 'custom'
         value: '',
         exclude: false,
         quantifier: 'once', // 'once', 'optional', 'zero_more', 'one_more', 'exact', 'range'
+        lazy: false,
         exactNum: 1,
         minNum: 1,
-        maxNum: 2
+        maxNum: 2,
+        disabled: false
       };
 
-      rules.push(ruleObj ? { ...defaultRule, ...ruleObj } : defaultRule);
-      renderRules();
-      generateRegex();
+      rules.push(customObj ? { ...defaultStep, ...customObj } : defaultStep);
+      renderRulesList();
+      buildAndRunRegex();
     }
 
     // 渲染规则链 DOM
-    function renderRules() {
+    function renderRulesList() {
+      const container = document.getElementById('ruleList');
       if (rules.length === 0) {
-        ruleListContainer.innerHTML = `
-          <div class="empty-state" style="background: var(--btn-secondary-bg); border: 1px dashed var(--line); border-radius: var(--radius-sm);">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-            <p>暂无任何匹配规则，请点击下方按钮添加匹配步。</p>
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--muted); border: 2px dashed var(--line); border-radius: var(--radius-sm);">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            <div>当前积木链为空，点击下方添加匹配步，或从顶部载入经典配方。</div>
           </div>`;
+        document.getElementById('step-count-tip').textContent = '共 0 步匹配';
+        document.getElementById('bar-rules-count').textContent = '0 步';
         return;
       }
+
+      document.getElementById('step-count-tip').textContent = `共 ${rules.length} 步匹配`;
+      document.getElementById('bar-rules-count').textContent = `${rules.length} 步`;
 
       let html = '';
       rules.forEach((rule, idx) => {
+        const isFirst = (idx === 0);
+        const isLast = (idx === rules.length - 1);
         const showValueField = (rule.type === 'text' || rule.type === 'custom');
-        const showExactNum = (rule.quantifier === 'exact');
-        const showRangeNum = (rule.quantifier === 'range');
+        const showExact = (rule.quantifier === 'exact');
+        const showRange = (rule.quantifier === 'range');
 
-        // 构建行
         html += `
-          <div class="rule-card" id="rule-card-${idx}">
-            <!-- 第一层：控制 -->
+          <div class="rule-card ${rule.disabled ? 'disabled' : ''}" id="rule-card-${idx}">
             <div class="rule-row-main">
-              <div class="rule-index">${idx + 1}</div>
-              
-              <!-- 逻辑选项 (第一行隐藏 logic) -->
-              ${idx > 0 ? `
-                <select class="logic-select" onchange="updateRule(${idx}, 'logic', this.value)">
-                  <option value="and" ${rule.logic === 'and' ? 'selected' : ''}>且 (AND)</option>
-                  <option value="or" ${rule.logic === 'or' ? 'selected' : ''}>或 (OR)</option>
+              <span class="rule-index-badge">${idx + 1}</span>
+
+              ${!isFirst ? `
+                <select class="logic-select" onchange="updateRuleProp(${idx}, 'logic', this.value)">
+                  <option value="and" ${rule.logic === 'and' ? 'selected' : ''}>且 AND</option>
+                  <option value="or" ${rule.logic === 'or' ? 'selected' : ''}>或 OR</option>
                 </select>
               ` : ''}
 
-              <!-- 匹配类别 -->
-              <select class="type-select" onchange="updateRule(${idx}, 'type', this.value)">
-                <option value="digits" ${rule.type === 'digits' ? 'selected' : ''}>🔢 数字 (0-9)</option>
-                <option value="letters" ${rule.type === 'letters' ? 'selected' : ''}>🔤 英文字母 (a-zA-Z)</option>
-                <option value="alphanumeric" ${rule.type === 'alphanumeric' ? 'selected' : ''}>🔣 字母与数字</option>
+              <select class="type-select" onchange="updateRuleProp(${idx}, 'type', this.value)">
+                <option value="digits" ${rule.type === 'digits' ? 'selected' : ''}>🔢 数字字符 [0-9]</option>
+                <option value="letters" ${rule.type === 'letters' ? 'selected' : ''}>🔤 英文字母 [a-zA-Z]</option>
+                <option value="alphanumeric" ${rule.type === 'alphanumeric' ? 'selected' : ''}>🔣 字母与数字 [a-zA-Z0-9]</option>
+                <option value="chinese" ${rule.type === 'chinese' ? 'selected' : ''}>🇨🇳 汉字/中文 [\\u4e00-\\u9fa5]</option>
                 <option value="whitespace" ${rule.type === 'whitespace' ? 'selected' : ''}>🌫️ 空白字符 (\\s)</option>
-                <option value="any" ${rule.type === 'any' ? 'selected' : ''}>🔮 任意单个字符 (点)</option>
+                <option value="boundary" ${rule.type === 'boundary' ? 'selected' : ''}>🚧 单词边界 (\\b)</option>
+                <option value="any" ${rule.type === 'any' ? 'selected' : ''}>🔮 任意单个字符 (点 .)</option>
                 <option value="text" ${rule.type === 'text' ? 'selected' : ''}>🔏 特定纯文本...</option>
-                <option value="custom" ${rule.type === 'custom' ? 'selected' : ''}>🗂️ 自定义字符范围...</option>
+                <option value="custom" ${rule.type === 'custom' ? 'selected' : ''}>🗂️ 自定义字符集 [...]</option>
               </select>
 
-              <!-- 特定输入参数值 -->
-              <input type="text" 
-                     class="value-input" 
-                     id="value-input-${idx}"
+              <input type="text"
+                     class="value-input"
                      style="display: ${showValueField ? 'block' : 'none'};"
                      value="${escapeHtml(rule.value)}"
                      placeholder="${rule.type === 'text' ? '例如 @ 或 admin' : '例如 a-z0-9 或 _#-'}"
-                     oninput="updateRule(${idx}, 'value', this.value)" />
+                     oninput="updateRuleProp(${idx}, 'value', this.value)" />
 
-              <button class="delete-btn" onclick="deleteRuleRow(${idx})" title="删除此规则步">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
+              <div class="rule-actions">
+                <button class="icon-btn" onclick="moveRule(${idx}, -1)" title="上移" ${isFirst ? 'disabled style="opacity:0.3;"' : ''}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </button>
+                <button class="icon-btn" onclick="moveRule(${idx}, 1)" title="下移" ${isLast ? 'disabled style="opacity:0.3;"' : ''}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <button class="icon-btn" onclick="cloneRule(${idx})" title="复制本步">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+                <button class="icon-btn" onclick="toggleDisableRule(${idx})" title="${rule.disabled ? '启用' : '临时停用'}">
+                  ${rule.disabled ? '👁️‍🗨️' : '👁️'}
+                </button>
+                <button class="icon-btn danger" onclick="deleteRule(${idx})" title="删除">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
             </div>
 
-            <!-- 第二层：修饰与重复度 -->
-            <div class="rule-row-options">
-              <!-- Exclude 排除 -->
-              <label class="exclude-container" title="选中表示匹配‘除了所设内容以外’的字符">
-                <input type="checkbox" ${rule.exclude ? 'checked' : ''} onchange="updateRule(${idx}, 'exclude', this.checked)" />
+            <!-- 第二行：修饰与频次 -->
+            <div class="rule-row-sub">
+              <label class="checkbox-label" title="匹配所选内容以外的字符">
+                <input type="checkbox" ${rule.exclude ? 'checked' : ''} onchange="updateRuleProp(${idx}, 'exclude', this.checked)">
                 <span>🚫 排除/取反 (Not)</span>
               </label>
 
-              <!-- 量词 -->
-              <div class="quantifier-container">
-                <span>🔁 出现频次：</span>
-                <select class="quantifier-select" onchange="updateRule(${idx}, 'quantifier', this.value)">
-                  <option value="once" ${rule.quantifier === 'once' ? 'selected' : ''}>恰好匹配 1 次</option>
-                  <option value="optional" ${rule.quantifier === 'optional' ? 'selected' : ''}>可选匹配 (出现 0 或 1 次)</option>
-                  <option value="zero_more" ${rule.quantifier === 'zero_more' ? 'selected' : ''}>0 次或多次 (任意次)</option>
-                  <option value="one_more" ${rule.quantifier === 'one_more' ? 'selected' : ''}>1 次或多次 (至少 1 次)</option>
-                  <option value="exact" ${rule.quantifier === 'exact' ? 'selected' : ''}>自定义精确次数...</option>
-                  <option value="range" ${rule.quantifier === 'range' ? 'selected' : ''}>自定义次数范围...</option>
+              <div class="quantifier-group">
+                <span style="color: var(--muted);">频次:</span>
+                <select class="quantifier-select" onchange="updateRuleProp(${idx}, 'quantifier', this.value)">
+                  <option value="once" ${rule.quantifier === 'once' ? 'selected' : ''}>恰好 1 次</option>
+                  <option value="optional" ${rule.quantifier === 'optional' ? 'selected' : ''}>可选 (0 或 1 次 ?)</option>
+                  <option value="zero_more" ${rule.quantifier === 'zero_more' ? 'selected' : ''}>0 次或多次 (*)</option>
+                  <option value="one_more" ${rule.quantifier === 'one_more' ? 'selected' : ''}>至少 1 次 (+)</option>
+                  <option value="exact" ${rule.quantifier === 'exact' ? 'selected' : ''}>精确 N 次 {n}</option>
+                  <option value="range" ${rule.quantifier === 'range' ? 'selected' : ''}>区间范围 {n,m}</option>
                 </select>
 
-                <!-- 精确次数输入 -->
-                <input type="number" 
-                       class="number-input"
-                       style="display: ${showExactNum ? 'inline-block' : 'none'};"
-                       min="1" max="999" 
+                <input type="number"
+                       class="num-input"
+                       style="display: ${showExact ? 'inline-block' : 'none'};"
                        value="${rule.exactNum}"
-                       oninput="updateRule(${idx}, 'exactNum', parseInt(this.value) || 1)" />
-                <span style="display: ${showExactNum ? 'inline' : 'none'};">次</span>
+                       min="1" max="999"
+                       oninput="updateRuleProp(${idx}, 'exactNum', parseInt(this.value) || 1)">
+                <span style="display: ${showExact ? 'inline' : 'none'};">次</span>
 
-                <!-- 范围次数输入 -->
-                <span style="display: ${showRangeNum ? 'inline' : 'none'};">在</span>
-                <input type="number" 
-                       class="number-input"
-                       style="display: ${showRangeNum ? 'inline-block' : 'none'};"
-                       min="0" max="999" 
+                <span style="display: ${showRange ? 'inline' : 'none'};">在</span>
+                <input type="number"
+                       class="num-input"
+                       style="display: ${showRange ? 'inline-block' : 'none'};"
                        value="${rule.minNum}"
-                       oninput="updateRule(${idx}, 'minNum', parseInt(this.value) || 0)" />
-                <span style="display: ${showRangeNum ? 'inline' : 'none'};">至</span>
-                <input type="number" 
-                       class="number-input"
-                       style="display: ${showRangeNum ? 'inline-block' : 'none'};"
-                       min="1" max="999" 
+                       min="0" max="999"
+                       oninput="updateRuleProp(${idx}, 'minNum', parseInt(this.value) || 0)">
+                <span style="display: ${showRange ? 'inline' : 'none'};">至</span>
+                <input type="number"
+                       class="num-input"
+                       style="display: ${showRange ? 'inline-block' : 'none'};"
                        value="${rule.maxNum}"
-                       oninput="updateRule(${idx}, 'maxNum', parseInt(this.value) || 1)" />
-                <span style="display: ${showRangeNum ? 'inline' : 'none'};">次之间</span>
+                       min="1" max="999"
+                       oninput="updateRuleProp(${idx}, 'maxNum', parseInt(this.value) || 1)">
+                <span style="display: ${showRange ? 'inline' : 'none'};">次</span>
               </div>
+
+              <label class="checkbox-label" title="开启非贪婪匹配模式 (匹配尽可能短的字符串)">
+                <input type="checkbox" ${rule.lazy ? 'checked' : ''} onchange="updateRuleProp(${idx}, 'lazy', this.checked)">
+                <span>非贪婪 (?)</span>
+              </label>
             </div>
           </div>`;
       });
 
-      ruleListContainer.innerHTML = html;
+      container.innerHTML = html;
     }
 
-    // 更新单个规则值并重新渲染与计算
-    function updateRule(idx, key, val) {
+    function updateRuleProp(idx, key, val) {
       rules[idx][key] = val;
-      
-      // 如果改变的是 type 或者是 quantifier，需要调整相关控制字段的显隐，此时重绘 DOM 最为简单稳妥
       if (key === 'type' || key === 'quantifier') {
-        renderRules();
+        renderRulesList();
       }
-      
-      generateRegex();
+      buildAndRunRegex();
     }
 
-    // 删除规则行
-    function deleteRuleRow(idx) {
+    function moveRule(idx, dir) {
+      const target = idx + dir;
+      if (target < 0 || target >= rules.length) return;
+      const temp = rules[idx];
+      rules[idx] = rules[target];
+      rules[target] = temp;
+      renderRulesList();
+      buildAndRunRegex();
+    }
+
+    function cloneRule(idx) {
+      const copy = JSON.parse(JSON.stringify(rules[idx]));
+      rules.splice(idx + 1, 0, copy);
+      renderRulesList();
+      buildAndRunRegex();
+      showToast('已复制该匹配步骤');
+    }
+
+    function toggleDisableRule(idx) {
+      rules[idx].disabled = !rules[idx].disabled;
+      renderRulesList();
+      buildAndRunRegex();
+    }
+
+    function deleteRule(idx) {
       rules.splice(idx, 1);
-      renderRules();
-      generateRegex();
+      renderRulesList();
+      buildAndRunRegex();
     }
 
-    // 核心生成正则字符串与中文流程解释函数
-    function generateRegex() {
-      if (rules.length === 0) {
-        regexResult.textContent = '/(空)/';
-        explainerList.innerHTML = `<div class="empty-state" style="height:100px;"><p>请在左侧添加拼装步骤以获取中文语义解释。</p></div>`;
+    function clearAllRules() {
+      rules = [];
+      renderRulesList();
+      buildAndRunRegex();
+      showToast('积木链已清空');
+    }
+
+    // 核心组装正则表达式并运行即时靶场
+    function buildAndRunRegex() {
+      const activeRules = rules.filter(r => !r.disabled);
+
+      if (activeRules.length === 0) {
+        document.getElementById('regexResult').textContent = '/(空)/';
+        document.getElementById('bar-regex-len').textContent = '0 字符';
+        document.getElementById('explainerList').innerHTML = '<div style="color: var(--muted); font-size: 12px; padding: 12px 0;">添加至少一个有效步骤以生成解析</div>';
+        updateLiveTesterResult(null);
         return;
       }
 
-      let regexStr = '';
-      const stepExplainers = [];
+      let regexBody = '';
+      const explainerSteps = [];
 
-      rules.forEach((rule, idx) => {
+      activeRules.forEach((rule, idx) => {
         let atom = '';
-        let typeDesc = '';
+        let typeText = '';
 
-        // 1. 生成原子匹配模式
         switch (rule.type) {
           case 'digits':
             atom = rule.exclude ? '\\D' : '\\d';
-            typeDesc = rule.exclude ? '非数字字符' : '数字字符 (0-9)';
+            typeText = rule.exclude ? '非数字字符' : '数字 [0-9]';
             break;
           case 'letters':
             atom = rule.exclude ? '[^a-zA-Z]' : '[a-zA-Z]';
-            typeDesc = rule.exclude ? '非英文字母字符' : '任意大小写英文字母';
+            typeText = rule.exclude ? '非英文字母' : '英文字母 [a-zA-Z]';
             break;
           case 'alphanumeric':
             atom = rule.exclude ? '[^a-zA-Z0-9]' : '[a-zA-Z0-9]';
-            typeDesc = rule.exclude ? '非字母与数字的字符' : '任意字母或数字';
+            typeText = rule.exclude ? '非字母与数字' : '字母与数字 [a-zA-Z0-9]';
+            break;
+          case 'chinese':
+            atom = rule.exclude ? '[^\\u4e00-\\u9fa5]' : '[\\u4e00-\\u9fa5]';
+            typeText = rule.exclude ? '非中文字符' : '中文字符 (汉字)';
             break;
           case 'whitespace':
             atom = rule.exclude ? '\\S' : '\\s';
-            typeDesc = rule.exclude ? '非空白字符' : '空白字符 (如空格、制表符等)';
+            typeText = rule.exclude ? '非空白字符' : '空白字符 (\\s)';
+            break;
+          case 'boundary':
+            atom = '\\b';
+            typeText = '单词边界 (\\b)';
             break;
           case 'any':
             atom = '.';
-            typeDesc = '除换行符外的任意单个字符';
+            typeText = '任意单个字符 (.)';
             break;
           case 'text':
-            const escaped = escapeRegex(rule.value || '(未设定)');
-            if (rule.exclude) {
-              atom = `[^${escaped}]`;
-              typeDesc = `除了“${rule.value || '空'}”之外的字符`;
-            } else {
-              // 对于多字符文本，若有量词，后续需要小括号封装
-              atom = escaped;
-              typeDesc = `纯文本 “${rule.value || '空'}”`;
-            }
+            const esc = escapeRegexMeta(rule.value || '');
+            atom = rule.exclude ? `[^${esc}]` : esc;
+            typeText = rule.exclude ? `除了 "${rule.value || '空'}" 以外` : `纯文本 "${rule.value || '空'}"`;
             break;
           case 'custom':
-            const innerVal = rule.value || '';
-            if (rule.exclude) {
-              atom = `[^${innerVal}]`;
-              typeDesc = `除了字符集合【${innerVal || '空'}】以外的任意字符`;
-            } else {
-              atom = `[${innerVal}]`;
-              typeDesc = `字符集合【${innerVal || '空'}】中的任意一个字符`;
-            }
+            const inner = rule.value || '';
+            atom = rule.exclude ? `[^${inner}]` : `[${inner}]`;
+            typeText = rule.exclude ? `字符集 [^${inner}]` : `字符集 [${inner}]`;
             break;
         }
 
-        // 2. 结合量词修饰
-        let quantifierStr = '';
-        let freqDesc = '';
-        let wrapInGroup = false;
-
-        // 如果原子模式是多字符的纯文本（且不是 1 次），比如 "abc"，重复多次时需要变为 (?:abc)+
-        if (rule.type === 'text' && rule.value && rule.value.length > 1 && rule.quantifier !== 'once') {
-          wrapInGroup = true;
-        }
-
-        const baseAtom = wrapInGroup ? `(?:${atom})` : atom;
+        // 处理量词
+        let quantStr = '';
+        let freqText = '';
+        const isMultiCharText = (rule.type === 'text' && rule.value && rule.value.length > 1 && !rule.exclude);
+        const baseAtom = isMultiCharText && rule.quantifier !== 'once' ? `(?:${atom})` : atom;
+        const lazySign = rule.lazy ? '?' : '';
 
         switch (rule.quantifier) {
           case 'once':
-            quantifierStr = baseAtom;
-            freqDesc = '精确匹配 1 次';
+            quantStr = baseAtom;
+            freqText = '恰好 1 次';
             break;
           case 'optional':
-            quantifierStr = baseAtom + '?';
-            freqDesc = '可选匹配 (出现 0 次或 1 次)';
+            quantStr = baseAtom + '?' + lazySign;
+            freqText = `可选 0 或 1 次${rule.lazy ? ' (非贪婪)' : ''}`;
             break;
           case 'zero_more':
-            quantifierStr = baseAtom + '*';
-            freqDesc = '匹配 0 次或多次 (任意次)';
+            quantStr = baseAtom + '*' + lazySign;
+            freqText = `0 次或多次${rule.lazy ? ' (非贪婪)' : ''}`;
             break;
           case 'one_more':
-            quantifierStr = baseAtom + '+';
-            freqDesc = '匹配 1 次或多次 (至少 1 次)';
+            quantStr = baseAtom + '+' + lazySign;
+            freqText = `至少 1 次${rule.lazy ? ' (非贪婪)' : ''}`;
             break;
           case 'exact':
-            quantifierStr = `${baseAtom}{${rule.exactNum}}`;
-            freqDesc = `精确匹配出现 ${rule.exactNum} 次`;
+            quantStr = `${baseAtom}{${rule.exactNum}}` + lazySign;
+            freqText = `精确 ${rule.exactNum} 次`;
             break;
           case 'range':
-            quantifierStr = `${baseAtom}{${rule.minNum},${rule.maxNum}}`;
-            freqDesc = `匹配出现 ${rule.minNum} 到 ${rule.maxNum} 次之间`;
+            quantStr = `${baseAtom}{${rule.minNum},${rule.maxNum}}` + lazySign;
+            freqText = `${rule.minNum} 到 ${rule.maxNum} 次之间`;
             break;
         }
 
-        // 3. 衔接逻辑分支
+        // 拼接逻辑
         if (idx > 0) {
           if (rule.logic === 'or') {
-            regexStr += '|' + quantifierStr;
-            stepExplainers.push({ idx: idx + 1, text: `<strong>逻辑“或”分支</strong>：或者匹配【${typeDesc}】并【${freqDesc}】` });
+            regexBody += '|' + quantStr;
+            explainerSteps.push({ num: idx + 1, text: `<strong>或者逻辑分支 (OR)</strong>：匹配【${typeText}】，频次【${freqText}】` });
           } else {
-            regexStr += quantifierStr;
-            stepExplainers.push({ idx: idx + 1, text: `<strong>紧接着匹配</strong>【${typeDesc}】并【${freqDesc}】` });
+            regexBody += quantStr;
+            explainerSteps.push({ num: idx + 1, text: `<strong>紧随其后匹配</strong>【${typeText}】，频次【${freqText}】` });
           }
         } else {
-          regexStr += quantifierStr;
-          stepExplainers.push({ idx: idx + 1, text: `<strong>从第一步开始匹配</strong>【${typeDesc}】并【${freqDesc}】` });
+          regexBody += quantStr;
+          explainerSteps.push({ num: idx + 1, text: `<strong>从首部开始匹配</strong>【${typeText}】，频次【${freqText}】` });
         }
       });
 
-      // 4. 全局开关修饰
-      let prefix = '';
-      let suffix = '';
-      let anchoredDesc = '';
+      // 边界包裹
+      const isStart = document.getElementById('anchoredStart').checked;
+      const isEnd = document.getElementById('anchoredEnd').checked;
+      const fullPattern = (isStart ? '^' : '') + regexBody + (isEnd ? '$' : '');
 
-      if (anchoredStart.checked) {
-        prefix = '^';
-        anchoredDesc += '<li>要求匹配必须从<strong>整个字符串的开头</strong>开始匹配。</li>';
-      }
-      if (anchoredEnd.checked) {
-        suffix = '$';
-        anchoredDesc += '<li>要求匹配必须到<strong>整个字符串的末尾</strong>结束匹配。</li>';
-      }
-
-      const finalRegexPattern = prefix + regexStr + suffix;
-
-      // 组装修饰符
+      // Flags
       let flags = '';
-      let flagsDesc = [];
-      if (flagG.checked) {
-        flags += 'g';
-        flagsDesc.push('全局模式 (搜索所有匹配项)');
-      }
-      if (flagI.checked) {
-        flags += 'i';
-        flagsDesc.push('忽略大小写');
-      }
+      if (document.getElementById('flagG').checked) flags += 'g';
+      if (document.getElementById('flagI').checked) flags += 'i';
+      if (document.getElementById('flagM').checked) flags += 'm';
+      if (document.getElementById('flagS').checked) flags += 's';
 
-      // 展现正则表达式
-      regexResult.textContent = `/${finalRegexPattern}/${flags}`;
+      const fullRegexText = `/${fullPattern}/${flags}`;
+      document.getElementById('regexResult').textContent = fullRegexText;
+      document.getElementById('bar-regex-len').textContent = `${fullPattern.length} 字符`;
 
-      // 展现中文流程步骤说明
-      let explainerHtml = '';
-      stepExplainers.forEach(step => {
-        explainerHtml += `
-          <div class="explainer-step">
-            <span class="explainer-step-num">${step.idx}</span>
-            <span>${step.text}</span>
+      // 渲染大白话流程
+      let expHtml = '';
+      explainerSteps.forEach(s => {
+        expHtml += `
+          <div class="explainer-item">
+            <span class="explainer-step-num">${s.num}</span>
+            <span>${s.text}</span>
           </div>`;
       });
+      document.getElementById('explainerList').innerHTML = expHtml;
 
-      if (anchoredDesc || flagsDesc.length > 0) {
-        explainerHtml += `<div style="border-top:1px dashed var(--line); margin-top:10px; padding-top:10px; font-size:12px; color:var(--muted);">`;
-        explainerHtml += `<strong>全局规则：</strong>`;
-        explainerHtml += `<ul style="margin:6px 0 0 16px; padding:0;">`;
-        explainerHtml += anchoredDesc;
-        if (flagsDesc.length > 0) {
-          explainerHtml += `<li>启用了：${flagsDesc.join('、')}。</li>`;
-        }
-        explainerHtml += `</ul></div>`;
+      // 运行即时测试靶场
+      try {
+        const regexObj = new RegExp(fullPattern, flags);
+        updateLiveTesterResult(regexObj);
+      } catch (e) {
+        updateLiveTesterResult(null);
       }
-
-      explainerList.innerHTML = explainerHtml;
     }
 
-    // 复制正则表达式到剪切板
-    function copyGeneratedRegex() {
-      const text = regexResult.textContent;
+    // ⚡ 内嵌实时验证靶场运算
+    function runLiveTester() {
+      buildAndRunRegex();
+    }
+
+    function updateLiveTesterResult(regex) {
+      const text = document.getElementById('testerInput').value;
+      const statusBanner = document.getElementById('testerStatusBanner');
+      const statusText = document.getElementById('testerStatusText');
+      const countText = document.getElementById('testerCountText');
+      const preview = document.getElementById('testerHighlightPreview');
+      const barStatus = document.getElementById('bar-tester-status');
+
+      if (!regex || !text) {
+        statusBanner.className = 'tester-status-banner';
+        statusText.textContent = text ? '正则表达式等待有效步骤' : '输入测试样本以检验规则';
+        countText.textContent = '0 处命中';
+        preview.textContent = text || '--';
+        barStatus.textContent = '就绪';
+        barStatus.style.color = 'var(--muted)';
+        return;
+      }
+
+      // 执行测试与高亮标记
+      const matches = [];
+      let m;
+      const isG = regex.global;
+      let safe = 0;
+
+      if (isG) {
+        regex.lastIndex = 0;
+        while ((m = regex.exec(text)) !== null) {
+          if (m.index === regex.lastIndex) regex.lastIndex++;
+          matches.push({ start: m.index, end: m.index + m[0].length, val: m[0] });
+          safe++;
+          if (safe > 3000) break;
+        }
+      } else {
+        m = regex.exec(text);
+        if (m) {
+          matches.push({ start: m.index, end: m.index + m[0].length, val: m[0] });
+        }
+      }
+
+      if (matches.length > 0) {
+        statusBanner.className = 'tester-status-banner match';
+        statusText.textContent = '✔ 校验通过：成功命中目标特征！';
+        countText.textContent = `${matches.length} 处命中`;
+        barStatus.textContent = `命中 ${matches.length} 处`;
+        barStatus.style.color = '#10b981';
+
+        // 拼接高亮 DOM
+        let last = 0;
+        let hlHtml = '';
+        matches.forEach(item => {
+          hlHtml += escapeHtml(text.substring(last, item.start));
+          hlHtml += `<mark>${escapeHtml(item.val)}</mark>`;
+          last = item.end;
+        });
+        hlHtml += escapeHtml(text.substring(last));
+        preview.innerHTML = hlHtml;
+      } else {
+        statusBanner.className = 'tester-status-banner nomatch';
+        statusText.textContent = '✘ 未匹配：测试样本中未找到符合规则的内容';
+        countText.textContent = '0 处命中';
+        preview.textContent = text;
+        barStatus.textContent = '未命中';
+        barStatus.style.color = '#ef4444';
+      }
+    }
+
+    // 胶囊开关
+    function toggleAnchor(type) {
+      if (type === 'start') {
+        const cb = document.getElementById('anchoredStart');
+        cb.checked = !cb.checked;
+        document.getElementById('pill-anchor-start').classList.toggle('active', cb.checked);
+      } else {
+        const cb = document.getElementById('anchoredEnd');
+        cb.checked = !cb.checked;
+        document.getElementById('pill-anchor-end').classList.toggle('active', cb.checked);
+      }
+      buildAndRunRegex();
+    }
+
+    function toggleFlag(flag) {
+      const id = 'flag' + flag.toUpperCase();
+      const pillId = 'pill-flag-' + flag;
+      const cb = document.getElementById(id);
+      cb.checked = !cb.checked;
+      document.getElementById(pillId).classList.toggle('active', cb.checked);
+      buildAndRunRegex();
+    }
+
+    // 复制正则表达式
+    function copyRegexResult() {
+      const text = document.getElementById('regexResult').textContent;
       if (!text || text === '/(空)/') return;
       navigator.clipboard.writeText(text).then(() => {
-        showToast('📋 正则表达式已复制到剪贴板！');
+        showToast('已复制正则表达式：' + text);
       });
     }
 
-    // 一键携带当前正则跳转并在测试器中打开
-    function openInTester() {
-      const rawText = regexResult.textContent;
-      if (!rawText || rawText === '/(空)/') {
+    // 一键携带当前正则与样本无缝跳转至高级测试器
+    function openInRegexStudio() {
+      const resText = document.getElementById('regexResult').textContent;
+      if (!resText || resText === '/(空)/') {
         showToast('当前无有效生成的正则表达式');
         return;
       }
 
-      // 获取纯正则（去掉前后的 / 和修饰符）
-      const patternVal = regexPatternValue();
-      const flagsVal = getFlagsString();
+      // 提取 pattern 与 flags
+      const lastSlash = resText.lastIndexOf('/');
+      const pattern = resText.substring(1, lastSlash);
+      const flags = resText.substring(lastSlash + 1);
+      const sample = document.getElementById('testerInput').value;
 
-      // 构建一个兼容测试器载入的 state 结构
       const stateObj = {
-        p: patternVal,
-        t: getPresetSampleText(patternVal),
+        p: pattern,
+        t: sample,
+        r: '',
         f: {
-          g: flagG.checked,
-          i: flagI.checked,
-          m: false,
-          s: false,
+          g: flags.includes('g'),
+          i: flags.includes('i'),
+          m: flags.includes('m'),
+          s: flags.includes('s'),
+          u: false,
           y: false
         },
-        c: getPresetSampleCases(patternVal)
+        c: [
+          { text: sample.split('\n')[0] || 'test', expectMatch: true }
+        ]
       };
 
-      const jsonStr = JSON.stringify(stateObj);
-      const base64Data = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      const b64 = btoa(encodeURIComponent(JSON.stringify(stateObj)).replace(/%([0-9A-F]{2})/g, (match, p1) => {
         return String.fromCharCode('0x' + p1);
       }));
 
-      // 跳转互通
-      const testerUrl = `${window.location.origin}/tool/regex_tool.html#state=${base64Data}`;
-      window.open(testerUrl, '_blank');
-      showToast('🚀 已成功在新标签页导入测试器！');
+      const url = `${window.location.origin}/tool/regex_tool.html#state=${b64}`;
+      window.open(url, '_blank');
+      showToast('🚀 已在新窗口导入高级测试器！');
     }
 
-    // 获取当前组合纯正则模式
-    function regexPatternValue() {
-      let regexStr = '';
-      rules.forEach((rule) => {
-        let atom = '';
-        switch (rule.type) {
-          case 'digits': atom = rule.exclude ? '\\D' : '\\d'; break;
-          case 'letters': atom = rule.exclude ? '[^a-zA-Z]' : '[a-zA-Z]'; break;
-          case 'alphanumeric': atom = rule.exclude ? '[^a-zA-Z0-9]' : '[a-zA-Z0-9]'; break;
-          case 'whitespace': atom = rule.exclude ? '\\S' : '\\s'; break;
-          case 'any': atom = '.'; break;
-          case 'text': atom = escapeRegex(rule.value || ''); break;
-          case 'custom': atom = rule.exclude ? `[^${rule.value || ''}]` : `[${rule.value || ''}]`; break;
-        }
+    // 配方库抽屉
+    function openPresetsDrawer() {
+      document.getElementById('presetsDrawerOverlay').classList.add('open');
+      document.getElementById('presetsDrawer').classList.add('open');
+    }
 
-        let wrapInGroup = (rule.type === 'text' && rule.value && rule.value.length > 1 && rule.quantifier !== 'once');
-        const baseAtom = wrapInGroup ? `(?:${atom})` : atom;
+    function closePresetsDrawer() {
+      document.getElementById('presetsDrawerOverlay').classList.remove('open');
+      document.getElementById('presetsDrawer').classList.remove('open');
+    }
 
-        switch (rule.quantifier) {
-          case 'once': regexStr += baseAtom; break;
-          case 'optional': regexStr += baseAtom + '?'; break;
-          case 'zero_more': regexStr += baseAtom + '*'; break;
-          case 'one_more': regexStr += baseAtom + '+'; break;
-          case 'exact': regexStr += `${baseAtom}{${rule.exactNum}}`; break;
-          case 'range': regexStr += `${baseAtom}{${rule.minNum},${rule.maxNum}}`; break;
-        }
+    function renderPresetsDrawerList() {
+      const container = document.getElementById('presetsList');
+      let html = '';
+
+      PRESET_RECIPES.forEach(r => {
+        html += `
+          <div class="preset-card" onclick="loadPresetRecipe('${r.id}')">
+            <div class="preset-name">${r.name}</div>
+            <div class="preset-desc">${r.desc}</div>
+          </div>`;
       });
 
-      const prefix = anchoredStart.checked ? '^' : '';
-      const suffix = anchoredEnd.checked ? '$' : '';
-      return prefix + regexStr + suffix;
+      container.innerHTML = html;
     }
 
-    function getFlagsString() {
-      let flags = '';
-      if (flagG.checked) flags += 'g';
-      if (flagI.checked) flags += 'i';
-      return flags;
+    function loadPresetRecipe(presetId) {
+      const item = PRESET_RECIPES.find(p => p.id === presetId);
+      if (!item) return;
+
+      // 填充规则
+      rules = JSON.parse(JSON.stringify(item.steps));
+
+      // 填充边界
+      const cbStart = document.getElementById('anchoredStart');
+      const cbEnd = document.getElementById('anchoredEnd');
+      cbStart.checked = !!item.anchors.start;
+      cbEnd.checked = !!item.anchors.end;
+      document.getElementById('pill-anchor-start').classList.toggle('active', cbStart.checked);
+      document.getElementById('pill-anchor-end').classList.toggle('active', cbEnd.checked);
+
+      // 填入测试样本
+      document.getElementById('testerInput').value = item.sample;
+
+      renderRulesList();
+      buildAndRunRegex();
+      closePresetsDrawer();
+      showToast(`已载入配方：${item.name}`);
     }
 
-    // 辅助工具：转义正则元字符
-    function escapeRegex(str) {
+    // 多语言调用代码抽屉
+    function openCodeDrawer() {
+      renderCodeSnippets();
+      document.getElementById('codeDrawerOverlay').classList.add('open');
+      document.getElementById('codeDrawer').classList.add('open');
+    }
+
+    function closeCodeDrawer() {
+      document.getElementById('codeDrawerOverlay').classList.remove('open');
+      document.getElementById('codeDrawer').classList.remove('open');
+    }
+
+    function renderCodeSnippets() {
+      const resText = document.getElementById('regexResult').textContent;
+      const lastSlash = resText.lastIndexOf('/');
+      const pattern = resText.substring(1, lastSlash);
+      const flags = resText.substring(lastSlash + 1);
+
+      const list = [
+        {
+          lang: 'JavaScript / TypeScript',
+          code: `const regex = new RegExp(${JSON.stringify(pattern)}, '${flags}');\nconst isMatch = regex.test(text);\nconst matches = text.match(regex);`
+        },
+        {
+          lang: 'Python 3',
+          code: `import re\npattern = r'${pattern}'\nmatches = re.findall(pattern, text${flags.includes('i') ? ', re.IGNORECASE' : ''})`
+        },
+        {
+          lang: 'Go (Golang)',
+          code: `import (\n    "fmt"\n    "regexp"\n)\nre := regexp.MustCompile(\`${pattern}\`)\nmatches := re.FindAllString(text, -1)`
+        },
+        {
+          lang: 'Java',
+          code: `import java.util.regex.*;\nPattern pattern = Pattern.compile("${pattern.replace(/\\/g, '\\\\')}"${flags.includes('i') ? ', Pattern.CASE_INSENSITIVE' : ''});\nMatcher matcher = pattern.matcher(text);`
+        },
+        {
+          lang: 'PHP',
+          code: `$pattern = '/${pattern}/${flags}';\npreg_match_all($pattern, $text, $matches);`
+        }
+      ];
+
+      const container = document.getElementById('codeSnippetsList');
+      let html = '';
+      list.forEach(item => {
+        html += `
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--teal);">${item.lang}</span>
+              <button class="nav-btn" style="padding: 2px 6px; font-size: 11px;" onclick="copyDirectCode(\`${escapeAttr(item.code)}\`)">复制代码</button>
+            </div>
+            <pre class="code-block">${escapeHtml(item.code)}</pre>
+          </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function copyDirectCode(code) {
+      navigator.clipboard.writeText(code).then(() => {
+        showToast('已复制代码片段');
+      });
+    }
+
+    function escapeRegexMeta(str) {
       return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // 根据生成的正则获取合理的示例数据供测试器展现
-    function getPresetSampleText(pattern) {
-      if (pattern.includes('1[3-9]\\d')) {
-        return '服务热线列表：\n1. 13912345678 (正确)\n2. +8618600001234 (正确)\n3. 12345678901 (错误)\n服务电话：15888889999。';
-      }
-      if (pattern.includes('[A-Z]')) {
-        return 'Text analysis:\n- Hello (Matches)\n- apple (No match)\n- MIT University (Matches)\n- 123 numbers (No match)';
-      }
-      if (pattern.includes('\\d{4}-\\d{2}')) {
-        return '报告归档日期清单：\n- 2026-05-28 (符合)\n- 2020/12/31 (不符合)\n- 2024-11-08 (符合)\n- 99-12-08 (不符合)。';
-      }
-      return '在此输入您要测试本生成器生成的正则表达式的匹配源文本...';
-    }
-
-    // 根据生成的正则获取合理用例数据供测试器展现
-    function getPresetSampleCases(pattern) {
-      if (pattern.includes('1[3-9]\\d')) {
-        return [
-          { text: '13912345678', expectMatch: true },
-          { text: '15898765432', expectMatch: true },
-          { text: '12812345678', expectMatch: false }
-        ];
-      }
-      if (pattern.includes('[A-Z]')) {
-        return [
-          { text: 'Hello', expectMatch: true },
-          { text: 'World', expectMatch: true },
-          { text: 'hello', expectMatch: false }
-        ];
-      }
-      return [
-        { text: 'test_string', expectMatch: true }
-      ];
-    }
-
-    // 载入常用可视化配方模板
-    function loadPreset(key) {
-      rules = [];
-      anchoredStart.checked = false;
-      anchoredEnd.checked = false;
-      flagG.checked = true;
-      flagI.checked = false;
-
-      switch (key) {
-        case 'phone':
-          // 手机号拼装：可选的前缀 +86 -> 1 -> 3-9中的数字 -> 精确 9 个数字
-          addRuleRow({ type: 'text', value: '+86', quantifier: 'optional' });
-          addRuleRow({ type: 'text', value: '1', quantifier: 'once' });
-          addRuleRow({ type: 'custom', value: '3-9', quantifier: 'once' });
-          addRuleRow({ type: 'digits', quantifier: 'exact', exactNum: 9 });
-          break;
-        case 'capital_start':
-          // 大写字母开头：开头是大写字母 -> 0或多次任意字母和空格
-          anchoredStart.checked = true;
-          addRuleRow({ type: 'custom', value: 'A-Z', quantifier: 'once' });
-          addRuleRow({ type: 'custom', value: 'a-zA-Z\\s', quantifier: 'zero_more' });
-          break;
-        case 'date':
-          // 年-月-日 日期：4个数字 -> 减号 -> 2个数字 -> 减号 -> 2个数字
-          addRuleRow({ type: 'digits', quantifier: 'exact', exactNum: 4 });
-          addRuleRow({ type: 'text', value: '-', quantifier: 'once' });
-          addRuleRow({ type: 'digits', quantifier: 'exact', exactNum: 2 });
-          addRuleRow({ type: 'text', value: '-', quantifier: 'once' });
-          addRuleRow({ type: 'digits', quantifier: 'exact', exactNum: 2 });
-          break;
-        case 'price':
-          // 带小数金币值：1个或多个数字 -> 句点(可选) -> 2位数字(可选)
-          addRuleRow({ type: 'digits', quantifier: 'one_more' });
-          addRuleRow({ type: 'text', value: '.', quantifier: 'optional' });
-          addRuleRow({ type: 'digits', quantifier: 'range', minNum: 0, maxNum: 2 });
-          break;
-      }
-
-      showToast('💡 配方模板载入成功！');
-    }
-
-    // 转义 HTML
     function escapeHtml(str) {
       if (!str) return '';
-      return str
+      return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -1106,15 +1687,18 @@
         .replace(/'/g, '&#039;');
     }
 
-    // Toast 轻提示
+    function escapeAttr(str) {
+      return str.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    }
+
     function showToast(msg) {
       const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMsg');
-      toastMsg.textContent = msg;
+      toast.textContent = msg;
       toast.classList.add('show');
-      setTimeout(() => {
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
         toast.classList.remove('show');
-      }, 3000);
+      }, 2200);
     }
   </script>
 </body>
