@@ -25,7 +25,7 @@
         { id: 'opencv_beauty', title: 'OpenCV 美颜实验', category: 'dev', icon: '✨', desc: 'WebAssembly 实时磨皮与滤镜', url: '/tool/opencv_beauty.html', tags: ['opencv', 'wasm', 'filter', 'meiyan'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
 
         // 安全与加密
-        { id: 'password_gen', title: '高强度密码生成', category: 'security', icon: '🔐', desc: '自定义规则防破解随机生成', url: '/tool/password_generator.html', tags: ['password', 'safe', 'mima', 'random'], gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)' },
+        { id: 'password_gen', title: '密码与凭据工坊', category: 'security', icon: '🔐', desc: '密码/UUID/NanoID/Hex/APIKey 多模态批量生成与安全熵', url: '/tool/password_generator.html', tags: ['password', 'safe', 'mima', 'uuid', 'nanoid', 'apikey', 'hex'], gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)' },
         { id: 'sm2_tool', title: '国密安全解密', category: 'security', icon: '🛡️', desc: '本地高性能 SM2 秘钥对解析', url: '/tool/sm2_tool.html', tags: ['sm2', 'encrypt', 'guomi', 'crypto'], gradient: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
 
         // 生活效率与图形
