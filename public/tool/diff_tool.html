@@ -3,211 +3,345 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Diff 文本对比工具 - 个人聚合面板</title>
+  <title>Diff 文本与代码对比工坊 - Diff Studio</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:;">
   <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../tool-switcher.css">
   <script src="../theme.js"></script>
+  <script src="../tool-switcher.js"></script>
   <style>
     :root {
-      --diff-del-bg: color-mix(in srgb, var(--accent) 12%, transparent);
-      --diff-del-text: #b84a26;
-      --diff-del-char-bg: color-mix(in srgb, var(--accent) 26%, transparent);
-      
-      --diff-ins-bg: color-mix(in srgb, var(--teal) 12%, transparent);
-      --diff-ins-text: #1b5e53;
-      --diff-ins-char-bg: color-mix(in srgb, var(--teal) 26%, transparent);
+      --header-h: 56px;
+      --footer-h: 32px;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      --diff-del-bg: rgba(239, 68, 68, 0.12);
+      --diff-del-text: #b91c1c;
+      --diff-del-char-bg: rgba(239, 68, 68, 0.35);
+
+      --diff-ins-bg: rgba(16, 185, 129, 0.12);
+      --diff-ins-text: #047857;
+      --diff-ins-char-bg: rgba(16, 185, 129, 0.35);
+
+      --diff-gutter-bg: var(--input-bg);
+      --diff-gutter-color: var(--muted);
     }
 
     [data-theme="dark"] {
-      --diff-del-bg: color-mix(in srgb, var(--accent) 16%, transparent);
-      --diff-del-text: #ff9e80;
-      --diff-del-char-bg: color-mix(in srgb, var(--accent) 34%, transparent);
-      
-      --diff-ins-bg: color-mix(in srgb, var(--teal) 16%, transparent);
-      --diff-ins-text: #a7ffeb;
-      --diff-ins-char-bg: color-mix(in srgb, var(--teal) 34%, transparent);
+      --diff-del-bg: rgba(239, 68, 68, 0.18);
+      --diff-del-text: #fca5a5;
+      --diff-del-char-bg: rgba(239, 68, 68, 0.45);
+
+      --diff-ins-bg: rgba(16, 185, 129, 0.18);
+      --diff-ins-text: #6ee7b7;
+      --diff-ins-char-bg: rgba(16, 185, 129, 0.45);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
       height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      font-family: "Avenir Next", "PingFang SC", system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 100%);
-      color: var(--text);
-      overflow: hidden;
     }
 
-    /* 顶部导航与工具栏 */
-    .top-navbar {
-      height: 56px;
-      min-height: 56px;
+    /* 顶部 56px 导航与快捷控制栏 */
+    .workbench-header {
+      height: var(--header-h);
       background: var(--paper);
-      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--line);
+      padding: 0 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      gap: 16px;
-      z-index: 50;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 100;
     }
 
-    .nav-left {
+    .header-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       flex-shrink: 0;
     }
 
-    .back-link {
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
+    .back-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s ease;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
       padding: 6px 10px;
       border-radius: var(--radius-sm);
-      background: transparent;
-    }
-
-    .back-link:hover {
-      color: var(--accent);
+      transition: all 0.2s ease;
       background: var(--paper-strong);
-    }
-
-    .app-title {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
-
-    .app-title h1 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, var(--accent), #d38d48);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .app-title .tag {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 99px;
-      background: var(--btn-secondary-bg);
-      color: var(--muted);
       border: 1px solid var(--line);
     }
 
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: nowrap;
+    .back-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      transform: translateX(-1px);
     }
 
-    /* 通用按钮 */
-    .btn {
-      height: 34px;
-      padding: 0 14px;
-      border-radius: 8px;
+    .tool-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(224, 122, 95, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(224, 122, 95, 0.25);
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
       border: 1px solid var(--line);
       background: var(--paper-strong);
       color: var(--text);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
       transition: all 0.2s ease;
       user-select: none;
       white-space: nowrap;
     }
 
-    .btn:hover {
+    .nav-btn:hover {
       border-color: var(--accent);
       color: var(--accent);
-      background: var(--paper);
     }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary {
+    .nav-btn.primary {
       background: var(--accent);
-      color: var(--btn-text);
       border-color: var(--accent);
-    }
-
-    .btn-primary:hover {
-      background: var(--accent);
-      filter: brightness(1.1);
       color: var(--btn-text);
-      box-shadow: 0 4px 12px rgba(191, 91, 50, 0.25);
+      box-shadow: 0 2px 6px rgba(224, 122, 95, 0.25);
     }
 
-    /* 选项开关/复选胶囊 */
-    .checkbox-pill {
-      display: inline-flex;
+    .nav-btn.primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .nav-nav-group {
+      display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 0 10px;
-      height: 32px;
-      background: var(--input-bg);
+      background: var(--paper-strong);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .nav-nav-btn {
+      padding: 6px 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
       font-size: 12px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .nav-nav-btn:hover {
+      background: var(--line);
+      color: var(--accent);
+    }
+
+    .nav-nav-count {
+      padding: 0 8px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--muted);
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 100vh 主工作区 */
+    .workbench-main {
+      flex: 1;
+      height: calc(100vh - var(--header-h) - var(--footer-h));
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 上半部分：文本输入面板 (可折叠) */
+    .inputs-container {
+      display: flex;
+      height: 250px;
+      min-height: 120px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+      transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s;
+    }
+
+    .inputs-container.collapsed {
+      height: 0 !important;
+      min-height: 0 !important;
+      overflow: hidden;
+      border-bottom: none;
+      opacity: 0;
+    }
+
+    .input-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .input-pane:first-child {
+      border-right: 1px solid var(--line);
+    }
+
+    .pane-header {
+      height: 38px;
+      padding: 0 14px;
+      background: var(--paper-strong);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .pane-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .link-action {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 11.5px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+    }
+
+    .link-action:hover {
+      color: var(--accent);
+    }
+
+    .diff-textarea {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      padding: 12px 14px;
+      border: none;
+      outline: none;
+      background: var(--input-bg);
       color: var(--text);
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      resize: none;
+      white-space: pre;
+      overflow: auto;
     }
 
-    .checkbox-pill:hover {
-      border-color: var(--accent);
+    .diff-textarea.dragover {
+      background: rgba(224, 122, 95, 0.08);
+      box-shadow: inset 0 0 0 2px var(--accent);
     }
 
-    .checkbox-pill input {
-      accent-color: var(--accent);
-      cursor: pointer;
-      margin: 0;
+    /* 下半部分：差异展示与分析视窗 */
+    .diff-viewer-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
     }
 
-    /* 布局切换胶囊 */
+    .viewer-subbar {
+      height: 42px;
+      padding: 0 16px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .subbar-left, .subbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 胶囊单选组 */
     .segmented-control {
       display: flex;
       align-items: center;
       background: var(--input-bg);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 2px;
-      gap: 2px;
     }
 
     .seg-btn {
+      padding: 4px 10px;
       border: none;
       background: transparent;
-      padding: 4px 10px;
+      color: var(--muted);
       font-size: 12px;
       font-weight: 600;
-      color: var(--muted);
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.15s;
       display: flex;
       align-items: center;
       gap: 4px;
-      white-space: nowrap;
     }
 
     .seg-btn:hover {
@@ -216,597 +350,382 @@
 
     .seg-btn.active {
       background: var(--paper-strong);
-      color: var(--accent);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
-    /* 主工作台区域 - 占满全屏 */
-    .workspace {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 12px;
-      gap: 12px;
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    /* 输入区双栏容器 */
-    .inputs-wrapper {
-      display: flex;
-      gap: 12px;
-      height: 220px;
-      min-height: 120px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .inputs-wrapper.collapsed {
-      height: 0 !important;
-      min-height: 0 !important;
-      margin-bottom: -12px;
-      opacity: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    /* 面板结构 */
-    .panel {
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      background: var(--paper);
-      backdrop-filter: blur(15px);
+    .checkbox-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 8px;
+      border-radius: 6px;
       border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      background: var(--paper-strong);
+      transition: all 0.15s;
     }
 
-    .panel-header {
-      height: 40px;
-      min-height: 40px;
-      padding: 0 14px;
+    .checkbox-chip:hover {
+      border-color: var(--accent);
+    }
+
+    .checkbox-chip input[type="checkbox"] {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* 差异主滚动渲染区 */
+    .diff-scroll-viewport {
+      flex: 1;
+      overflow: auto;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.6;
       background: var(--paper-strong);
-      border-bottom: 1px solid var(--line);
+    }
+
+    /* 左右并排 (Split) 样式 */
+    .diff-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .diff-row {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .diff-row.highlight-focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      animation: pulseFocus 1.5s ease-out;
+    }
+
+    @keyframes pulseFocus {
+      0% { background-color: rgba(224, 122, 95, 0.35); }
+      100% { background-color: transparent; }
+    }
+
+    .gutter-col {
+      width: 44px;
+      text-align: right;
+      padding: 0 8px;
+      color: var(--diff-gutter-color);
+      background: var(--diff-gutter-bg);
+      user-select: none;
+      border-right: 1px solid var(--line);
+      font-size: 11px;
+    }
+
+    .content-col {
+      padding: 0 10px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      vertical-align: top;
+    }
+
+    /* 增删背景与文字颜色 */
+    .line-delete {
+      background-color: var(--diff-del-bg);
+      color: var(--diff-del-text);
+    }
+
+    .line-insert {
+      background-color: var(--diff-ins-bg);
+      color: var(--diff-ins-text);
+    }
+
+    .char-del {
+      background-color: var(--diff-del-char-bg);
+      font-weight: 800;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    .char-ins {
+      background-color: var(--diff-ins-char-bg);
+      font-weight: 800;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    /* 折叠无差异行样式 */
+    .diff-fold-row {
+      background: var(--input-bg);
+      border-top: 1px dashed var(--line);
+      border-bottom: 1px dashed var(--line);
+      text-align: center;
+      padding: 6px 0;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .diff-fold-row:hover {
+      background: var(--line);
+      color: var(--accent);
+    }
+
+    /* 空白状态 */
+    .empty-diff-state {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    /* 底部 32px 状态监控栏 */
+    .status-bar {
+      height: var(--footer-h);
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      padding: 0 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      font-size: 11.5px;
+      color: var(--muted);
+      flex-shrink: 0;
+      z-index: 50;
     }
 
-    .panel-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
+    .status-left, .status-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 16px;
     }
 
-    .panel-title .badge {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--muted);
-      background: var(--input-bg);
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: none;
-      letter-spacing: 0;
-      border: 1px solid var(--line);
-    }
-
-    .panel-actions {
+    .status-item {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .action-link {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 5px;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      user-select: none;
-      line-height: 1;
-    }
-
-    .action-link:hover {
-      color: var(--accent);
-      background: var(--btn-secondary-bg);
-    }
-
-    .action-divider {
-      width: 1px;
-      height: 14px;
-      background: var(--line);
-      margin: 0 2px;
-    }
-
-    .panel-body {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background: var(--input-bg);
-      overflow: hidden;
-    }
-
-    /* 输入文本框 */
-    .diff-textarea {
-      flex: 1;
-      width: 100%;
-      height: 100%;
-      padding: 12px 14px;
-      border: none;
-      background: transparent;
-      font-family: "Fira Code", Consolas, Monaco, "Courier New", monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--text);
-      resize: none;
-      outline: none;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-      tab-size: 2;
-    }
-
-    .diff-textarea::placeholder {
-      color: var(--muted);
-      opacity: 0.65;
-    }
-
-    /* 结果面板 */
-    .result-panel {
-      flex: 1;
-      min-height: 0;
-    }
-
-    .diff-legend {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 600;
-      margin-left: 8px;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .legend-color {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      display: inline-block;
-    }
-
-    .legend-color.delete {
-      background-color: var(--diff-del-bg);
-      border: 1px solid var(--diff-del-text);
-    }
-
-    .legend-color.insert {
-      background-color: var(--diff-ins-bg);
-      border: 1px solid var(--diff-ins-text);
-    }
-
-    /* 差异对比展示容器 - 滚动区域 */
-    .diff-scroll-view {
-      flex: 1;
-      min-height: 0;
-      overflow: auto;
-      background: var(--paper-strong);
-    }
-
-    .diff-container {
-      font-family: "Fira Code", Consolas, Monaco, "Courier New", monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      width: 100%;
-      min-width: 100%;
-      box-sizing: border-box;
-    }
-
-    /* 双栏并排 Diff 表格样式 */
-    .diff-container.split {
-      display: grid;
-      grid-template-columns: 48px minmax(0, 1fr) 48px minmax(0, 1fr);
-      width: 100%;
-    }
-
-    /* 单栏混排 Diff 表格样式 */
-    .diff-container.inline {
-      display: grid;
-      grid-template-columns: 48px 48px minmax(0, 1fr);
-      width: 100%;
-    }
-
-    .diff-header-col {
-      background-color: color-mix(in srgb, var(--text) 5%, transparent);
-      color: var(--muted);
-      font-size: 11px;
+    .stat-badge-add {
+      color: #10b981;
       font-weight: 700;
-      text-transform: uppercase;
-      padding: 6px 12px;
-      border-bottom: 1px solid var(--line);
-      letter-spacing: 0.06em;
-      user-select: none;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(8px);
     }
 
-    .diff-header-col.left {
-      border-right: 1px solid var(--line);
-    }
-
-    .diff-gutter {
-      background-color: color-mix(in srgb, var(--text) 3%, transparent);
-      color: var(--muted);
-      text-align: right;
-      padding: 0 8px;
-      user-select: none;
-      border-right: 1px solid var(--line);
-      font-size: 11px;
-      line-height: 1.6;
-    }
-
-    .diff-code {
-      padding: 0 12px;
-      min-height: 1.6em;
-      white-space: pre-wrap;
-      word-break: break-all;
-      overflow-wrap: anywhere;
-    }
-
-    .diff-code.left {
-      border-right: 1px solid var(--line);
-    }
-
-    /* 高亮差异行 */
-    .diff-row-delete {
-      background-color: var(--diff-del-bg);
-      color: var(--diff-del-text);
-    }
-
-    .diff-row-insert {
-      background-color: var(--diff-ins-bg);
-      color: var(--diff-ins-text);
-    }
-
-    .diff-row-modify-left {
-      background-color: color-mix(in srgb, var(--accent) 7%, transparent);
-    }
-
-    .diff-row-modify-right {
-      background-color: color-mix(in srgb, var(--teal) 7%, transparent);
-    }
-
-    .char-delete {
-      background-color: var(--diff-del-char-bg);
-      color: var(--diff-del-text);
-      text-decoration: line-through;
-      font-weight: bold;
-      border-radius: 2px;
-      padding: 1px 2px;
-    }
-
-    .char-insert {
-      background-color: var(--diff-ins-char-bg);
-      color: var(--diff-ins-text);
-      text-decoration: underline;
-      font-weight: bold;
-      border-radius: 2px;
-      padding: 1px 2px;
-    }
-
-    .empty-line {
-      background-color: color-mix(in srgb, var(--text) 2%, transparent);
-    }
-
-    /* 逐词/逐字对比视图 */
-    .diff-container.token-view {
-      display: flex;
-      gap: 16px;
-      padding: 16px;
-      box-sizing: border-box;
-      min-height: 100%;
-    }
-
-    .diff-token-pane {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .diff-token-pane.left {
-      border-right: 1px solid var(--line);
-      padding-right: 16px;
-    }
-
-    .diff-container.token-view pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-all;
-      font-family: inherit;
-      font-size: 13.5px;
-      line-height: 1.65;
-    }
-
-    .pane-title {
-      font-size: 11px;
+    .stat-badge-del {
+      color: #ef4444;
       font-weight: 700;
-      text-transform: uppercase;
-      color: var(--muted);
-      border-bottom: 1px dashed var(--line);
-      padding-bottom: 6px;
-      letter-spacing: 0.05em;
     }
 
-    /* 空白状态 */
-    .empty-state {
-      height: 100%;
-      min-height: 240px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      gap: 12px;
-      user-select: none;
-      padding: 40px;
-      text-align: center;
+    .stat-badge-mod {
+      color: #f59e0b;
+      font-weight: 700;
     }
 
-    .empty-state svg {
-      opacity: 0.4;
-    }
-
-    .empty-state p {
-      margin: 0;
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    .empty-state .sub {
-      font-size: 12px;
-      opacity: 0.5;
-    }
-
-    /* 复制 Toast */
-    .toast-tip {
+    /* 全局 Toast */
+    .toast {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 42px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
       background: var(--text);
       color: var(--bg);
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
       font-weight: 600;
       opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.2s ease;
       pointer-events: none;
-      z-index: 100;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10000;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
 
-    .toast-tip.show {
+    .toast.show {
       opacity: 1;
-      transform: translateY(0);
-    }
-
-    @media (max-width: 900px) {
-      .app-title .tag {
-        display: none;
-      }
-      .inputs-wrapper {
-        flex-direction: column;
-        height: 280px;
-      }
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
 <body>
 
-  <!-- 顶部导航与工具栏 -->
-  <header class="top-navbar">
-    <div class="nav-left">
-      <a href="../index.html" class="back-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        返回首页
+  <!-- 顶部 56px 导航栏 -->
+  <header class="workbench-header top-navbar">
+    <div class="header-left">
+      <a href="../index.html" class="back-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>返回</span>
       </a>
-      <div class="app-title">
-        <h1>Diff 文本对比</h1>
-        <span class="tag">并排/单栏 · 逐行/逐词/逐字 · 本地纯前端</span>
+      <div class="tool-title">
+        <span>Diff 文本与代码对比</span>
+        <span class="badge-pill">Studio v2.0</span>
       </div>
     </div>
 
-    <div class="nav-right">
-      <!-- 载入测试数据 -->
-      <button class="btn" onclick="loadSampleDiff()" title="载入测试用的代码对比示例">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-        <span>示例</span>
-      </button>
-
-      <!-- 交换左右两边 -->
-      <button class="btn" onclick="swapTexts()" title="交换原文本与修改后文本">
+    <div class="header-center">
+      <!-- 左右互换 -->
+      <button class="nav-btn" onclick="swapTexts()" title="左右两边文本/代码对调">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg>
-        <span>交换</span>
+        <span>⇄ 交换</span>
       </button>
 
-      <!-- 忽略选项 -->
-      <label class="checkbox-pill" title="对比时忽略首尾或连续空格差异">
-        <input type="checkbox" id="ignoreWhitespace" onchange="performDiff()" checked />
-        <span>忽略空白</span>
-      </label>
-      <label class="checkbox-pill" title="对比时忽略英文字母大小写差异">
-        <input type="checkbox" id="ignoreCase" onchange="performDiff()" />
-        <span>忽略大小写</span>
-      </label>
+      <!-- 差异块导航 (Next / Prev Diff) -->
+      <div class="nav-nav-group" title="差异块快捷跳转 (快捷键: Alt + 上/下箭头)">
+        <button class="nav-nav-btn" onclick="navigateDiff(-1)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          <span>上一个</span>
+        </button>
+        <span class="nav-nav-count" id="diffNavCount">0 / 0</span>
+        <button class="nav-nav-btn" onclick="navigateDiff(1)">
+          <span>下一个</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+      </div>
 
-      <!-- 立即比对主按钮 -->
-      <button class="btn btn-primary" onclick="performDiff()" title="立即对比差异 (Ctrl + Enter)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        <span>比对 (Diff)</span>
+      <!-- 示例数据 -->
+      <button class="nav-btn" onclick="loadSampleData()" title="载入微服务代码对比测试数据">
+        <span>📋 示例数据</span>
       </button>
 
-      <!-- 主题切换按钮 (由 theme.js 自动接管) -->
-      <button id="theme-toggle" class="btn" style="padding: 0 10px;" title="切换明亮/暗黑主题">
-        <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <!-- 导出 Patch 补丁 -->
+      <button class="nav-btn" onclick="exportUnifiedPatch()" title="导出 Git 兼容的 .patch / .diff 补丁文件">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>导出 Patch</span>
+      </button>
+
+      <!-- 折叠/展开输入区 -->
+      <button class="nav-btn" id="toggleInputsBtn" onclick="toggleInputsArea()" title="折叠/展开上方输入区，使对比结果铺满整个屏幕">
+        <span id="toggleInputsText">折叠输入区</span>
+      </button>
+    </div>
+
+    <div class="header-right nav-right">
+      <button class="nav-btn" onclick="clearAll()" title="清空左右两边输入与对比结果">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span>清空</span>
+      </button>
+      <button id="theme-toggle" class="nav-btn" style="padding: 6px 10px;" title="切换明亮/暗黑主题">
+        <svg class="sun-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
       </button>
     </div>
   </header>
 
-  <!-- 全屏工作台 -->
-  <main class="workspace">
+  <!-- 100vh 主工作区 -->
+  <main class="workbench-main">
 
-    <!-- 上半部分：原文本与修改后文本输入区 (可一键折叠铺满) -->
-    <div id="inputsSection" class="inputs-wrapper">
-      
-      <!-- 原文本面板 -->
-      <section class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <span>原版本 (Original)</span>
-            <span id="origStats" class="badge">0 行 / 0 字</span>
+    <!-- 上半部分：原版本与修改后版本编辑器 (支持本地文件拖拽投递) -->
+    <section class="inputs-container" id="inputsContainer">
+      <!-- 左栏：原版本 -->
+      <div class="input-pane">
+        <div class="pane-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>原版本 (Original / Left)</span>
+            <span id="origStatsBadge" style="font-family: var(--font-mono); font-size: 11px; color: var(--muted);">0 行 / 0 字</span>
           </div>
-          <div class="panel-actions">
-            <label class="action-link" style="cursor: pointer;" title="导入本地文件">
+          <div class="pane-actions">
+            <label class="link-action" style="cursor: pointer;" title="选择导入本地文本文件">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              导入
-              <input type="file" id="fileImportOriginal" style="display: none;" onchange="importFile('originalText', this)" />
+              <span>导入文件</span>
+              <input type="file" id="fileImportOrig" style="display: none;" onchange="handleFileSelect(this, 'originalText')">
             </label>
-            <div class="action-divider"></div>
-            <button class="action-link" onclick="clearEditor('originalText')" title="清空原文本">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              清空
-            </button>
+            <button class="link-action" onclick="clearText('originalText')" title="清空此栏">清空</button>
           </div>
         </div>
-        <div class="panel-body">
-          <textarea 
-            id="originalText" 
-            class="diff-textarea" 
-            placeholder="在此输入、粘贴或拖入原版本文本/代码..." 
-            oninput="handleInputChange('originalText')" 
-            spellcheck="false"></textarea>
-        </div>
-      </section>
+        <textarea 
+          id="originalText" 
+          class="diff-textarea" 
+          placeholder="在此输入、粘贴或直接将原版本文件拖拽到此处..."
+          oninput="onInputChanged()" 
+          spellcheck="false"></textarea>
+      </div>
 
-      <!-- 修改后文本面板 -->
-      <section class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <span>修改后 (Modified)</span>
-            <span id="modStats" class="badge">0 行 / 0 字</span>
+      <!-- 右栏：修改后版本 -->
+      <div class="input-pane">
+        <div class="pane-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>修改后版本 (Modified / Right)</span>
+            <span id="modStatsBadge" style="font-family: var(--font-mono); font-size: 11px; color: var(--muted);">0 行 / 0 字</span>
           </div>
-          <div class="panel-actions">
-            <label class="action-link" style="cursor: pointer;" title="导入本地文件">
+          <div class="pane-actions">
+            <label class="link-action" style="cursor: pointer;" title="选择导入本地文本文件">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              导入
-              <input type="file" id="fileImportModified" style="display: none;" onchange="importFile('modifiedText', this)" />
+              <span>导入文件</span>
+              <input type="file" id="fileImportMod" style="display: none;" onchange="handleFileSelect(this, 'modifiedText')">
             </label>
-            <div class="action-divider"></div>
-            <button class="action-link" onclick="clearEditor('modifiedText')" title="清空修改后文本">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              清空
-            </button>
+            <button class="link-action" onclick="clearText('modifiedText')" title="清空此栏">清空</button>
           </div>
         </div>
-        <div class="panel-body">
-          <textarea 
-            id="modifiedText" 
-            class="diff-textarea" 
-            placeholder="在此输入、粘贴或拖入修改后新版本文本/代码..." 
-            oninput="handleInputChange('modifiedText')" 
-            spellcheck="false"></textarea>
-        </div>
-      </section>
+        <textarea 
+          id="modifiedText" 
+          class="diff-textarea" 
+          placeholder="在此输入、粘贴或直接将修改后文件拖拽到此处..." 
+          oninput="onInputChanged()" 
+          spellcheck="false"></textarea>
+      </div>
+    </section>
 
-    </div>
-
-    <!-- 下半部分：对比分析结果面板 (自适应撑满剩余屏幕) -->
-    <section class="panel result-panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <span>差异分析结果</span>
-          <span id="diffSummaryBadge" class="badge" style="display: none;">无差异</span>
-          <div class="diff-legend" id="diffLegend" style="display: none;">
-            <span class="legend-item"><span class="legend-color delete"></span> 删除</span>
-            <span class="legend-item"><span class="legend-color insert"></span> 新增</span>
-          </div>
-        </div>
-
-        <div class="panel-actions">
-          <!-- 视图模式胶囊 -->
-          <div class="segmented-control" id="viewModeGroup">
-            <button class="seg-btn active" data-value="split" onclick="setViewMode('split')" title="双栏左右并排对比">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
-              并排
+    <!-- 下半部分：差异对比分析视窗 -->
+    <section class="diff-viewer-section">
+      <!-- 操作控制子工具栏 -->
+      <div class="viewer-subbar">
+        <div class="subbar-left">
+          <!-- 并排 / 单栏切换 -->
+          <div class="segmented-control">
+            <button class="seg-btn active" id="btnModeSplit" onclick="setViewMode('split')" title="左右并排并列对比 (Split View)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+              <span>并排对比</span>
             </button>
-            <button class="seg-btn" data-value="inline" onclick="setViewMode('inline')" title="单栏合并混排对比">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line></svg>
-              单栏
+            <button class="seg-btn" id="btnModeInline" onclick="setViewMode('inline')" title="单栏混合逐行对比 (Unified View)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line></svg>
+              <span>单栏合并</span>
             </button>
           </div>
 
-          <!-- 对比粒度胶囊 -->
-          <div class="segmented-control" id="diffTypeGroup">
-            <button class="seg-btn active" data-value="line" onclick="setDiffType('line')" title="逐行对比">行</button>
-            <button class="seg-btn" data-value="word" onclick="setDiffType('word')" title="逐词对比">词</button>
-            <button class="seg-btn" data-value="char" onclick="setDiffType('char')" title="逐字对比">字</button>
+          <!-- 对比颗粒度 -->
+          <div class="segmented-control">
+            <button class="seg-btn active" id="btnDiffLine" onclick="setDiffType('line')" title="逐行比对并提供行内字符精细加粗高亮">逐行 + 行内字符</button>
+            <button class="seg-btn" id="btnDiffWord" onclick="setDiffType('word')" title="逐词纯文本流动对比">逐词比对</button>
+            <button class="seg-btn" id="btnDiffChar" onclick="setDiffType('char')" title="逐字符细粒度对比">逐字比对</button>
           </div>
+        </div>
 
-          <div class="action-divider"></div>
-
-          <!-- 折叠/展开输入区，让对比结果铺满整个视口 -->
-          <button id="toggleInputsBtn" class="action-link" onclick="toggleInputs()" title="折叠/展开上方输入区，使结果铺满屏幕">
-            <svg id="toggleInputsIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
-            <span id="toggleInputsText">折叠输入</span>
-          </button>
-
-          <div class="action-divider"></div>
-
-          <!-- 复制修改后文本 -->
-          <button class="action-link" onclick="copyResult()" title="复制右侧修改后完整文本">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            复制新文本
-          </button>
+        <div class="subbar-right">
+          <!-- 高级过滤开关 -->
+          <label class="checkbox-chip" title="自动忽略每行首尾多余空格差异">
+            <input type="checkbox" id="chkTrimWhitespace" onchange="triggerDiff()">
+            <span>忽略首尾空格</span>
+          </label>
+          <label class="checkbox-chip" title="彻底忽略所有空白与制表符变动">
+            <input type="checkbox" id="chkIgnoreAllWhitespace" onchange="triggerDiff()">
+            <span>忽略所有空白</span>
+          </label>
+          <label class="checkbox-chip" title="对比时不区分英文字母大小写">
+            <input type="checkbox" id="chkIgnoreCase" onchange="triggerDiff()">
+            <span>忽略大小写</span>
+          </label>
+          <label class="checkbox-chip" title="折叠大量无修改的代码行，只保留上下文">
+            <input type="checkbox" id="chkFoldUnchanged" onchange="triggerDiff()">
+            <span>折叠相同代码</span>
+          </label>
         </div>
       </div>
 
-      <!-- 对比内容独立滚动区 -->
-      <div class="diff-scroll-view" id="diffScrollView">
-        <div id="diffOutput">
-          <div class="empty-state">
+      <!-- 核心对比内容滚动渲染区 -->
+      <div class="diff-scroll-viewport" id="diffScrollView">
+        <div id="diffOutputContainer">
+          <!-- 动态渲染对比表格或空状态 -->
+          <div class="empty-diff-state">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            <p>在上方输入原文本与修改后的文本，系统将在此展现精准对比差异</p>
-            <span class="sub">支持快捷键 Ctrl + Enter 快速比对，也可点击右上角“示例”快速体验</span>
+            <p style="font-size: 14px; font-weight: 600;">在上方输入原文本与修改后版本，即可实时渲染对比差异</p>
+            <span style="font-size: 12px; color: var(--muted);">支持直接拖入文件，也可点击顶栏「📋 示例数据」快速体验</span>
           </div>
         </div>
       </div>
@@ -814,112 +733,152 @@
 
   </main>
 
-  <!-- 轻量轻提示 Toast -->
-  <div id="toast" class="toast-tip">已复制到剪贴板</div>
+  <!-- 底部 32px 状态监控栏 -->
+  <footer class="status-bar">
+    <div class="status-left">
+      <div class="status-item">
+        <span>统计大盘: </span>
+        <span class="stat-badge-add" id="statAddedLines">+0 行新增</span>
+        <span class="stat-badge-del" id="statDeletedLines">-0 行删除</span>
+        <span class="stat-badge-mod" id="statDiffBlocks">~0 处差异</span>
+      </div>
+      <div class="status-item">
+        <span>耗时: <strong id="statDuration">0.0 ms</strong></span>
+      </div>
+    </div>
 
-  <!-- 引入 jsdiff 库 -->
+    <div class="status-right">
+      <div class="status-item">
+        <span>快捷操作: <kbd style="background:var(--input-bg); border:1px solid var(--line); padding:1px 5px; border-radius:3px;">Alt + ↑ / ↓</kbd> 穿梭差异</span>
+      </div>
+      <div class="status-item">
+        <span>算法引擎: <strong>jsdiff 本地纯前端毫秒级运算</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 全局轻量 Toast 提示 -->
+  <div class="toast" id="toast">已成功复制到剪贴板！</div>
+
+  <!-- 引入本地纯前端 jsdiff 库 -->
   <script src="/vendor/diff.min.js"></script>
-  <script>
-    let diffDebounceTimer;
-    let currentViewMode = 'split';
-    let currentDiffType = 'line';
-    let isInputsCollapsed = false;
 
-    // 载入示例测试数据
-    function loadSampleDiff() {
-      const sampleOrig = `function getUserProfile(userId) {
-  // 从数据库中查找用户信息
-  const user = db.find({ id: userId });
+  <script>
+    // =========================================================================
+    // 1. 全局状态中心
+    // =========================================================================
+    let viewMode = 'split'; // 'split' | 'inline'
+    let diffType = 'line';  // 'line' | 'word' | 'char'
+    let isInputsCollapsed = false;
+    let diffTimer = null;
+
+    let diffBlockElements = []; // 所有标记为差异的 DOM 节点
+    let currentDiffIndex = -1;  // 当前聚焦的差异块索引
+
+    // =========================================================================
+    // 2. 拖拽导入与文件读取支持
+    // =========================================================================
+    function initDragAndDrop() {
+      const origArea = document.getElementById('originalText');
+      const modArea = document.getElementById('modifiedText');
+
+      [
+        { el: origArea, id: 'originalText' },
+        { el: modArea, id: 'modifiedText' }
+      ].forEach(({ el, id }) => {
+        el.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          el.classList.add('dragover');
+        });
+
+        el.addEventListener('dragleave', () => {
+          el.classList.remove('dragover');
+        });
+
+        el.addEventListener('drop', (e) => {
+          e.preventDefault();
+          el.classList.remove('dragover');
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            readFileInto(file, id);
+          }
+        });
+      });
+    }
+
+    function handleFileSelect(input, targetId) {
+      if (input.files && input.files[0]) {
+        readFileInto(input.files[0], targetId);
+      }
+    }
+
+    function readFileInto(file, targetId) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById(targetId).value = e.target.result;
+        updateStats();
+        triggerDiff();
+        showToast(`已导入文件: ${file.name}`);
+      };
+      reader.readAsText(file);
+    }
+
+    // =========================================================================
+    // 3. 示例数据与清空互换
+    // =========================================================================
+    function loadSampleData() {
+      const sampleOrig = `// 用户信息服务接口 (v1.0)
+function getUserProfile(userId) {
+  // 从本地同步数据源查询用户
+  const user = db.queryUser({ id: userId });
   if (!user) {
     return { status: 404, message: "User not found" };
   }
   return {
     id: user.id,
     name: user.name,
-    role: "member"
+    role: "standard_member",
+    createdAt: user.created_time
   };
+}
+
+function calculateScore(metrics) {
+  let score = 0;
+  for (let i = 0; i < metrics.length; i++) {
+    score += metrics[i].value;
+  }
+  return score;
 }`;
 
-      const sampleMod = `async function getUserProfile(userId) {
-  // 从数据库中异步查找用户信息并附带缓存
-  const user = await db.findById(userId);
+      const sampleMod = `// 用户信息服务接口 (v2.0 异步分布式缓存增强版)
+async function getUserProfile(userId, options = {}) {
+  // 优化：优先从 Redis 缓存中异步获取
+  const cached = await redis.get(\`user:\${userId}\`);
+  if (cached) return JSON.parse(cached);
+
+  const user = await db.queryUserAsync({ id: userId });
   if (!user) {
-    throw new NotFoundError("User not found: " + userId);
+    throw new NotFoundException(\`User \${userId} does not exist\`);
   }
   return {
     id: user.id,
     name: user.name,
-    role: user.role || "guest",
-    avatar: user.avatarUrl,
+    role: user.role || "standard_member",
+    createdAt: user.created_time,
     updatedAt: new Date().toISOString()
   };
+}
+
+function calculateScore(metrics) {
+  // 使用 reduce 高阶函数重写计算逻辑
+  return metrics.reduce((acc, m) => acc + (m.value * (m.weight || 1)), 0);
 }`;
 
       document.getElementById('originalText').value = sampleOrig;
       document.getElementById('modifiedText').value = sampleMod;
-      updateTextStats('originalText');
-      updateTextStats('modifiedText');
-      performDiff();
-      showToast('已加载对比示例数据');
-    }
-
-    // 统计文本行数与字符数
-    function updateTextStats(id) {
-      const val = document.getElementById(id).value;
-      const statsId = id === 'originalText' ? 'origStats' : 'modStats';
-      const statsEl = document.getElementById(statsId);
-      if (!val) {
-        statsEl.textContent = '0 行 / 0 字';
-        return;
-      }
-      const lines = val.split('\n').length;
-      const chars = val.length;
-      statsEl.textContent = `${lines} 行 / ${chars} 字`;
-    }
-
-    function handleInputChange(id) {
-      updateTextStats(id);
-      debounceDiff();
-    }
-
-    // 折叠/展开输入区
-    function toggleInputs() {
-      const section = document.getElementById('inputsSection');
-      const text = document.getElementById('toggleInputsText');
-      const icon = document.getElementById('toggleInputsIcon');
-      isInputsCollapsed = !isInputsCollapsed;
-
-      if (isInputsCollapsed) {
-        section.classList.add('collapsed');
-        text.textContent = '展开输入';
-        icon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
-      } else {
-        section.classList.remove('collapsed');
-        text.textContent = '折叠输入';
-        icon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>';
-      }
-    }
-
-    function setViewMode(mode) {
-      document.querySelectorAll('#viewModeGroup .seg-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.value === mode);
-      });
-      currentViewMode = mode;
-      performDiff();
-    }
-
-    function setDiffType(type) {
-      document.querySelectorAll('#diffTypeGroup .seg-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.value === type);
-      });
-      currentDiffType = type;
-      performDiff();
-    }
-
-    function clearEditor(id) {
-      document.getElementById(id).value = '';
-      updateTextStats(id);
-      performDiff();
+      updateStats();
+      triggerDiff();
+      showToast('已载入测试代码对比数据');
     }
 
     function swapTexts() {
@@ -928,386 +887,482 @@
       const temp = orig.value;
       orig.value = mod.value;
       mod.value = temp;
-      updateTextStats('originalText');
-      updateTextStats('modifiedText');
-      performDiff();
-      showToast('已交换两边文本');
+      updateStats();
+      triggerDiff();
+      showToast('已交换原版本与新版本');
     }
 
-    function debounceDiff() {
-      clearTimeout(diffDebounceTimer);
-      const origLen = document.getElementById('originalText').value.length;
-      const modLen = document.getElementById('modifiedText').value.length;
-      const totalLen = origLen + modLen;
+    function clearText(id) {
+      document.getElementById(id).value = '';
+      updateStats();
+      triggerDiff();
+    }
 
-      if (totalLen > 100000) {
-        return; // 超大文本需手动点击“比对”
+    function clearAll() {
+      document.getElementById('originalText').value = '';
+      document.getElementById('modifiedText').value = '';
+      updateStats();
+      triggerDiff();
+      showToast('已清空全部内容');
+    }
+
+    function toggleInputsArea() {
+      const container = document.getElementById('inputsContainer');
+      const btnText = document.getElementById('toggleInputsText');
+      isInputsCollapsed = !isInputsCollapsed;
+      container.classList.toggle('collapsed', isInputsCollapsed);
+      btnText.textContent = isInputsCollapsed ? '展开输入区' : '折叠输入区';
+    }
+
+    // =========================================================================
+    // 4. 输入统计与防抖比对
+    // =========================================================================
+    function updateStats() {
+      const origVal = document.getElementById('originalText').value;
+      const modVal = document.getElementById('modifiedText').value;
+
+      const origLines = origVal ? origVal.split('\n').length : 0;
+      const modLines = modVal ? modVal.split('\n').length : 0;
+
+      document.getElementById('origStatsBadge').textContent = `${origLines} 行 / ${origVal.length} 字`;
+      document.getElementById('modStatsBadge').textContent = `${modLines} 行 / ${modVal.length} 字`;
+    }
+
+    function onInputChanged() {
+      updateStats();
+      clearTimeout(diffTimer);
+      diffTimer = setTimeout(triggerDiff, 200);
+    }
+
+    // =========================================================================
+    // 5. 核心 Diff 引擎与行内字符级高亮计算
+    // =========================================================================
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      document.getElementById('btnModeSplit').classList.toggle('active', mode === 'split');
+      document.getElementById('btnModeInline').classList.toggle('active', mode === 'inline');
+      triggerDiff();
+    }
+
+    function setDiffType(type) {
+      diffType = type;
+      document.getElementById('btnDiffLine').classList.toggle('active', type === 'line');
+      document.getElementById('btnDiffWord').classList.toggle('active', type === 'word');
+      document.getElementById('btnDiffChar').classList.toggle('active', type === 'char');
+      triggerDiff();
+    }
+
+    function triggerDiff() {
+      const startTime = performance.now();
+      let orig = document.getElementById('originalText').value;
+      let mod = document.getElementById('modifiedText').value;
+
+      const container = document.getElementById('diffOutputContainer');
+      diffBlockElements = [];
+      currentDiffIndex = -1;
+      updateNavCount();
+
+      if (!orig && !mod) {
+        container.innerHTML = `
+          <div class="empty-diff-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <p style="font-size: 14px; font-weight: 600;">在上方输入原文本与修改后版本，即可实时渲染对比差异</p>
+            <span style="font-size: 12px; color: var(--muted);">支持直接拖入文件，也可点击顶栏「📋 示例数据」快速体验</span>
+          </div>
+        `;
+        resetStats();
+        return;
       }
 
-      const delay = totalLen > 30000 ? 500 : 150;
-      diffDebounceTimer = setTimeout(performDiff, delay);
+      // 高级过滤处理
+      const trimWs = document.getElementById('chkTrimWhitespace').checked;
+      const ignoreAllWs = document.getElementById('chkIgnoreAllWhitespace').checked;
+      const ignoreCase = document.getElementById('chkIgnoreCase').checked;
+      const foldUnchanged = document.getElementById('chkFoldUnchanged').checked;
+
+      const diffOptions = {
+        ignoreWhitespace: ignoreAllWs,
+        ignoreCase: ignoreCase
+      };
+
+      if (!window.Diff) {
+        container.innerHTML = '<div style="padding: 20px; color: red;">未检测到 Diff 引擎库</div>';
+        return;
+      }
+
+      // 逐词或逐字模式
+      if (diffType === 'word' || diffType === 'char') {
+        renderTokenDiff(orig, mod, diffType, diffOptions);
+        const duration = (performance.now() - startTime).toFixed(1);
+        document.getElementById('statDuration').textContent = `${duration} ms`;
+        return;
+      }
+
+      // 核心：逐行比对 + 行内字符高亮 (Line Diff with Intra-line Char Highlights)
+      renderLineDiff(orig, mod, diffOptions, foldUnchanged);
+      const duration = (performance.now() - startTime).toFixed(1);
+      document.getElementById('statDuration').textContent = `${duration} ms`;
     }
 
-    function escapeHtml(text) {
-      if (!text) return '';
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    // 逐行渲染引擎
+    function renderLineDiff(origText, modText, diffOptions, foldUnchanged) {
+      const container = document.getElementById('diffOutputContainer');
+      const changes = Diff.diffLines(origText, modText, diffOptions);
+
+      // 统计数据
+      let addCount = 0;
+      let delCount = 0;
+      let blockCount = 0;
+
+      // 构建行列表
+      let origLines = [];
+      let modLines = [];
+
+      let origLineNum = 1;
+      let modLineNum = 1;
+
+      // 结构化整理
+      let structuredChunks = [];
+
+      for (let i = 0; i < changes.length; i++) {
+        const part = changes[i];
+        const lines = part.value.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop(); // 去除末尾换行分割产生的多余空项
+
+        if (part.added) {
+          addCount += lines.length;
+          structuredChunks.push({ type: 'add', lines: lines });
+        } else if (part.removed) {
+          delCount += lines.length;
+          // 检查下一个是否是 added，如果是则配对为 'modify' 变更块
+          if (i + 1 < changes.length && changes[i + 1].added) {
+            const nextPart = changes[i + 1];
+            const nextLines = nextPart.value.replace(/\r\n/g, '\n').split('\n');
+            if (nextLines.length > 0 && nextLines[nextLines.length - 1] === '') nextLines.pop();
+            addCount += nextLines.length;
+            structuredChunks.push({ type: 'mod', delLines: lines, addLines: nextLines });
+            i++; // 跳过下一个 added
+          } else {
+            structuredChunks.push({ type: 'del', lines: lines });
+          }
+        } else {
+          structuredChunks.push({ type: 'same', lines: lines });
+        }
+      }
+
+      // 计算变更块数
+      blockCount = structuredChunks.filter(c => c.type !== 'same').length;
+
+      document.getElementById('statAddedLines').textContent = `+${addCount} 行新增`;
+      document.getElementById('statDeletedLines').textContent = `-${delCount} 行删除`;
+      document.getElementById('statDiffBlocks').textContent = `~${blockCount} 处差异`;
+
+      // 准备渲染 HTML
+      let html = `<table class="diff-table"><tbody>`;
+      let currentOrigNum = 1;
+      let currentModNum = 1;
+
+      structuredChunks.forEach((chunk, chunkIdx) => {
+        if (chunk.type === 'same') {
+          // 若启用折叠无差异代码，且连续无变化超过 6 行
+          if (foldUnchanged && chunk.lines.length > 6) {
+            // 前留 2 行
+            for (let k = 0; k < 2; k++) {
+              html += renderSameRow(currentOrigNum++, currentModNum++, chunk.lines[k]);
+            }
+            // 折叠中间部分
+            const foldedCount = chunk.lines.length - 4;
+            html += `
+              <tr class="diff-fold-row" onclick="unfoldChunk(this, ${chunkIdx})">
+                <td colspan="${viewMode === 'split' ? 4 : 3}">
+                  ⋯ 折叠了 ${foldedCount} 行无改动代码 (点击展开) ⋯
+                </td>
+              </tr>
+            `;
+            currentOrigNum += foldedCount;
+            currentModNum += foldedCount;
+            // 后留 2 行
+            for (let k = chunk.lines.length - 2; k < chunk.lines.length; k++) {
+              html += renderSameRow(currentOrigNum++, currentModNum++, chunk.lines[k]);
+            }
+          } else {
+            chunk.lines.forEach(line => {
+              html += renderSameRow(currentOrigNum++, currentModNum++, line);
+            });
+          }
+        } else if (chunk.type === 'add') {
+          chunk.lines.forEach(line => {
+            if (viewMode === 'split') {
+              html += `
+                <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                  <td class="gutter-col"></td>
+                  <td class="content-col"></td>
+                  <td class="gutter-col line-insert">${currentModNum++}</td>
+                  <td class="content-col line-insert">+ ${escapeHtml(line)}</td>
+                </tr>
+              `;
+            } else {
+              html += `
+                <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                  <td class="gutter-col"></td>
+                  <td class="gutter-col line-insert">${currentModNum++}</td>
+                  <td class="content-col line-insert">+ ${escapeHtml(line)}</td>
+                </tr>
+              `;
+            }
+          });
+        } else if (chunk.type === 'del') {
+          chunk.lines.forEach(line => {
+            if (viewMode === 'split') {
+              html += `
+                <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                  <td class="gutter-col line-delete">${currentOrigNum++}</td>
+                  <td class="content-col line-delete">- ${escapeHtml(line)}</td>
+                  <td class="gutter-col"></td>
+                  <td class="content-col"></td>
+                </tr>
+              `;
+            } else {
+              html += `
+                <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                  <td class="gutter-col line-delete">${currentOrigNum++}</td>
+                  <td class="gutter-col"></td>
+                  <td class="content-col line-delete">- ${escapeHtml(line)}</td>
+                </tr>
+              `;
+            }
+          });
+        } else if (chunk.type === 'mod') {
+          // 成对修改块：计算行内细粒度字符高亮 (Intra-line Char Diff)
+          const maxL = Math.max(chunk.delLines.length, chunk.addLines.length);
+          for (let m = 0; m < maxL; m++) {
+            const delLine = chunk.delLines[m];
+            const addLine = chunk.addLines[m];
+
+            let delHtml = '';
+            let addHtml = '';
+
+            if (delLine !== undefined && addLine !== undefined) {
+              // 执行字符级对比
+              const charDiff = Diff.diffWordsWithSpace ? Diff.diffWordsWithSpace(delLine, addLine) : Diff.diffChars(delLine, addLine);
+              charDiff.forEach(c => {
+                if (c.removed) {
+                  delHtml += `<span class="char-del">${escapeHtml(c.value)}</span>`;
+                } else if (c.added) {
+                  addHtml += `<span class="char-ins">${escapeHtml(c.value)}</span>`;
+                } else {
+                  delHtml += escapeHtml(c.value);
+                  addHtml += escapeHtml(c.value);
+                }
+              });
+            } else if (delLine !== undefined) {
+              delHtml = escapeHtml(delLine);
+            } else if (addLine !== undefined) {
+              addHtml = escapeHtml(addLine);
+            }
+
+            if (viewMode === 'split') {
+              html += `
+                <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                  <td class="gutter-col ${delLine !== undefined ? 'line-delete' : ''}">${delLine !== undefined ? currentOrigNum++ : ''}</td>
+                  <td class="content-col ${delLine !== undefined ? 'line-delete' : ''}">${delLine !== undefined ? '- ' + delHtml : ''}</td>
+                  <td class="gutter-col ${addLine !== undefined ? 'line-insert' : ''}">${addLine !== undefined ? currentModNum++ : ''}</td>
+                  <td class="content-col ${addLine !== undefined ? 'line-insert' : ''}">${addLine !== undefined ? '+ ' + addHtml : ''}</td>
+                </tr>
+              `;
+            } else {
+              // 单栏模式：先展示删除行，再展示新增行
+              if (delLine !== undefined) {
+                html += `
+                  <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                    <td class="gutter-col line-delete">${currentOrigNum++}</td>
+                    <td class="gutter-col"></td>
+                    <td class="content-col line-delete">- ${delHtml}</td>
+                  </tr>
+                `;
+              }
+              if (addLine !== undefined) {
+                html += `
+                  <tr class="diff-row diff-block-target" data-diff-id="${diffBlockElements.length}">
+                    <td class="gutter-col"></td>
+                    <td class="gutter-col line-insert">${currentModNum++}</td>
+                    <td class="content-col line-insert">+ ${addHtml}</td>
+                  </tr>
+                `;
+              }
+            }
+          }
+        }
+      });
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+
+      // 提取所有差异目标元素用于导航
+      diffBlockElements = Array.from(container.querySelectorAll('.diff-block-target'));
+      updateNavCount();
+    }
+
+    function renderSameRow(origNum, modNum, text) {
+      if (viewMode === 'split') {
+        return `
+          <tr class="diff-row">
+            <td class="gutter-col">${origNum}</td>
+            <td class="content-col">${escapeHtml(text)}</td>
+            <td class="gutter-col">${modNum}</td>
+            <td class="content-col">${escapeHtml(text)}</td>
+          </tr>
+        `;
+      } else {
+        return `
+          <tr class="diff-row">
+            <td class="gutter-col">${origNum}</td>
+            <td class="gutter-col">${modNum}</td>
+            <td class="content-col">  ${escapeHtml(text)}</td>
+          </tr>
+        `;
+      }
+    }
+
+    // 逐词/逐字对比模式
+    function renderTokenDiff(origText, modText, type, diffOptions) {
+      const container = document.getElementById('diffOutputContainer');
+      const parts = type === 'word' 
+        ? Diff.diffWordsWithSpace(origText, modText, diffOptions) 
+        : Diff.diffChars(origText, modText, diffOptions);
+
+      let html = `<div style="padding: 16px; white-space: pre-wrap; font-family: var(--font-mono); font-size: 13px; line-height: 1.8;">`;
+      parts.forEach(part => {
+        if (part.added) {
+          html += `<span class="char-ins diff-block-target">${escapeHtml(part.value)}</span>`;
+        } else if (part.removed) {
+          html += `<span class="char-del diff-block-target">${escapeHtml(part.value)}</span>`;
+        } else {
+          html += escapeHtml(part.value);
+        }
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+
+      diffBlockElements = Array.from(container.querySelectorAll('.diff-block-target'));
+      updateNavCount();
+    }
+
+    // =========================================================================
+    // 6. 差异块快速穿梭导航 (Next / Prev Diff)
+    // =========================================================================
+    function navigateDiff(direction) {
+      if (diffBlockElements.length === 0) return;
+
+      // 移除之前的高亮
+      diffBlockElements.forEach(el => el.classList.remove('highlight-focus'));
+
+      currentDiffIndex += direction;
+      if (currentDiffIndex >= diffBlockElements.length) {
+        currentDiffIndex = 0; // 循环回开头
+      } else if (currentDiffIndex < 0) {
+        currentDiffIndex = diffBlockElements.length - 1; // 循环回末尾
+      }
+
+      const targetEl = diffBlockElements[currentDiffIndex];
+      if (targetEl) {
+        targetEl.classList.add('highlight-focus');
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        updateNavCount();
+      }
+    }
+
+    function updateNavCount() {
+      const countEl = document.getElementById('diffNavCount');
+      if (diffBlockElements.length === 0) {
+        countEl.textContent = '0 / 0';
+      } else {
+        countEl.textContent = `${currentDiffIndex + 1} / ${diffBlockElements.length}`;
+      }
+    }
+
+    function resetStats() {
+      document.getElementById('statAddedLines').textContent = `+0 行新增`;
+      document.getElementById('statDeletedLines').textContent = `-0 行删除`;
+      document.getElementById('statDiffBlocks').textContent = `~0 处差异`;
+      document.getElementById('statDuration').textContent = `0.0 ms`;
+    }
+
+    // =========================================================================
+    // 7. 导出 Git Unified Patch (.diff / .patch)
+    // =========================================================================
+    function exportUnifiedPatch() {
+      const orig = document.getElementById('originalText').value;
+      const mod = document.getElementById('modifiedText').value;
+
+      if (!orig && !mod) {
+        showToast('内容为空，无法生成补丁');
+        return;
+      }
+
+      let patchContent = '';
+      if (window.Diff && window.Diff.createTwoFilesPatch) {
+        patchContent = Diff.createTwoFilesPatch(
+          'a/original_version.txt',
+          'b/modified_version.txt',
+          orig,
+          mod,
+          'Original Version',
+          'Modified Version'
+        );
+      } else {
+        patchContent = `--- a/original.txt\n+++ b/modified.txt\n@@ -1 +1 @@\n` + orig;
+      }
+
+      const blob = new Blob([patchContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `diff_${new Date().toISOString().slice(0, 10)}.patch`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('已导出 Git 兼容 .patch 补丁文件！');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
       toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 1800);
+      setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
-    function copyResult() {
-      const newText = document.getElementById('modifiedText').value;
-      if (!newText) {
-        showToast('修改后文本为空');
-        return;
-      }
-      navigator.clipboard.writeText(newText).then(() => {
-        showToast('已复制新版本文本到剪贴板');
-      });
-    }
-
-    function performDiff() {
-      const oldText = document.getElementById('originalText').value;
-      const newText = document.getElementById('modifiedText').value;
-      const diffOutput = document.getElementById('diffOutput');
-      const diffLegend = document.getElementById('diffLegend');
-      const diffSummaryBadge = document.getElementById('diffSummaryBadge');
-
-      if (!oldText && !newText) {
-        diffOutput.innerHTML = `
-          <div class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            <p>在上方输入原文本与修改后的文本，系统将在此展现精准对比差异</p>
-            <span class="sub">支持快捷键 Ctrl + Enter 快速比对，也可点击右上角“示例”快速体验</span>
-          </div>
-        `;
-        if (diffLegend) diffLegend.style.display = 'none';
-        if (diffSummaryBadge) diffSummaryBadge.style.display = 'none';
-        return;
-      }
-
-      if (diffLegend) diffLegend.style.display = 'flex';
-      if (diffSummaryBadge) diffSummaryBadge.style.display = 'inline-block';
-
-      const options = {
-        ignoreCase: document.getElementById('ignoreCase').checked,
-        ignoreWhitespace: document.getElementById('ignoreWhitespace').checked
-      };
-
-      try {
-        if (typeof Diff === 'undefined') {
-          diffOutput.innerHTML = `<div class="empty-state" style="color: var(--accent);"><p>jsdiff 库加载中，请稍候...</p></div>`;
-          return;
-        }
-
-        if (currentDiffType === 'line') {
-          const diffResult = Diff.diffLines(oldText, newText, options);
-          renderLineDiff(diffResult, currentViewMode, options);
-        } else if (currentDiffType === 'word') {
-          const diffResult = Diff.diffWords(oldText, newText, options);
-          renderTokenDiff(diffResult, currentViewMode, 'word');
-        } else {
-          const diffResult = Diff.diffChars(oldText, newText, options);
-          renderTokenDiff(diffResult, currentViewMode, 'char');
-        }
-      } catch (e) {
-        diffOutput.innerHTML = `<div class="empty-state" style="color: var(--accent);"><p>比对出错: ${e.message}</p></div>`;
-      }
-    }
-
-    function renderLineDiff(diffResult, viewMode, options) {
-      const diffOutput = document.getElementById('diffOutput');
-      const diffSummaryBadge = document.getElementById('diffSummaryBadge');
-
-      let blocks = [];
-      let currentChange = { removed: [], added: [] };
-      let totalAdded = 0;
-      let totalRemoved = 0;
-
-      for (let part of diffResult) {
-        let lines = part.value.split(/\r?\n/);
-        if (lines.length > 1 && lines[lines.length - 1] === '') {
-          lines.pop();
-        }
-        if (part.removed) {
-          currentChange.removed.push(...lines);
-          totalRemoved += lines.length;
-        } else if (part.added) {
-          currentChange.added.push(...lines);
-          totalAdded += lines.length;
-        } else {
-          if (currentChange.removed.length > 0 || currentChange.added.length > 0) {
-            blocks.push({
-              type: 'changed',
-              removed: [...currentChange.removed],
-              added: [...currentChange.added]
-            });
-            currentChange = { removed: [], added: [] };
-          }
-          blocks.push({ type: 'unchanged', lines: lines });
-        }
-      }
-      if (currentChange.removed.length > 0 || currentChange.added.length > 0) {
-        blocks.push({
-          type: 'changed',
-          removed: [...currentChange.removed],
-          added: [...currentChange.added]
-        });
-      }
-
-      if (diffSummaryBadge) {
-        if (totalAdded === 0 && totalRemoved === 0) {
-          diffSummaryBadge.textContent = '两份文本完全一致';
-        } else {
-          diffSummaryBadge.textContent = `+${totalAdded} 行 / -${totalRemoved} 行`;
-        }
-      }
-
-      if (viewMode === 'split') {
-        // 双栏渲染
-        let html = `
-          <div class="diff-container split">
-            <div class="diff-header-col left" style="grid-column: span 2;">原版本 (含删除)</div>
-            <div class="diff-header-col right" style="grid-column: span 2;">修改后 (含新增)</div>
-        `;
-        let leftLineNum = 1;
-        let rightLineNum = 1;
-
-        for (let block of blocks) {
-          if (block.type === 'unchanged') {
-            for (let line of block.lines) {
-              html += `
-                <div class="diff-gutter left">${leftLineNum++}</div>
-                <div class="diff-code left">${escapeHtml(line)}</div>
-                <div class="diff-gutter right">${rightLineNum++}</div>
-                <div class="diff-code right">${escapeHtml(line)}</div>
-              `;
-            }
-          } else {
-            let maxLen = Math.max(block.removed.length, block.added.length);
-            for (let i = 0; i < maxLen; i++) {
-              let leftLine = block.removed[i] !== undefined ? block.removed[i] : null;
-              let rightLine = block.added[i] !== undefined ? block.added[i] : null;
-
-              if (leftLine !== null && rightLine !== null) {
-                let charDiff = Diff.diffChars(leftLine, rightLine, options);
-                let leftHtml = '';
-                let rightHtml = '';
-                for (let cp of charDiff) {
-                  let esc = escapeHtml(cp.value);
-                  if (cp.removed) {
-                    leftHtml += `<span class="char-delete">${esc}</span>`;
-                  } else if (cp.added) {
-                    rightHtml += `<span class="char-insert">${esc}</span>`;
-                  } else {
-                    leftHtml += esc;
-                    rightHtml += esc;
-                  }
-                }
-                html += `
-                  <div class="diff-gutter left">${leftLineNum++}</div>
-                  <div class="diff-code left diff-row-modify-left">${leftHtml}</div>
-                  <div class="diff-gutter right">${rightLineNum++}</div>
-                  <div class="diff-code right diff-row-modify-right">${rightHtml}</div>
-                `;
-              } else if (leftLine !== null) {
-                html += `
-                  <div class="diff-gutter left">${leftLineNum++}</div>
-                  <div class="diff-code left diff-row-delete">${escapeHtml(leftLine)}</div>
-                  <div class="diff-gutter right"></div>
-                  <div class="diff-code right empty-line"></div>
-                `;
-              } else if (rightLine !== null) {
-                html += `
-                  <div class="diff-gutter left"></div>
-                  <div class="diff-code left empty-line"></div>
-                  <div class="diff-gutter right">${rightLineNum++}</div>
-                  <div class="diff-code right diff-row-insert">${escapeHtml(rightLine)}</div>
-                `;
-              }
-            }
-          }
-        }
-        html += '</div>';
-        diffOutput.innerHTML = html;
-      } else {
-        // 单栏渲染
-        let html = `
-          <div class="diff-container inline">
-            <div class="diff-header-col gutter-title">原行号</div>
-            <div class="diff-header-col gutter-title" style="border-right: 1px solid var(--line);">新行号</div>
-            <div class="diff-header-col content-title">内容 (单栏合并)</div>
-        `;
-        let leftLineNum = 1;
-        let rightLineNum = 1;
-
-        for (let block of blocks) {
-          if (block.type === 'unchanged') {
-            for (let line of block.lines) {
-              html += `
-                <div class="diff-gutter left">${leftLineNum++}</div>
-                <div class="diff-gutter right">${rightLineNum++}</div>
-                <div class="diff-code">${escapeHtml(line)}</div>
-              `;
-            }
-          } else {
-            for (let line of block.removed) {
-              html += `
-                <div class="diff-gutter left">${leftLineNum++}</div>
-                <div class="diff-gutter right"></div>
-                <div class="diff-code diff-row-delete">${escapeHtml(line)}</div>
-              `;
-            }
-            for (let line of block.added) {
-              html += `
-                <div class="diff-gutter left"></div>
-                <div class="diff-gutter right">${rightLineNum++}</div>
-                <div class="diff-code diff-row-insert">${escapeHtml(line)}</div>
-              `;
-            }
-          }
-        }
-        html += '</div>';
-        diffOutput.innerHTML = html;
-      }
-    }
-
-    function renderTokenDiff(diffResult, viewMode, tokenType) {
-      const diffOutput = document.getElementById('diffOutput');
-      const diffSummaryBadge = document.getElementById('diffSummaryBadge');
-
-      let addCount = 0;
-      let delCount = 0;
-      for (let part of diffResult) {
-        if (part.added) addCount += part.value.length;
-        if (part.removed) delCount += part.value.length;
-      }
-      if (diffSummaryBadge) {
-        const unit = tokenType === 'word' ? '词' : '字';
-        if (addCount === 0 && delCount === 0) {
-          diffSummaryBadge.textContent = '两份文本完全一致';
-        } else {
-          diffSummaryBadge.textContent = `+${addCount} ${unit} / -${delCount} ${unit}`;
-        }
-      }
-
-      let html = '<div class="diff-container token-view">';
-
-      if (viewMode === 'split') {
-        let leftHtml = '';
-        let rightHtml = '';
-
-        for (let part of diffResult) {
-          let esc = escapeHtml(part.value);
-          if (part.removed) {
-            leftHtml += `<span class="char-delete">${esc}</span>`;
-          } else if (part.added) {
-            rightHtml += `<span class="char-insert">${esc}</span>`;
-          } else {
-            leftHtml += esc;
-            rightHtml += esc;
-          }
-        }
-        html += `
-          <div class="diff-token-pane left">
-            <div class="pane-title">原文本（高亮删除）</div>
-            <pre>${leftHtml}</pre>
-          </div>
-          <div class="diff-token-pane right">
-            <div class="pane-title">修改后文本（高亮新增）</div>
-            <pre>${rightHtml}</pre>
-          </div>
-        `;
-      } else {
-        let inlineHtml = '';
-        for (let part of diffResult) {
-          let esc = escapeHtml(part.value);
-          if (part.removed) {
-            inlineHtml += `<span class="char-delete">${esc}</span>`;
-          } else if (part.added) {
-            inlineHtml += `<span class="char-insert">${esc}</span>`;
-          } else {
-            inlineHtml += esc;
-          }
-        }
-        html += `
-          <div class="diff-token-pane">
-            <div class="pane-title">比对内容 (单栏混排)</div>
-            <pre style="padding: 10px 0;">${inlineHtml}</pre>
-          </div>
-        `;
-      }
-
-      html += '</div>';
-      diffOutput.innerHTML = html;
-    }
-
-    function importFile(targetId, input) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById(targetId).value = e.target.result;
-        updateTextStats(targetId);
-        performDiff();
-        input.value = '';
-        showToast('文件导入成功');
-      };
-      reader.readAsText(file);
-    }
-
-    function setupDragAndDrop(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('dragover', (e) => {
+    // =========================================================================
+    // 8. 键盘快捷键监听
+    // =========================================================================
+    document.addEventListener('keydown', (e) => {
+      // Alt + Down / Alt + Up 差异跳转
+      if (e.altKey && e.key === 'ArrowDown') {
         e.preventDefault();
-        el.style.background = 'color-mix(in srgb, var(--accent) 8%, transparent)';
-      });
-      el.addEventListener('dragleave', (e) => {
+        navigateDiff(1);
+      } else if (e.altKey && e.key === 'ArrowUp') {
         e.preventDefault();
-        el.style.background = '';
-      });
-      el.addEventListener('drop', (e) => {
+        navigateDiff(-1);
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        el.style.background = '';
-        const file = e.dataTransfer.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            el.value = event.target.result;
-            updateTextStats(id);
-            performDiff();
-            showToast('拖拽文件加载成功');
-          };
-          reader.readAsText(file);
-        }
-      });
-    }
-
-    // 全局快捷键 Ctrl+Enter 立即比对
-    window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        performDiff();
+        triggerDiff();
+        showToast('已刷新比对差异');
       }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      setupDragAndDrop('originalText');
-      setupDragAndDrop('modifiedText');
-    });
+    // 初始化启动
+    initDragAndDrop();
+    loadSampleData();
   </script>
 </body>
 </html>
