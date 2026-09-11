@@ -3,438 +3,1571 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>法定假日查询与工作日计算</title>
+  <title>中国法定节假日与工作日排期工坊 - Holiday & Workday Studio v2.0</title>
+  <meta name="description" content="全功能中国法定节假日查询与工作日排期工坊：实时工作日区间统计、正逆双向工期排程推导、大小周与上N休M轮班排休、国务院放假调休全览、下一个假期倒计时、智能拼假攻略与21.75天加班薪酬测算。">
   <link rel="stylesheet" href="../theme.css">
   <script src="../theme.js"></script>
   <style>
-    :root {
-      /* 变量已由 theme.css 提供 */
-    }
-
+    /* ==========================================================================
+       100vh 现代工作台核心重置与基础变量
+       ========================================================================== */
     * {
       box-sizing: border-box;
-    }
-
-    body {
       margin: 0;
-      min-height: 100vh;
-      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(224, 122, 95, 0.08), transparent 26%),
-        radial-gradient(circle at 88% 12%, rgba(129, 178, 154, 0.08), transparent 22%),
-        linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 45%, var(--grad-end) 100%);
-      overflow-x: hidden;
     }
 
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      z-index: 0;
-      pointer-events: none;
-      filter: blur(8px);
-    }
-
-    body::before {
-      width: 320px;
-      height: 320px;
-      top: -100px;
-      right: -90px;
-      background: radial-gradient(circle, rgba(202, 157, 58, 0.18), transparent 68%);
-    }
-
-    body::after {
-      width: 340px;
-      height: 340px;
-      bottom: -120px;
-      left: -120px;
-      background: radial-gradient(circle, rgba(140, 73, 100, 0.12), transparent 70%);
-    }
-
-    .page {
-      position: relative;
-      z-index: 1;
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    .header {
+    .workbench-app {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 32px;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
     }
 
-    .back-link {
-      text-decoration: none;
+    /* ==========================================================================
+       56px 顶部导航栏 (Header)
+       ========================================================================== */
+    .workbench-header {
+      height: 56px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm, 6px);
+      font-size: 13px;
+      font-weight: 600;
       color: var(--muted);
-      font-size: 14px;
-      font-weight: 500;
+      text-decoration: none;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      transition: all 0.2s ease;
+    }
+
+    .back-home-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--paper-strong, rgba(255, 255, 255, 0.1));
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      font-size: 20px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(224, 122, 95, 0.12);
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--input-bg);
+      padding: 3px;
+      border-radius: var(--radius-md, 8px);
+      border: 1px solid var(--line);
+    }
+
+    .mode-tab {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm, 6px);
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
       transition: all 0.2s ease;
-      padding: 4px 8px;
-      border-radius: var(--radius-sm);
-      background: transparent;
-      margin-left: -8px;
-      z-index: 10;
     }
 
-    .back-link:hover {
-      color: var(--accent);
-      background: var(--paper-strong);
+    .mode-tab:hover {
+      color: var(--text);
     }
 
-    .back-link svg {
-      transition: transform 0.2s ease;
-    }
-
-    .back-link:hover svg {
-      transform: translateX(-4px);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.02em;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-
-    @media (max-width: 768px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
+    .mode-tab.active {
       background: var(--paper);
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm, 6px);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
       border: 1px solid var(--line);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-lg);
-      padding: 24px;
+      background: var(--input-bg);
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
+
+    .header-btn:hover {
+      background: var(--paper-strong, rgba(255, 255, 255, 0.08));
+      border-color: var(--accent);
+    }
+
+    /* ==========================================================================
+       中央主视口 (Main Content)
+       ========================================================================== */
+    .workbench-main {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      position: relative;
+    }
+
+    .view-panel {
+      display: none;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .view-panel.active {
+      display: flex;
+    }
+
+    /* 双栏经典工作台布局 */
+    .split-layout {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .left-col {
+      width: 440px;
+      flex-shrink: 0;
+      height: 100%;
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      background: var(--paper);
+      padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    .card-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0;
-      color: var(--text);
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
+    .right-col {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      overflow-y: auto;
+      padding: 24px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
+    /* 卡片式容器 */
+    .panel-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 10px);
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(45, 120, 108, 0.12);
+      color: var(--teal, #2d786c);
+    }
+
+    /* 表单组件 */
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
+      margin-bottom: 14px;
     }
 
-    .form-group label {
-      font-size: 14px;
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      font-size: 13px;
       font-weight: 600;
       color: var(--muted);
-    }
-
-    input[type="date"],
-    input[type="number"] {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--line);
-      background: var(--input-bg);
-      font-family: inherit;
-      font-size: 15px;
-      color: var(--text);
-      transition: all 0.2s;
-      outline: none;
-    }
-
-    input[type="date"]:focus,
-    input[type="number"]:focus {
-      background: var(--bg-deep, var(--bg));
-      border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.1);
-    }
-
-    .btn-row {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 8px;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .btn {
-      padding: 10px 18px;
-      border-radius: var(--radius-sm);
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--teal);
-      color: var(--btn-text);
-      box-shadow: 0 4px 12px rgba(45, 120, 108, 0.2);
-    }
-
-    .btn-primary:hover {
-      background: #246359;
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: var(--btn-secondary-bg);
+    .form-input, .form-select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm, 6px);
       border: 1px solid var(--line);
+      background: var(--input-bg);
       color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
     }
 
-    .btn-secondary:hover {
-      background: var(--paper-strong);
-      border-color: rgba(84, 66, 49, 0.3);
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent);
+      background: var(--paper);
+      box-shadow: 0 0 0 3px rgba(224, 122, 95, 0.15);
     }
 
-    .result-box {
-      margin-top: 24px;
-      padding: 20px;
-      border-radius: var(--radius-md);
+    /* 快捷胶囊组 */
+    .capsule-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .capsule-btn {
+      padding: 5px 10px;
+      border-radius: var(--radius-sm, 6px);
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .capsule-btn:hover {
+      background: var(--paper-strong, rgba(255, 255, 255, 0.1));
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .capsule-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ==========================================================================
+       排班规则次级拓展面板与自定义星期选择器
+       ========================================================================== */
+    .sub-schedule-panel {
+      display: none;
+      margin-top: 8px;
+      padding: 12px;
       background: var(--input-bg);
       border: 1px solid var(--line);
-      display: none;
+      border-radius: var(--radius-sm, 6px);
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeIn 0.2s ease;
     }
 
-    .result-box.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
+    .sub-schedule-panel.active {
+      display: flex;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(-4px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .result-highlight {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
-
-    .result-highlight small {
-      font-size: 16px;
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .stat-list {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 24px;
-      font-size: 14px;
-    }
-
-    .stat-row {
+    .weekday-selector {
       display: flex;
-      justify-content: space-between;
-      padding-bottom: 8px;
-      border-bottom: 1px dashed rgba(84, 66, 49, 0.1);
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
-    .stat-row:last-child {
-      border-bottom: none;
-    }
-
-    .stat-label {
-      color: var(--muted);
-    }
-
-    .stat-val {
-      font-weight: 600;
-    }
-
-    .detail-list {
-      margin-top: 20px;
-      font-size: 13px;
-    }
-
-    .detail-title {
-      font-weight: 700;
+    .weekday-pill {
+      flex: 1;
+      min-width: 44px;
+      padding: 6px 0;
+      text-align: center;
+      border-radius: var(--radius-sm, 6px);
+      border: 1px solid var(--line);
+      background: var(--paper);
       color: var(--text);
-      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .weekday-pill:hover {
+      border-color: var(--accent);
+    }
+
+    .weekday-pill.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(224, 122, 95, 0.25);
+    }
+
+    /* 指标看板矩阵 */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .metric-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 10px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .metric-card.hero-card {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(224, 122, 95, 0.08), rgba(45, 120, 108, 0.08));
+      border-color: rgba(224, 122, 95, 0.3);
+      padding: 20px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .detail-title::before {
-      content: "";
-      display: block;
-      width: 4px;
-      height: 12px;
-      background: var(--mustard);
-      border-radius: 2px;
+    .metric-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
     }
 
-    .detail-items {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 16px 0;
+    .metric-val small {
+      font-size: 14px;
+      font-weight: 600;
       color: var(--muted);
-      line-height: 1.8;
-    }
-    
-    .detail-items li {
-      padding-left: 10px;
     }
 
-    .tag-paid {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(191, 91, 50, 0.1);
+    .metric-desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tag-highlight {
       color: var(--accent);
+    }
+
+    .tag-teal {
+      color: var(--teal, #2d786c);
+    }
+
+    /* 明细流水列表 */
+    .detail-section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 10px);
+      padding: 20px;
+    }
+
+    .detail-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-top: 6px;
+    }
+
+    .date-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm, 6px);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+    }
+
+    .date-chip.chip-holiday {
+      background: rgba(224, 122, 95, 0.1);
+      border-color: rgba(224, 122, 95, 0.3);
+      color: var(--accent);
+    }
+
+    .date-chip.chip-makeup {
+      background: rgba(45, 120, 108, 0.12);
+      border-color: rgba(45, 120, 108, 0.3);
+      color: var(--teal, #2d786c);
+    }
+
+    .date-chip.chip-weekend {
+      background: rgba(0, 0, 0, 0.03);
+      color: var(--muted);
+    }
+
+    /* 倒计时英雄卡 */
+    .countdown-hero {
+      background: linear-gradient(135deg, rgba(224, 122, 95, 0.12) 0%, rgba(202, 157, 58, 0.1) 50%, rgba(45, 120, 108, 0.08) 100%);
+      border: 1px solid rgba(224, 122, 95, 0.3);
+      border-radius: var(--radius-lg, 12px);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .countdown-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .countdown-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .countdown-festival-name {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .countdown-festival-dates {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .countdown-digits {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .countdown-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 8px);
+      padding: 10px 14px;
+      min-width: 64px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .countdown-num {
+      font-size: 28px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .countdown-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* 节日全景卡片网格 */
+    .holiday-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .holiday-calendar-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 10px);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .holiday-calendar-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-fest-title {
+      font-size: 17px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-pill {
       font-size: 11px;
       font-weight: 700;
-      margin-left: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .status-pill.pill-active {
+      background: rgba(45, 120, 108, 0.15);
+      color: var(--teal, #2d786c);
+    }
+
+    .status-pill.pill-upcoming {
+      background: rgba(224, 122, 95, 0.15);
+      color: var(--accent);
+    }
+
+    .status-pill.pill-past {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--muted);
+    }
+
+    .card-date-range {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .card-makeup-row {
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--input-bg);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm, 6px);
+      border: 1px solid var(--line);
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    .btn-card-use {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+
+    .btn-card-use:hover {
+      background: rgba(224, 122, 95, 0.1);
+    }
+
+    /* 拼假与加班薪酬卡片 */
+    .hack-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .hack-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 10px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .hack-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hack-badge {
+      background: linear-gradient(135deg, #e07a5f, #d96244);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .hack-benefit {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .hack-formula {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* 时间轴流水 (排程推导) */
+    .timeline-container {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md, 10px);
+      padding: 20px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .timeline-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .timeline-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--line);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .timeline-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .timeline-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .timeline-table tr:hover {
+      background: var(--input-bg);
+    }
+
+    /* ==========================================================================
+       32px 底部状态监控栏 (Footer)
+       ========================================================================== */
+    .workbench-footer {
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+      z-index: 100;
+    }
+
+    .footer-left, .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+
+    /* 响应式适配 */
+    @media (max-width: 960px) {
+      .split-layout {
+        flex-direction: column;
+      }
+      .left-col {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .countdown-hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-center {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="header">
-      <a href="../index.html" class="back-link">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        返回首页
-    </a>
-      <h1>法定假日与工作日计算器</h1>
-    </div>
-
-    <div class="grid">
-      <!-- 时段 -> 工作天数 -->
-      <div class="card">
-        <h2 class="card-title">时段 → 工作天数</h2>
-        
-        <div class="form-group">
-          <label>开始日期</label>
-          <input type="date" id="start-date-1">
-        </div>
-        
-        <div class="form-group">
-          <label>结束日期</label>
-          <input type="date" id="end-date-1">
-        </div>
-
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="calcWorkdays()">计算工作日</button>
-          <button class="btn btn-secondary" onclick="setRange('thisMonth')">本月</button>
-          <button class="btn btn-secondary" onclick="setRange('prevMonth')">上月</button>
-          <button class="btn btn-secondary" onclick="setRange('nextMonth')">下月</button>
-        </div>
-
-        <div class="result-box" id="result-1">
-          <div class="result-highlight" id="res1-title">-- <small>个工作日</small></div>
-          
-          <div class="stat-list">
-            <div class="stat-row"><span class="stat-label">日期区间</span><span class="stat-val" id="res1-range">--</span></div>
-            <div class="stat-row"><span class="stat-label">合计天数</span><span class="stat-val" id="res1-total">--</span></div>
-            <div class="stat-row"><span class="stat-label">周末天数</span><span class="stat-val" id="res1-weekend">--</span></div>
-            <div class="stat-row"><span class="stat-label">法定假日</span><span class="stat-val" id="res1-holiday">--</span></div>
-            <div class="stat-row"><span class="stat-label">调休上班</span><span class="stat-val" id="res1-makeup">--</span></div>
-            <div class="stat-row"><span class="stat-label">带薪假期</span><span class="stat-val" id="res1-paid">--</span></div>
-            <div class="stat-row"><span class="stat-label">计薪天数</span><span class="stat-val" id="res1-paydays">--</span></div>
-          </div>
-
-          <div class="detail-list" id="res1-details">
-            <!-- 动态注入明细 -->
+  <div class="workbench-app">
+    <!-- 56px 顶部导航条 -->
+    <header class="workbench-header">
+      <div class="header-left">
+        <a href="../index.html" class="back-home-btn" title="返回首页">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>首页</span>
+        </a>
+        <div class="brand-group">
+          <span class="brand-icon">📅</span>
+          <div class="brand-title">
+            <span>节假日与工作日排期工坊</span>
+            <span class="brand-tag">v2.0 旗舰版</span>
           </div>
         </div>
       </div>
 
-      <!-- 工作天数 -> 日期 -->
-      <div class="card">
-        <h2 class="card-title">工作天数 → 日期</h2>
-        
-        <div class="form-group">
-          <label>开始日期</label>
-          <input type="date" id="start-date-2">
-        </div>
-        
-        <div class="form-group">
-          <label>工作天数</label>
-          <input type="number" id="work-days-count" placeholder="例如：20" min="1">
-        </div>
+      <div class="header-center">
+        <button class="mode-tab active" data-target="panel-range">
+          <span>⏱️ 区间工作日统计</span>
+        </button>
+        <button class="mode-tab" data-target="panel-schedule">
+          <span>🔄 双向工期排程</span>
+        </button>
+        <button class="mode-tab" data-target="panel-calendar">
+          <span>📅 法定假日大盘</span>
+        </button>
+        <button class="mode-tab" data-target="panel-hack">
+          <span>✈️ 拼假与加班算薪</span>
+        </button>
+      </div>
 
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="calcTargetDate()">计算日期</button>
+      <div class="header-right">
+        <!-- 注意：此处的“🧰 工具箱”按钮将由 tool-switcher.js 统一自动挂载，严禁手写以防双按钮 Bug -->
+        <button class="header-btn" id="btn-reset-all" title="重置全部参数为默认状态">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          <span>重置</span>
+        </button>
+        <button class="header-btn" id="btn-theme-toggle" title="切换深色/浅色主题">
+          <span id="theme-icon">🌓</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 中央主视口 (包含四大模式面板) -->
+    <main class="workbench-main">
+      <!-- 模式一：区间工作日统计 (Range) -->
+      <section class="view-panel active" id="panel-range">
+        <div class="split-layout">
+          <div class="left-col">
+            <div class="panel-card">
+              <div class="panel-title">
+                <span>时段选择与设定</span>
+                <span class="badge">毫秒级即时联动</span>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">开始日期</label>
+                <input type="date" id="range-start-date" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">结束日期</label>
+                <input type="date" id="range-end-date" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">快捷预设周期</label>
+                <div class="capsule-row">
+                  <button class="capsule-btn" onclick="setQuickRange('thisWeek')">本周</button>
+                  <button class="capsule-btn" onclick="setQuickRange('thisMonth')">本月</button>
+                  <button class="capsule-btn" onclick="setQuickRange('prevMonth')">上月</button>
+                  <button class="capsule-btn" onclick="setQuickRange('nextMonth')">下月</button>
+                  <button class="capsule-btn" onclick="setQuickRange('thisQuarter')">本季度</button>
+                  <button class="capsule-btn" onclick="setQuickRange('thisYear')">全年</button>
+                </div>
+              </div>
+
+              <!-- 全面升级的排班规则选择 -->
+              <div class="form-group" style="margin-top: 14px;">
+                <label class="form-label">休息制度与排班规则</label>
+                <select id="range-schedule-rule" class="form-select" onchange="onScheduleRuleChange('range')">
+                  <option value="standard" selected>标准双休制（周六、周日休息）</option>
+                  <option value="single-sun">单休制（仅周日休息，周六正常上班）</option>
+                  <option value="single-mon">单休制（仅周一休息）</option>
+                  <option value="alt-big-first">大小周制（本周/起始周为【大周·双休】，次周单休）</option>
+                  <option value="alt-small-first">大小周制（本周/起始周为【小周·单休】，次周双休）</option>
+                  <option value="shift-cycle">轮班轮休制（上 N 天 休 M 天，如做四休二）</option>
+                  <option value="custom-days">自定义星期轮休（自由勾选休息日）</option>
+                  <option value="none">无休连续排班（不计周末公休）</option>
+                </select>
+
+                <!-- 大小周次级说明面板 -->
+                <div id="range-panel-alt" class="sub-schedule-panel">
+                  <div style="font-size: 12px; color: var(--muted); line-height: 1.5;">
+                    🔄 <strong>大小周交替排班规则</strong>：每两周为一个完整循环。大周为周六、周日双休；小周周六正常出勤上班、周日单休。系统根据基准周自动平滑交替推算。
+                  </div>
+                </div>
+
+                <!-- 轮班排休制次级配置面板 -->
+                <div id="range-panel-shift" class="sub-schedule-panel">
+                  <div style="display: flex; gap: 8px;">
+                    <div style="flex: 1;">
+                      <label class="form-label" style="font-size: 12px;">连续上班 (天)</label>
+                      <input type="number" id="range-shift-work" class="form-input" value="4" min="1" max="30" oninput="runRangeCalculation()">
+                    </div>
+                    <div style="flex: 1;">
+                      <label class="form-label" style="font-size: 12px;">连续休息 (天)</label>
+                      <input type="number" id="range-shift-rest" class="form-input" value="2" min="1" max="30" oninput="runRangeCalculation()">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 12px;">常用轮休模板快捷选择</label>
+                    <div class="capsule-row" style="margin-top: 4px;">
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('range', 4, 2)">上4休2</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('range', 5, 1)">上5休1</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('range', 3, 1)">上3休1</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('range', 2, 1)">做2休1</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('range', 1, 1)">做1休1(隔天)</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 12px;">轮班排班基准日 (轮班周期第1天)</label>
+                    <input type="date" id="range-shift-base" class="form-input" onchange="runRangeCalculation()">
+                  </div>
+                </div>
+
+                <!-- 自定义星期轮休次级配置面板 -->
+                <div id="range-panel-custom" class="sub-schedule-panel">
+                  <label class="form-label" style="font-size: 12px;">点击指定哪几天为公休日 (支持多选)</label>
+                  <div class="weekday-selector" id="range-weekday-selector">
+                    <div class="weekday-pill" data-day="1" onclick="toggleWeekdayPill(this, 'range')">周一</div>
+                    <div class="weekday-pill" data-day="2" onclick="toggleWeekdayPill(this, 'range')">周二</div>
+                    <div class="weekday-pill" data-day="3" onclick="toggleWeekdayPill(this, 'range')">周三</div>
+                    <div class="weekday-pill" data-day="4" onclick="toggleWeekdayPill(this, 'range')">周四</div>
+                    <div class="weekday-pill" data-day="5" onclick="toggleWeekdayPill(this, 'range')">周五</div>
+                    <div class="weekday-pill selected" data-day="6" onclick="toggleWeekdayPill(this, 'range')">周六</div>
+                    <div class="weekday-pill selected" data-day="0" onclick="toggleWeekdayPill(this, 'range')">周日</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                  <input type="checkbox" id="range-holiday-priority" checked onchange="runRangeCalculation()">
+                  <label for="range-holiday-priority" style="font-size: 12px; color: var(--text); cursor: pointer;">法定放假及周末调休优先覆盖排班（推荐）</label>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 14px;">
+                <label class="form-label">计算范围包含性</label>
+                <select id="range-include-rule" class="form-select" onchange="runRangeCalculation()">
+                  <option value="both" selected>闭区间：首尾两天均计入 (A ~ B)</option>
+                  <option value="start">包含起始日，不含结束日</option>
+                  <option value="end">不含起始日，包含结束日</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 便捷操作卡片 -->
+            <div class="panel-card">
+              <div class="panel-title">
+                <span>报表一键导出</span>
+              </div>
+              <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5;">
+                已将区间内的工作天数、排班出勤、法定节假日与调休统计自动整理成标准考勤格式。
+              </p>
+              <button class="header-btn" style="width: 100%; justify-content: center;" onclick="copyRangeReport()">
+                📋 一键复制考勤统计报表
+              </button>
+            </div>
+          </div>
+
+          <div class="right-col">
+            <!-- 英雄总览卡 -->
+            <div class="metric-card hero-card">
+              <div class="metric-label">统计时段区间与排班模式</div>
+              <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;" id="hero-date-range">-- ~ --</div>
+              <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                <div>
+                  <div class="metric-label">实际应出勤工作日</div>
+                  <div class="metric-val tag-highlight" id="hero-workdays">0 <small>个工作日</small></div>
+                </div>
+                <div>
+                  <div class="metric-label">劳动法计薪天数 (含带薪假)</div>
+                  <div class="metric-val tag-teal" id="hero-paydays">0 <small>天</small></div>
+                </div>
+                <div>
+                  <div class="metric-label">时段自然日总计</div>
+                  <div class="metric-val" id="hero-totaldays">0 <small>天</small></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 指标矩阵 -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">🏖️ 周末/排班公休</div>
+                <div class="metric-val" id="metric-weekends">0 <small>天</small></div>
+                <div class="metric-desc">包含双休/小周单休/轮休休息日</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-label">🏮 法定节假日放假</div>
+                <div class="metric-val tag-highlight" id="metric-holidays">0 <small>天</small></div>
+                <div class="metric-desc">国务院公布的法定节日假期待遇</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-label">💼 周末调休补班</div>
+                <div class="metric-val tag-teal" id="metric-makeups">0 <small>天</small></div>
+                <div class="metric-desc">因节假日拼凑而需出勤上班</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-label">💰 法定带薪节日</div>
+                <div class="metric-val" id="metric-paid">0 <small>天</small></div>
+                <div class="metric-desc">国家规定必须计发底薪的法定假正日</div>
+              </div>
+            </div>
+
+            <!-- 详细流水抽屉清单 -->
+            <div class="detail-section">
+              <div class="panel-title">
+                <span>出勤状态与特殊日期流水清单</span>
+                <span id="detail-count-badge" class="badge">0 条记录</span>
+              </div>
+              <div id="range-details-container" class="detail-tag-list">
+                <span style="color: var(--muted); font-size: 13px;">请在左侧选择日期范围，此处将自动呈现具体放假、排休与调休明细。</span>
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <div class="result-box" id="result-2">
-          <div style="margin-bottom: 16px; font-size: 15px; line-height: 1.6; color: var(--text);" id="res2-summary">
-            从 <strong id="res2-start">--</strong> 开始，工作满 <strong id="res2-count">--</strong> 个工作日，最后一天是 <strong id="res2-target-inline">--</strong>。
-          </div>
-          
-          <div class="stat-list">
-            <div class="stat-row"><span class="stat-label">日期区间</span><span class="stat-val" id="res2-range">--</span></div>
-            <div class="stat-row"><span class="stat-label">合计天数</span><span class="stat-val" id="res2-total">--</span></div>
-            <div class="stat-row"><span class="stat-label">工作天数</span><span class="stat-val" id="res2-workdays">--</span></div>
-          </div>
-          
-          <div style="font-size: 13px; color: var(--muted); margin-bottom: 20px;" id="res2-hint">
-            提示：统计时包含开始和结束这两天
+      <!-- 模式二：双向工期排程 (Schedule) -->
+      <section class="view-panel" id="panel-schedule">
+        <div class="split-layout">
+          <div class="left-col">
+            <div class="panel-card">
+              <div class="panel-title">
+                <span>双向工期排程设定</span>
+                <span class="badge">正反向推算</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">排程方向</label>
+                <div class="capsule-row" style="margin-bottom: 8px;">
+                  <button class="capsule-btn active" id="btn-dir-forward" onclick="setScheduleDir('forward')">⏩ 正向推算 (开工 ➔ 截止)</button>
+                  <button class="capsule-btn" id="btn-dir-backward" onclick="setScheduleDir('backward')">⏪ 逆向倒推 (交付 ➔ 开工)</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" id="schedule-date-label">基准起始日期 (开工日)</label>
+                <input type="date" id="schedule-base-date" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">所需工作天数 (个工作日)</label>
+                <input type="number" id="schedule-days-count" class="form-input" min="1" max="500" value="20">
+                <div class="capsule-row" style="margin-top: 6px;">
+                  <button class="capsule-btn" onclick="setDaysCount(5)">5 天(1周)</button>
+                  <button class="capsule-btn" onclick="setDaysCount(10)">10 天(2周)</button>
+                  <button class="capsule-btn" onclick="setDaysCount(20)">20 天(约1月)</button>
+                  <button class="capsule-btn" onclick="setDaysCount(60)">60 天(1季)</button>
+                </div>
+              </div>
+
+              <!-- 模式二专属排班规则 -->
+              <div class="form-group" style="margin-top: 14px;">
+                <label class="form-label">排班考勤规则</label>
+                <select id="schedule-schedule-rule" class="form-select" onchange="onScheduleRuleChange('schedule')">
+                  <option value="standard" selected>标准双休制（周六、周日休息）</option>
+                  <option value="single-sun">单休制（仅周日休息，周六正常上班）</option>
+                  <option value="single-mon">单休制（仅周一休息）</option>
+                  <option value="alt-big-first">大小周制（起始周为【大周·双休】，次周单休）</option>
+                  <option value="alt-small-first">大小周制（起始周为【小周·单休】，次周双休）</option>
+                  <option value="shift-cycle">轮班轮休制（上 N 天 休 M 天）</option>
+                  <option value="custom-days">自定义星期轮休（自由指定哪几天休息）</option>
+                  <option value="none">自然日连续推算（不扣除任何周末休息）</option>
+                </select>
+
+                <!-- 大小周次级说明 -->
+                <div id="schedule-panel-alt" class="sub-schedule-panel">
+                  <div style="font-size: 12px; color: var(--muted); line-height: 1.5;">
+                    🔄 <strong>工期排程大小周联动</strong>：推算过程中遇到大周正常双休，遇到小周则周六算作出勤工作日。
+                  </div>
+                </div>
+
+                <!-- 轮班轮休次级面板 -->
+                <div id="schedule-panel-shift" class="sub-schedule-panel">
+                  <div style="display: flex; gap: 8px;">
+                    <div style="flex: 1;">
+                      <label class="form-label" style="font-size: 12px;">连续上班 (天)</label>
+                      <input type="number" id="schedule-shift-work" class="form-input" value="4" min="1" max="30" oninput="runScheduleCalculation()">
+                    </div>
+                    <div style="flex: 1;">
+                      <label class="form-label" style="font-size: 12px;">连续休息 (天)</label>
+                      <input type="number" id="schedule-shift-rest" class="form-input" value="2" min="1" max="30" oninput="runScheduleCalculation()">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 12px;">常用轮休预设</label>
+                    <div class="capsule-row" style="margin-top: 4px;">
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('schedule', 4, 2)">上4休2</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('schedule', 5, 1)">上5休1</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('schedule', 3, 1)">上3休1</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('schedule', 2, 1)">做2休1</button>
+                      <button type="button" class="capsule-btn" onclick="setShiftPreset('schedule', 1, 1)">做1休1(隔天)</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 12px;">轮班排班基准日</label>
+                    <input type="date" id="schedule-shift-base" class="form-input" onchange="runScheduleCalculation()">
+                  </div>
+                </div>
+
+                <!-- 自定义星期次级面板 -->
+                <div id="schedule-panel-custom" class="sub-schedule-panel">
+                  <label class="form-label" style="font-size: 12px;">选择哪些星期为公休休息日</label>
+                  <div class="weekday-selector" id="schedule-weekday-selector">
+                    <div class="weekday-pill" data-day="1" onclick="toggleWeekdayPill(this, 'schedule')">周一</div>
+                    <div class="weekday-pill" data-day="2" onclick="toggleWeekdayPill(this, 'schedule')">周二</div>
+                    <div class="weekday-pill" data-day="3" onclick="toggleWeekdayPill(this, 'schedule')">周三</div>
+                    <div class="weekday-pill" data-day="4" onclick="toggleWeekdayPill(this, 'schedule')">周四</div>
+                    <div class="weekday-pill" data-day="5" onclick="toggleWeekdayPill(this, 'schedule')">周五</div>
+                    <div class="weekday-pill selected" data-day="6" onclick="toggleWeekdayPill(this, 'schedule')">周六</div>
+                    <div class="weekday-pill selected" data-day="0" onclick="toggleWeekdayPill(this, 'schedule')">周日</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                  <input type="checkbox" id="schedule-holiday-priority" checked onchange="runScheduleCalculation()">
+                  <label for="schedule-holiday-priority" style="font-size: 12px; color: var(--text); cursor: pointer;">法定放假及周末调休优先覆盖排班</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-title">
+                <span>💡 排期实用建议</span>
+              </div>
+              <ul style="font-size: 13px; color: var(--muted); line-height: 1.8; padding-left: 18px;">
+                <li><strong>大小周排程</strong>：遇到小周周六正常计入工作日进度，工期推导更符合制造业及研发实际节奏；</li>
+                <li><strong>轮休与倒班</strong>：支持上 4 休 2、上 5 休 1 等客服与生产线连续排班，精确推算满 N 个班次的交接点；</li>
+                <li><strong>逆向倒排</strong>：明确项目最终上线交付时限，反推出最晚启动日期。</li>
+              </ul>
+            </div>
           </div>
 
-          <div class="detail-list" id="res2-details">
-            <!-- 动态注入明细 -->
+          <div class="right-col">
+            <!-- 目标推算结果卡 -->
+            <div class="metric-card hero-card">
+              <div class="metric-label" id="res-target-title">🎯 推算目标最终交付日期</div>
+              <div class="metric-val tag-highlight" id="res-target-date">-- 年 -- 月 -- 日</div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-top: 6px;" id="res-target-summary">
+                从 -- 开始，包含 -- 个工作日，共跨越 -- 个自然日。
+              </div>
+            </div>
+
+            <!-- 时间轴流水明细 -->
+            <div class="timeline-container">
+              <div class="panel-title">
+                <span>工期排程逐日流水明细</span>
+                <span id="timeline-count-badge" class="badge">共 0 天</span>
+              </div>
+              <table class="timeline-table">
+                <thead>
+                  <tr>
+                    <th style="width: 70px;">进度</th>
+                    <th style="width: 140px;">公历日期</th>
+                    <th style="width: 80px;">星期</th>
+                    <th style="width: 130px;">属性状态</th>
+                    <th>说明</th>
+                  </tr>
+                </thead>
+                <tbody id="schedule-timeline-tbody">
+                  <tr><td colspan="5" style="text-align: center; color: var(--muted);">暂无排程数据</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+        </div>
+      </section>
+
+      <!-- 模式三：法定节假日全景大盘 (Calendar & Countdown) -->
+      <section class="view-panel" id="panel-calendar">
+        <div style="flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+          <!-- 顶部倒计时大牌 -->
+          <div class="countdown-hero">
+            <div class="countdown-left">
+              <div class="countdown-title">
+                <span>⏳ 倒计时看板</span>
+                <span class="badge" id="cd-target-type">下一个法定节假日</span>
+              </div>
+              <div class="countdown-festival-name" id="cd-fest-name">正在获取...</div>
+              <div class="countdown-festival-dates" id="cd-fest-dates">-- ~ --</div>
+            </div>
+
+            <div class="countdown-digits">
+              <div class="countdown-unit">
+                <span class="countdown-num" id="cd-days">00</span>
+                <span class="countdown-lbl">天</span>
+              </div>
+              <div class="countdown-unit">
+                <span class="countdown-num" id="cd-hours">00</span>
+                <span class="countdown-lbl">时</span>
+              </div>
+              <div class="countdown-unit">
+                <span class="countdown-num" id="cd-mins">00</span>
+                <span class="countdown-lbl">分</span>
+              </div>
+              <div class="countdown-unit">
+                <span class="countdown-num" id="cd-secs">00</span>
+                <span class="countdown-lbl">秒</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 年份选择与操作栏 -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 15px; font-weight: 700;">选择查看年份：</span>
+              <div class="capsule-row" id="year-capsules">
+                <button class="capsule-btn" onclick="selectHolidayYear(2024)">2024 年</button>
+                <button class="capsule-btn" onclick="selectHolidayYear(2025)">2025 年</button>
+                <button class="capsule-btn active" onclick="selectHolidayYear(2026)">2026 年</button>
+              </div>
+            </div>
+            <div style="font-size: 13px; color: var(--muted);">
+              📌 数据严格依据中国国务院办公厅发布的全国年节及纪念日放假办法
+            </div>
+          </div>
+
+          <!-- 7 大法定节假日全景卡片矩阵 -->
+          <div class="holiday-cards-grid" id="holiday-cards-container">
+            <!-- 动态注入 7 大假日卡片 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 模式四：拼假与加班薪酬工坊 (Hack & Salary) -->
+      <section class="view-panel" id="panel-hack">
+        <div class="split-layout">
+          <div class="left-col">
+            <!-- 劳动法加班费测算配置 -->
+            <div class="panel-card">
+              <div class="panel-title">
+                <span>💼 21.75 计薪标准与加班测算</span>
+                <span class="badge">劳动法基准</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">每月基本应发工资 (元)</label>
+                <input type="number" id="salary-base" class="form-input" value="10000" min="1000" step="500" oninput="runSalaryCalculation()">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">法定节假日加班天数 (300% 薪资)</label>
+                <input type="number" id="salary-holiday-days" class="form-input" value="1" min="0" max="30" oninput="runSalaryCalculation()">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">休息日加班天数 (未调休, 200% 薪资)</label>
+                <input type="number" id="salary-weekend-days" class="form-input" value="2" min="0" max="30" oninput="runSalaryCalculation()">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">平时工作日延时加班小时 (150% 薪资)</label>
+                <input type="number" id="salary-extra-hours" class="form-input" value="10" min="0" max="200" oninput="runSalaryCalculation()">
+              </div>
+
+              <div style="margin-top: 14px; padding: 12px; background: var(--input-bg); border-radius: 6px; font-size: 12px; color: var(--muted); line-height: 1.6;">
+                <strong>权威法条依据：</strong><br>
+                月计薪天数 = (365天 - 104天周末) ÷ 12月 = <strong>21.75 天</strong><br>
+                日工资基数 = 月薪 ÷ 21.75<br>
+                小时工资基数 = 日薪 ÷ 8
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-title">
+                <span>测算结论</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--muted);">日折算基本薪资：</span>
+                  <strong id="calc-daily-rate">¥ 459.77</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--muted);">时薪基准：</span>
+                  <strong id="calc-hourly-rate">¥ 57.47</strong>
+                </div>
+                <div style="border-top: 1px dashed var(--line); margin: 6px 0;"></div>
+                <div style="display: flex; justify-content: space-between; font-size: 16px;">
+                  <span style="font-weight: 700;">合计应补发加班费：</span>
+                  <strong class="tag-highlight" id="calc-total-overtime">¥ 0.00</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="right-col">
+            <!-- 拼假攻略卡片矩阵 -->
+            <div class="panel-title" style="font-size: 18px; margin-bottom: 0;">
+              <span>✈️ 黄金周智能拼假攻略</span>
+              <span class="badge">高效休假指南</span>
+            </div>
+            
+            <div class="hack-cards-grid" id="hack-cards-container">
+              <!-- 动态注入拼假方案卡片 -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 32px 底部状态监控栏 -->
+    <footer class="workbench-footer">
+      <div class="footer-left">
+        <div class="status-item">
+          <span class="status-dot"></span>
+          <span>当前引擎：Lunar Holiday Engine (2001~2026 国务院法定库)</span>
+        </div>
+        <div class="status-item">
+          <span>当前年份：<strong id="footer-cur-year">2026</strong></span>
         </div>
       </div>
-    </div>
+
+      <div class="footer-right">
+        <div class="status-item" id="footer-next-hint">
+          <span>下一个假期：<strong>--</strong></span>
+        </div>
+        <div class="status-item">
+          <span>🔒 100% 浏览器纯前端秒级推算</span>
+        </div>
+      </div>
+    </footer>
   </div>
 
+  <!-- 引入基础依赖与工具箱快速切换器 -->
   <script src="/vendor/lunar.js"></script>
-  <script>
-    const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+  <script src="../tool-switcher.js"></script>
 
-    function initDates() {
+  <script>
+    /* ==========================================================================
+       核心业务逻辑：日期推算、大小周排班、上N休M轮休、节假日解析与实时大盘驱动
+       ========================================================================== */
+    const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+    let currentHolidayYear = 2026;
+    let scheduleDirection = 'forward'; // 'forward' or 'backward'
+    let countdownInterval = null;
+
+    // 自定义星期选中的数组状态
+    let rangeCustomDays = [0, 6]; // 周日、周六
+    let scheduleCustomDays = [0, 6];
+
+    // 格式化辅助函数
+    function formatDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      const parts = str.split('-');
+      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+
+    function getMonday(d) {
+      const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const day = date.getDay();
+      const diff = date.getDate() - (day === 0 ? 6 : day - 1);
+      return new Date(date.setDate(diff));
+    }
+
+    // 初始化页面与默认日期
+    function initApp() {
       const today = new Date();
       const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      const todayStr = `${yyyy}-${mm}-${dd}`;
+      currentHolidayYear = yyyy;
       
-      document.getElementById('start-date-1').value = todayStr;
-      document.getElementById('end-date-1').value = todayStr;
-      document.getElementById('start-date-2').value = todayStr;
-      document.getElementById('work-days-count').value = 20;
+      // 设置模式一初始日期为本月
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      document.getElementById('range-start-date').value = formatDate(startOfMonth);
+      document.getElementById('range-end-date').value = formatDate(endOfMonth);
+
+      // 设置模式二初始日期
+      document.getElementById('schedule-base-date').value = formatDate(today);
+
+      // 初始化轮班基准日
+      document.getElementById('range-shift-base').value = formatDate(today);
+      document.getElementById('schedule-shift-base').value = formatDate(today);
+
+      // 绑定模式 Tab 切换
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          const targetId = tab.dataset.target;
+          document.getElementById(targetId).classList.add('active');
+        });
+      });
+
+      // 绑定重置按钮
+      document.getElementById('btn-reset-all').addEventListener('click', () => {
+        initApp();
+      });
+
+      // 监听区间输入变动实时计算
+      document.getElementById('range-start-date').addEventListener('input', runRangeCalculation);
+      document.getElementById('range-end-date').addEventListener('input', runRangeCalculation);
+      
+      // 监听排程输入变动实时计算
+      document.getElementById('schedule-base-date').addEventListener('input', runScheduleCalculation);
+      document.getElementById('schedule-days-count').addEventListener('input', runScheduleCalculation);
+
+      // 初始化各模块计算
+      runRangeCalculation();
+      runScheduleCalculation();
+      buildHolidayCalendar(currentHolidayYear);
+      startFestivalCountdown();
+      runSalaryCalculation();
+      buildLeaveHacks(currentHolidayYear);
+
+      document.getElementById('footer-cur-year').innerText = yyyy;
     }
 
-    function formatDate(date) {
-      const yyyy = date.getFullYear();
-      const mm = String(date.getMonth() + 1).padStart(2, '0');
-      const dd = String(date.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
+    /* ==========================================================================
+       排班规则交互：次级面板显隐、自定义星期选择、预设轮班设定
+       ========================================================================== */
+    function onScheduleRuleChange(prefix) {
+      const rule = document.getElementById(`${prefix}-schedule-rule`).value;
+      const altPanel = document.getElementById(`${prefix}-panel-alt`);
+      const shiftPanel = document.getElementById(`${prefix}-panel-shift`);
+      const customPanel = document.getElementById(`${prefix}-panel-custom`);
+
+      altPanel.classList.toggle('active', rule === 'alt-big-first' || rule === 'alt-small-first');
+      shiftPanel.classList.toggle('active', rule === 'shift-cycle');
+      customPanel.classList.toggle('active', rule === 'custom-days');
+
+      if (prefix === 'range') {
+        runRangeCalculation();
+      } else {
+        runScheduleCalculation();
+      }
     }
 
-    function setRange(type) {
+    function setShiftPreset(prefix, work, rest) {
+      document.getElementById(`${prefix}-shift-work`).value = work;
+      document.getElementById(`${prefix}-shift-rest`).value = rest;
+      if (prefix === 'range') {
+        runRangeCalculation();
+      } else {
+        runScheduleCalculation();
+      }
+    }
+
+    function toggleWeekdayPill(el, prefix) {
+      el.classList.toggle('selected');
+      const container = document.getElementById(`${prefix}-weekday-selector`);
+      const selectedPills = container.querySelectorAll('.weekday-pill.selected');
+      const days = [];
+      selectedPills.forEach(p => days.push(parseInt(p.dataset.day, 10)));
+
+      if (prefix === 'range') {
+        rangeCustomDays = days;
+        runRangeCalculation();
+      } else {
+        scheduleCustomDays = days;
+        runScheduleCalculation();
+      }
+    }
+
+    /* ==========================================================================
+       核心算法：根据考勤排班规则判断某一天是否属于公休休息日
+       ========================================================================== */
+    function isRestDayBySchedule(date, rule, cfg) {
+      const w = date.getDay();
+
+      if (rule === 'standard') {
+        return w === 0 || w === 6;
+      }
+      if (rule === 'single-sun') {
+        return w === 0;
+      }
+      if (rule === 'single-mon') {
+        return w === 1;
+      }
+      if (rule === 'none') {
+        return false;
+      }
+
+      // 大小周制
+      if (rule === 'alt-big-first' || rule === 'alt-small-first') {
+        const anchor = cfg.anchorDate || new Date();
+        const mondayCurr = getMonday(date);
+        const mondayAnchor = getMonday(anchor);
+        const diffWeeks = Math.round((mondayCurr - mondayAnchor) / (7 * 24 * 3600 * 1000));
+        const isEvenWeek = (Math.abs(diffWeeks) % 2 === 0);
+
+        // 如果是 alt-big-first：偶数周是大周(双休)，奇数周是小周(单休周六上班)
+        // 如果是 alt-small-first：偶数周是小周(单休)，奇数周是大周(双休)
+        const isBigWeek = (rule === 'alt-big-first') ? isEvenWeek : !isEvenWeek;
+
+        if (isBigWeek) {
+          return w === 0 || w === 6; // 大周双休
+        } else {
+          return w === 0; // 小周单休周日，周六为出勤日
+        }
+      }
+
+      // 轮班排休制 (上 N 休 M)
+      if (rule === 'shift-cycle') {
+        const workDays = cfg.shiftWork || 4;
+        const restDays = cfg.shiftRest || 2;
+        const cycle = workDays + restDays;
+        if (cycle <= 0) return false;
+
+        const baseDate = cfg.shiftBase || new Date();
+        const dOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const bOnly = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
+        const diffDays = Math.round((dOnly - bOnly) / (24 * 3600 * 1000));
+        const offset = ((diffDays % cycle) + cycle) % cycle;
+
+        // offset 在 [0, workDays - 1] 为出勤日，在 [workDays, cycle - 1] 为休息日
+        return offset >= workDays;
+      }
+
+      // 自定义星期轮休
+      if (rule === 'custom-days') {
+        const selectedDays = cfg.customDays || [0, 6];
+        return selectedDays.includes(w);
+      }
+
+      return w === 0 || w === 6;
+    }
+
+    /* ==========================================================================
+       模块 1：工作日区间统计逻辑
+       ========================================================================== */
+    function setQuickRange(type) {
       const now = new Date();
       let start, end;
-      
-      if (type === 'thisMonth') {
+
+      if (type === 'thisWeek') {
+        const day = now.getDay();
+        const diffToMon = now.getDate() - (day === 0 ? 6 : day - 1);
+        start = new Date(now.setDate(diffToMon));
+        end = new Date(now.setDate(diffToMon + 6));
+      } else if (type === 'thisMonth') {
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       } else if (type === 'prevMonth') {
@@ -443,208 +1576,581 @@
       } else if (type === 'nextMonth') {
         start = new Date(now.getFullYear(), now.getMonth() + 1, 1);
         end = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+      } else if (type === 'thisQuarter') {
+        const q = Math.floor(now.getMonth() / 3);
+        start = new Date(now.getFullYear(), q * 3, 1);
+        end = new Date(now.getFullYear(), q * 3 + 3, 0);
+      } else if (type === 'thisYear') {
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31);
       }
-      
-      document.getElementById('start-date-1').value = formatDate(start);
-      document.getElementById('end-date-1').value = formatDate(end);
-      calcWorkdays();
+
+      document.getElementById('range-start-date').value = formatDate(start);
+      document.getElementById('range-end-date').value = formatDate(end);
+      runRangeCalculation();
     }
 
-    function calcWorkdays() {
-      if (typeof HolidayUtil === 'undefined') {
-        alert("节假日库加载失败，请检查网络。");
-        return;
-      }
+    function runRangeCalculation() {
+      const startStr = document.getElementById('range-start-date').value;
+      const endStr = document.getElementById('range-end-date').value;
+      const rule = document.getElementById('range-schedule-rule').value;
+      const incRule = document.getElementById('range-include-rule').value;
+      const holidayPriority = document.getElementById('range-holiday-priority').checked;
 
-      const startStr = document.getElementById('start-date-1').value;
-      const endStr = document.getElementById('end-date-1').value;
-      
-      if (!startStr || !endStr) {
-        alert("请选择完整的开始和结束日期");
-        return;
-      }
+      if (!startStr || !endStr) return;
 
-      let start = new Date(startStr);
-      let end = new Date(endStr);
-      
+      let start = parseDate(startStr);
+      let end = parseDate(endStr);
+
       if (start > end) {
         const temp = start;
         start = end;
         end = temp;
       }
 
+      // 排班参数对象
+      const shiftWork = parseInt(document.getElementById('range-shift-work').value, 10) || 4;
+      const shiftRest = parseInt(document.getElementById('range-shift-rest').value, 10) || 2;
+      const shiftBaseStr = document.getElementById('range-shift-base').value;
+      const shiftBase = parseDate(shiftBaseStr) || start;
+
+      const scheduleCfg = {
+        anchorDate: start,
+        shiftWork: shiftWork,
+        shiftRest: shiftRest,
+        shiftBase: shiftBase,
+        customDays: rangeCustomDays
+      };
+
       let workDays = 0;
       let weekendDays = 0;
-      let legalHolidayDays = 0;
-      let makeUpWorkDays = 0;
+      let holidayDays = 0;
+      let makeupDays = 0;
       let paidHolidayDays = 0;
+      let detailChips = [];
 
-      let weekendList = [];
-      let holidayList = [];
-      let makeUpWorkList = [];
+      let d = new Date(start);
+      const loopEnd = new Date(end);
 
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        let y = d.getFullYear();
-        let m = d.getMonth() + 1;
-        let day = d.getDate();
-        let ymd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        let h = HolidayUtil.getHoliday(y, m, day);
-        let w = d.getDay();
-        let isWk = (w === 0 || w === 6);
-        let weekStr = `周${weekNames[w]}`;
-        
-        if (h) {
-          if (h.isWork()) {
-            makeUpWorkDays++;
-            workDays++;
-            makeUpWorkList.push(`${ymd}: ${h.getName()}调休 (${weekStr})`);
-          } else {
-            legalHolidayDays++;
-            let isPaid = (ymd === h.getTarget());
-            if (isPaid) paidHolidayDays++;
-            
-            holidayList.push(`${ymd}: ${h.getName()}(${weekStr})${isPaid ? '<span class="tag-paid">带薪</span>' : ''}`);
-          }
-        } else {
-          if (isWk) {
-            weekendDays++;
-            weekendList.push(`${ymd}: ${weekStr}`);
-          } else {
-            workDays++;
-          }
-        }
-      }
+      while (d <= loopEnd) {
+        const isFirst = (d.getTime() === start.getTime());
+        const isLast = (d.getTime() === loopEnd.getTime());
 
-      let totalDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
-      let paidDays = workDays + paidHolidayDays;
-
-      document.getElementById('res1-title').innerHTML = `${workDays} <small>个工作日</small>`;
-      document.getElementById('res1-range').innerText = `${formatDate(start)} ~ ${formatDate(end)}`;
-      document.getElementById('res1-total').innerText = totalDays;
-      document.getElementById('res1-weekend').innerText = weekendDays;
-      document.getElementById('res1-holiday').innerText = legalHolidayDays;
-      document.getElementById('res1-makeup').innerText = makeUpWorkDays;
-      document.getElementById('res1-paid').innerText = paidHolidayDays;
-      document.getElementById('res1-paydays').innerText = paidDays;
-
-      let detailsHtml = '';
-      
-      if (holidayList.length > 0) {
-        detailsHtml += `<div class="detail-title">节日放假</div><ul class="detail-items">`;
-        holidayList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
-        detailsHtml += `</ul>`;
-      }
-      
-      if (makeUpWorkList.length > 0) {
-        detailsHtml += `<div class="detail-title" style="color:var(--teal)">调休上班</div><ul class="detail-items">`;
-        makeUpWorkList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
-        detailsHtml += `</ul>`;
-      }
-
-      if (weekendList.length > 0) {
-        detailsHtml += `<div class="detail-title">周末放假 <span style="font-weight:normal;font-size:12px;color:var(--muted)">(已排除重叠节日)</span></div><ul class="detail-items">`;
-        weekendList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
-        detailsHtml += `</ul>`;
-      }
-
-      document.getElementById('res1-details').innerHTML = detailsHtml;
-      document.getElementById('result-1').classList.add('active');
-    }
-
-    function calcTargetDate() {
-      if (typeof HolidayUtil === 'undefined') {
-        alert("节假日库加载失败，请检查网络。");
-        return;
-      }
-
-      const startStr = document.getElementById('start-date-2').value;
-      const workDaysCountInput = document.getElementById('work-days-count').value;
-      
-      if (!startStr || !workDaysCountInput) {
-        alert("请选择开始日期并输入工作天数");
-        return;
-      }
-
-      let targetWorkDays = parseInt(workDaysCountInput);
-      if (targetWorkDays <= 0) {
-        alert("工作天数必须大于0");
-        return;
-      }
-
-      let d = new Date(startStr);
-      let count = 0;
-      let resultDate = '';
-      let resultWeek = '';
-      let startDateStrFormatted = '';
-      let startWeekStr = '';
-      let workDateList = [];
-
-      // 防止死循环的硬性保护
-      let maxLoops = targetWorkDays * 5; 
-      let loop = 0;
-
-      while (count < targetWorkDays && loop < maxLoops) {
-        let y = d.getFullYear();
-        let m = d.getMonth() + 1;
-        let day = d.getDate();
-        let currentYmd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        let h = HolidayUtil.getHoliday(y, m, day);
-        let w = d.getDay();
-        let isWk = (w === 0 || w === 6);
-        let weekStr = `周${weekNames[w]}`;
-        
-        if (loop === 0) {
-           startDateStrFormatted = currentYmd;
-           startWeekStr = weekStr;
-        }
-        
-        let isWorkDay = false;
-        let workTypeDesc = '工作日';
-        if (h) {
-          if (h.isWork()) {
-            isWorkDay = true;
-            workTypeDesc = h.getName() + '调休';
-          }
-        } else {
-          if (!isWk) isWorkDay = true;
-        }
-        
-        if (isWorkDay) {
-          count++;
-          resultDate = currentYmd;
-          resultWeek = weekStr;
-          workDateList.push(`${currentYmd}: ${workTypeDesc}(${weekStr})`);
-        }
-        
-        if (count < targetWorkDays) {
+        // 根据包含性规则跳过
+        if (incRule === 'start' && isLast && start.getTime() !== loopEnd.getTime()) {
           d.setDate(d.getDate() + 1);
+          continue;
         }
-        loop++;
+        if (incRule === 'end' && isFirst && start.getTime() !== loopEnd.getTime()) {
+          d.setDate(d.getDate() + 1);
+          continue;
+        }
+
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        const ymd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const w = d.getDay();
+        const weekStr = `周${weekNames[w]}`;
+
+        let h = null;
+        if (typeof HolidayUtil !== 'undefined') {
+          h = HolidayUtil.getHoliday(y, m, day);
+        }
+
+        const isScheduleRest = isRestDayBySchedule(d, rule, scheduleCfg);
+
+        if (h && holidayPriority) {
+          if (h.isWork()) {
+            // 调休补班
+            makeupDays++;
+            workDays++;
+            detailChips.push(`<span class="date-chip chip-makeup">${ymd} ${h.getName()}调休上班 (${weekStr})</span>`);
+          } else {
+            // 法定放假
+            holidayDays++;
+            const isPaid = (ymd === h.getTarget());
+            if (isPaid) paidHolidayDays++;
+            detailChips.push(`<span class="date-chip chip-holiday">🎉 ${ymd} ${h.getName()}放假 (${weekStr})${isPaid ? ' [带薪]' : ''}</span>`);
+          }
+        } else {
+          if (isScheduleRest) {
+            weekendDays++;
+            if (rule === 'shift-cycle') {
+              detailChips.push(`<span class="date-chip chip-weekend">${ymd} 轮休排休 (${weekStr})</span>`);
+            } else if (rule === 'alt-big-first' || rule === 'alt-small-first') {
+              if (w === 6) {
+                detailChips.push(`<span class="date-chip chip-weekend">${ymd} 大周休息 (${weekStr})</span>`);
+              }
+            }
+          } else {
+            workDays++;
+            if ((rule === 'alt-big-first' || rule === 'alt-small-first') && w === 6) {
+              detailChips.push(`<span class="date-chip" style="color:var(--teal)">${ymd} 小周出勤上班 (${weekStr})</span>`);
+            }
+          }
+        }
+
+        d.setDate(d.getDate() + 1);
       }
 
-      document.getElementById('res2-start').innerText = `${startDateStrFormatted}(${startWeekStr})`;
-      document.getElementById('res2-count').innerText = targetWorkDays;
-      document.getElementById('res2-target-inline').innerText = `${resultDate}(${resultWeek})`;
-      
-      document.getElementById('res2-range').innerText = `${startDateStrFormatted} ~ ${resultDate}`;
-      document.getElementById('res2-total').innerText = loop;
-      document.getElementById('res2-workdays').innerText = targetWorkDays;
-      document.getElementById('res2-hint').innerText = `提示：统计时包含${startDateStrFormatted}、${resultDate}这两天`;
+      const totalNaturalDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      const payDays = workDays + paidHolidayDays;
 
-      let detailsHtml = '';
-      if (workDateList.length > 0) {
-        detailsHtml += `<div class="detail-title">上班日期:</div><ul class="detail-items">`;
-        workDateList.forEach(item => { detailsHtml += `<li>${item}</li>`; });
-        detailsHtml += `</ul>`;
+      // 渲染英雄看板与指标
+      document.getElementById('hero-date-range').innerText = `${formatDate(start)} ~ ${formatDate(end)}`;
+      document.getElementById('hero-workdays').innerHTML = `${workDays} <small>个工作日</small>`;
+      document.getElementById('hero-paydays').innerHTML = `${payDays} <small>天</small>`;
+      document.getElementById('hero-totaldays').innerHTML = `${totalNaturalDays} <small>天</small>`;
+
+      document.getElementById('metric-weekends').innerHTML = `${weekendDays} <small>天</small>`;
+      document.getElementById('metric-holidays').innerHTML = `${holidayDays} <small>天</small>`;
+      document.getElementById('metric-makeups').innerHTML = `${makeupDays} <small>天</small>`;
+      document.getElementById('metric-paid').innerHTML = `${paidHolidayDays} <small>天</small>`;
+
+      // 渲染明细
+      const container = document.getElementById('range-details-container');
+      if (detailChips.length > 0) {
+        container.innerHTML = detailChips.join('');
+        document.getElementById('detail-count-badge').innerText = `${detailChips.length} 项排班明细标记`;
+      } else {
+        container.innerHTML = `<span style="color: var(--muted); font-size: 13px;">该时段内无特殊放假、大小周或轮休标记。</span>`;
+        document.getElementById('detail-count-badge').innerText = `0 项`;
       }
-
-      document.getElementById('res2-details').innerHTML = detailsHtml;
-      document.getElementById('result-2').classList.add('active');
     }
 
-    document.addEventListener('DOMContentLoaded', initDates);
+    function copyRangeReport() {
+      const range = document.getElementById('hero-date-range').innerText;
+      const workdays = document.getElementById('hero-workdays').innerText;
+      const paydays = document.getElementById('hero-paydays').innerText;
+      const total = document.getElementById('hero-totaldays').innerText;
+      const holidays = document.getElementById('metric-holidays').innerText;
+      const makeups = document.getElementById('metric-makeups').innerText;
+      const weekends = document.getElementById('metric-weekends').innerText;
+      const ruleText = document.getElementById('range-schedule-rule').selectedOptions[0].text;
+
+      const text = `【考勤排期统计报表】\n统计时段：${range}\n排班制度：${ruleText}\n自然日总计：${total}\n实际出勤工作日：${workdays}\n标准计薪天数：${paydays}\n公休/轮休休息：${weekends}\n法定放假天数：${holidays}\n周末调休补班：${makeups}\n生成自：中国法定节假日与工作日排期工坊 (Holiday & Workday Studio)`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert("考勤统计报表已成功复制到剪贴板！");
+      }).catch(() => {
+        alert("复制失败，请手动截屏或选取文本。");
+      });
+    }
+
+    /* ==========================================================================
+       模块 2：双向工期排程推导
+       ========================================================================== */
+    function setScheduleDir(dir) {
+      scheduleDirection = dir;
+      const btnFwd = document.getElementById('btn-dir-forward');
+      const btnBwd = document.getElementById('btn-dir-backward');
+      const lbl = document.getElementById('schedule-date-label');
+      const targetTitle = document.getElementById('res-target-title');
+
+      if (dir === 'forward') {
+        btnFwd.classList.add('active');
+        btnBwd.classList.remove('active');
+        lbl.innerText = '基准起始日期 (开工日)';
+        targetTitle.innerText = '🎯 推算目标最终交付日期';
+      } else {
+        btnFwd.classList.remove('active');
+        btnBwd.classList.add('active');
+        lbl.innerText = '基准截止日期 (交付日)';
+        targetTitle.innerText = '🎯 逆向倒推最晚启动日期';
+      }
+      runScheduleCalculation();
+    }
+
+    function setDaysCount(n) {
+      document.getElementById('schedule-days-count').value = n;
+      runScheduleCalculation();
+    }
+
+    function runScheduleCalculation() {
+      const baseDateStr = document.getElementById('schedule-base-date').value;
+      const countInput = document.getElementById('schedule-days-count').value;
+      const rule = document.getElementById('schedule-schedule-rule').value;
+      const holidayPriority = document.getElementById('schedule-holiday-priority').checked;
+
+      if (!baseDateStr || !countInput) return;
+
+      const targetCount = parseInt(countInput, 10);
+      if (targetCount <= 0) return;
+
+      let d = parseDate(baseDateStr);
+      let matchedWorkDays = 0;
+      let totalNatural = 0;
+      let timelineRows = [];
+
+      const shiftWork = parseInt(document.getElementById('schedule-shift-work').value, 10) || 4;
+      const shiftRest = parseInt(document.getElementById('schedule-shift-rest').value, 10) || 2;
+      const shiftBaseStr = document.getElementById('schedule-shift-base').value;
+      const shiftBase = parseDate(shiftBaseStr) || d;
+
+      const scheduleCfg = {
+        anchorDate: d,
+        shiftWork: shiftWork,
+        shiftRest: shiftRest,
+        shiftBase: shiftBase,
+        customDays: scheduleCustomDays
+      };
+
+      const step = (scheduleDirection === 'forward') ? 1 : -1;
+      const maxLoops = targetCount * 5; // 防止死循环保护
+      let loops = 0;
+
+      while (matchedWorkDays < targetCount && loops < maxLoops) {
+        loops++;
+        totalNatural++;
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        const ymd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const w = d.getDay();
+        const weekStr = `周${weekNames[w]}`;
+
+        let h = null;
+        if (typeof HolidayUtil !== 'undefined') {
+          h = HolidayUtil.getHoliday(y, m, day);
+        }
+
+        const isScheduleRest = isRestDayBySchedule(d, rule, scheduleCfg);
+        let isWork = false;
+        let tagHtml = '';
+        let desc = '';
+
+        if (h && holidayPriority) {
+          if (h.isWork()) {
+            isWork = true;
+            matchedWorkDays++;
+            tagHtml = `<span class="date-chip chip-makeup">调休上班</span>`;
+            desc = `${h.getName()}调休补班`;
+          } else {
+            isWork = false;
+            tagHtml = `<span class="date-chip chip-holiday">节日放假</span>`;
+            desc = `${h.getName()}放假休息`;
+          }
+        } else {
+          if (isScheduleRest) {
+            isWork = false;
+            if (rule === 'shift-cycle') {
+              tagHtml = `<span class="date-chip chip-weekend">轮休休息</span>`;
+              desc = `上${shiftWork}休${shiftRest} 轮班休息`;
+            } else if ((rule === 'alt-big-first' || rule === 'alt-small-first') && w === 6) {
+              tagHtml = `<span class="date-chip chip-weekend">大周双休</span>`;
+              desc = `大周周六公休`;
+            } else {
+              tagHtml = `<span class="date-chip chip-weekend">公休日</span>`;
+              desc = `排班休息`;
+            }
+          } else {
+            isWork = true;
+            matchedWorkDays++;
+            if ((rule === 'alt-big-first' || rule === 'alt-small-first') && w === 6) {
+              tagHtml = `<span class="date-chip" style="color:var(--teal)">小周上班</span>`;
+              desc = `小周周六正常出勤 (第 ${matchedWorkDays} 个工作日)`;
+            } else if (rule === 'shift-cycle') {
+              tagHtml = `<span class="date-chip" style="color:var(--teal)">轮班出勤</span>`;
+              desc = `轮班上班 (第 ${matchedWorkDays} 个出勤班次)`;
+            } else {
+              tagHtml = `<span class="date-chip" style="color:var(--teal)">正常出勤</span>`;
+              desc = `第 ${matchedWorkDays} 个工作日`;
+            }
+          }
+        }
+
+        // 仅收录前 60 天避免 DOM 过载
+        if (loops <= 60) {
+          timelineRows.push(`
+            <tr>
+              <td><strong>#${loops}</strong></td>
+              <td>${ymd}</td>
+              <td>${weekStr}</td>
+              <td>${tagHtml}</td>
+              <td style="color:var(--muted)">${desc}</td>
+            </tr>
+          `);
+        }
+
+        if (matchedWorkDays === targetCount) {
+          break;
+        }
+
+        d.setDate(d.getDate() + step);
+      }
+
+      const finalDateStr = formatDate(d);
+      const finalWeekStr = `周${weekNames[d.getDay()]}`;
+
+      document.getElementById('res-target-date').innerText = `${finalDateStr} (${finalWeekStr})`;
+      document.getElementById('res-target-summary').innerText = `从 ${baseDateStr} ${scheduleDirection === 'forward' ? '顺延' : '倒推'} ${targetCount} 个工作日，实际跨越了 ${totalNatural} 个自然日。`;
+
+      const tbody = document.getElementById('schedule-timeline-tbody');
+      tbody.innerHTML = timelineRows.join('');
+      document.getElementById('timeline-count-badge').innerText = `跨越 ${totalNatural} 天 / 显示前 ${Math.min(loops, 60)} 天`;
+    }
+
+    /* ==========================================================================
+       模块 3：法定节假日全景大盘与倒计时
+       ========================================================================== */
+    const FESTIVAL_META = [
+      { name: '元旦', icon: '🎆' },
+      { name: '春节', icon: '🧧' },
+      { name: '清明节', icon: '🌿' },
+      { name: '劳动节', icon: '🛠️' },
+      { name: '端午节', icon: '🛶' },
+      { name: '中秋节', icon: '🥮' },
+      { name: '国庆节', icon: '🇨🇳' }
+    ];
+
+    function selectHolidayYear(year) {
+      currentHolidayYear = year;
+      document.querySelectorAll('#year-capsules .capsule-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.includes(year));
+      });
+      buildHolidayCalendar(year);
+      buildLeaveHacks(year);
+      startFestivalCountdown();
+      document.getElementById('footer-cur-year').innerText = year;
+    }
+
+    function buildHolidayCalendar(year) {
+      const container = document.getElementById('holiday-cards-container');
+      if (typeof HolidayUtil === 'undefined') {
+        container.innerHTML = '节假日库正在加载...';
+        return;
+      }
+
+      const list = HolidayUtil.getHolidays(year);
+      const groups = {};
+
+      // 按节日名称归类
+      list.forEach(item => {
+        const n = item.getName();
+        if (!groups[n]) {
+          groups[n] = { vacations: [], makeups: [], target: item.getTarget() };
+        }
+        if (item.isWork()) {
+          groups[n].makeups.push(item.getDay());
+        } else {
+          groups[n].vacations.push(item.getDay());
+        }
+      });
+
+      const todayStr = formatDate(new Date());
+      let cardsHtml = '';
+
+      FESTIVAL_META.forEach(meta => {
+        const data = groups[meta.name];
+        if (!data || data.vacations.length === 0) return;
+
+        data.vacations.sort();
+        data.makeups.sort();
+
+        const startDay = data.vacations[0];
+        const endDay = data.vacations[data.vacations.length - 1];
+        const daysCount = data.vacations.length;
+
+        // 判断状态
+        let statusBadge = '';
+        if (todayStr > endDay) {
+          statusBadge = '<span class="status-pill pill-past">已过完</span>';
+        } else if (todayStr >= startDay && todayStr <= endDay) {
+          statusBadge = '<span class="status-pill pill-active">放假进行中 🎉</span>';
+        } else {
+          const diffDays = Math.ceil((parseDate(startDay) - parseDate(todayStr)) / (1000 * 60 * 60 * 24));
+          statusBadge = `<span class="status-pill pill-upcoming">还有 ${diffDays} 天</span>`;
+        }
+
+        const makeupStr = data.makeups.length > 0 
+          ? `调休上班：${data.makeups.join('、')}`
+          : '无周末调休，无需补班';
+
+        cardsHtml += `
+          <div class="holiday-calendar-card">
+            <div class="card-top">
+              <div class="card-fest-title">
+                <span>${meta.icon}</span>
+                <span>${meta.name}</span>
+              </div>
+              ${statusBadge}
+            </div>
+
+            <div class="card-date-range">
+              📅 ${startDay} ~ ${endDay} (共 ${daysCount} 天)
+            </div>
+
+            <div class="card-makeup-row">
+              💼 ${makeupStr}
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-card-use" onclick="loadFestivalToRange('${startDay}', '${endDay}')">
+                将此区间代入统计 ➔
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = cardsHtml;
+    }
+
+    function loadFestivalToRange(start, end) {
+      document.getElementById('range-start-date').value = start;
+      document.getElementById('range-end-date').value = end;
+      // 切换到区间面板
+      document.querySelector('[data-target="panel-range"]').click();
+      runRangeCalculation();
+    }
+
+    function startFestivalCountdown() {
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      function updateTimer() {
+        if (typeof HolidayUtil === 'undefined') return;
+
+        const now = new Date();
+        const y = now.getFullYear();
+        const todayStr = formatDate(now);
+
+        // 寻找下一个未开始或正在进行的假期
+        const list = HolidayUtil.getHolidays(y).concat(HolidayUtil.getHolidays(y + 1));
+        const vacations = list.filter(item => !item.isWork());
+        vacations.sort((a, b) => a.getDay().localeCompare(b.getDay()));
+
+        let targetFest = null;
+        for (let item of vacations) {
+          if (item.getDay() >= todayStr) {
+            targetFest = item;
+            break;
+          }
+        }
+
+        if (!targetFest) {
+          document.getElementById('cd-fest-name').innerText = '本年度所有假期已度过';
+          return;
+        }
+
+        const targetName = targetFest.getName();
+        // 找到该节日的开始日期与结束日期
+        const festItems = vacations.filter(i => i.getName() === targetName && Math.abs(parseInt(i.getDay().slice(0,4)) - parseInt(targetFest.getDay().slice(0,4))) <= 1);
+        festItems.sort((a, b) => a.getDay().localeCompare(b.getDay()));
+        const startDayStr = festItems[0].getDay();
+        const endDayStr = festItems[festItems.length - 1].getDay();
+
+        document.getElementById('cd-fest-name').innerText = targetName;
+        document.getElementById('cd-fest-dates').innerText = `${startDayStr} 至 ${endDayStr} (共 ${festItems.length} 天)`;
+        document.getElementById('footer-next-hint').innerHTML = `下一个假期：<strong>${targetName} (${startDayStr})</strong>`;
+
+        const targetDateObj = new Date(startDayStr + 'T00:00:00');
+        const diffMs = targetDateObj - now;
+
+        if (diffMs <= 0) {
+          document.getElementById('cd-target-type').innerText = '🎉 假期正在进行中';
+          document.getElementById('cd-days').innerText = '00';
+          document.getElementById('cd-hours').innerText = '00';
+          document.getElementById('cd-mins').innerText = '00';
+          document.getElementById('cd-secs').innerText = '00';
+        } else {
+          document.getElementById('cd-target-type').innerText = '下一个法定节假日';
+          const totalSecs = Math.floor(diffMs / 1000);
+          const days = Math.floor(totalSecs / (3600 * 24));
+          const hours = Math.floor((totalSecs % (3600 * 24)) / 3600);
+          const mins = Math.floor((totalSecs % 3600) / 60);
+          const secs = totalSecs % 60;
+
+          document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
+          document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
+          document.getElementById('cd-mins').innerText = String(mins).padStart(2, '0');
+          document.getElementById('cd-secs').innerText = String(secs).padStart(2, '0');
+        }
+      }
+
+      updateTimer();
+      countdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    /* ==========================================================================
+       模块 4：拼假攻略与加班薪酬工坊
+       ========================================================================== */
+    function runSalaryCalculation() {
+      const baseSalary = parseFloat(document.getElementById('salary-base').value) || 0;
+      const holidayDays = parseFloat(document.getElementById('salary-holiday-days').value) || 0;
+      const weekendDays = parseFloat(document.getElementById('salary-weekend-days').value) || 0;
+      const extraHours = parseFloat(document.getElementById('salary-extra-hours').value) || 0;
+
+      // 劳动法标准月计薪天数 21.75 天
+      const dailyRate = baseSalary / 21.75;
+      const hourlyRate = dailyRate / 8;
+
+      // 法定假日 300%
+      const holidayPay = dailyRate * 3.0 * holidayDays;
+      // 休息日未补休 200%
+      const weekendPay = dailyRate * 2.0 * weekendDays;
+      // 平时延时 150%
+      const extraPay = hourlyRate * 1.5 * extraHours;
+
+      const totalOvertime = holidayPay + weekendPay + extraPay;
+
+      document.getElementById('calc-daily-rate').innerText = `¥ ${dailyRate.toFixed(2)}`;
+      document.getElementById('calc-hourly-rate').innerText = `¥ ${hourlyRate.toFixed(2)}`;
+      document.getElementById('calc-total-overtime').innerText = `¥ ${totalOvertime.toFixed(2)}`;
+    }
+
+    function buildLeaveHacks(year) {
+      const container = document.getElementById('hack-cards-container');
+      
+      // 针对中国节假日特点的经典黄金拼假模板推荐
+      const hacks = [
+        {
+          fest: '劳动节连休攻略',
+          badge: '请 3 天休 9 天',
+          formula: '5月1日~5日放假 ➔ 5月6日、7日、8日请假3天 ➔ 连上后续周末，无缝拼出 <strong>9 天超长小长假</strong>！',
+          suit: '适合长途出境游、跨省自驾游'
+        },
+        {
+          fest: '国庆节终极黄金周',
+          badge: '请 2 天休 10 天',
+          formula: '10月1日~7日国庆长假 ➔ 前置在9月29日、30日请年假2天 ➔ 直接拼出 <strong>10 天连休假期</strong>！',
+          suit: '黄金周避峰出行、深度度假旅行'
+        },
+        {
+          fest: '端午 / 中秋轻量拼假',
+          badge: '请 4 天休 9 天',
+          formula: '法定放假3天 ➔ 在工作日前后请4天年休假 ➔ 与前后两个双休日连缀成 <strong>9 天假期</strong>。',
+          suit: '回家探亲、轻量慢游'
+        },
+        {
+          fest: '春节提前返乡拼假',
+          badge: '请 2 天休 11 天',
+          formula: '春节法定假日前申请2天带薪年假提前启程 ➔ 错开春运最高峰，轻松连休 <strong>11 天过大年</strong>！',
+          suit: '错峰春运、走亲访友'
+        }
+      ];
+
+      let html = '';
+      hacks.forEach(item => {
+        html += `
+          <div class="hack-card">
+            <div class="hack-header">
+              <div class="hack-benefit">${item.fest}</div>
+              <span class="hack-badge">${item.badge}</span>
+            </div>
+            <div class="hack-formula">${item.formula}</div>
+            <div style="font-size: 12px; color: var(--teal); font-weight: 600;">
+              ✨ 适宜场景：${item.suit}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // 页面加载启动
+    window.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
