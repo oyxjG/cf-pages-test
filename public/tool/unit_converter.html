@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>多功能智能单位换算器</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>全能科学与工程单位换算工坊 - Unit & Radix Studio v2.0</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:;">
   <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../tool-switcher.css">
   <script src="../theme.js"></script>
+  <script src="../tool-switcher.js"></script>
   <style>
     :root {
-      /* 继承 theme.css 中的变量 */
+      --header-h: 56px;
+      --footer-h: 32px;
+      --sidebar-w: 250px;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
     * {
@@ -18,371 +24,430 @@
     }
 
     body {
-      min-height: 100vh;
-      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(224, 122, 95, 0.08), transparent 26%),
-        radial-gradient(circle at 88% 12%, rgba(129, 178, 154, 0.08), transparent 22%),
-        linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 45%, var(--grad-end) 100%);
-      overflow-x: hidden;
-    }
-
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      z-index: 0;
-      pointer-events: none;
-      filter: blur(12px);
-    }
-
-    body::before {
-      width: 350px;
-      height: 350px;
-      top: -120px;
-      right: -80px;
-      background: radial-gradient(circle, rgba(45, 120, 108, 0.15), transparent 70%);
-    }
-
-    body::after {
-      width: 350px;
-      height: 350px;
-      bottom: -100px;
-      left: -100px;
-      background: radial-gradient(circle, rgba(191, 91, 50, 0.12), transparent 70%);
-    }
-
-    .page {
-      position: relative;
-      z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 20px;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      gap: 24px;
     }
 
-    .header {
+    /* 顶部 56px 工作台导航栏 */
+    .workbench-header {
+      height: var(--header-h);
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      padding: 0 16px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 8px;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 100;
     }
 
     .header-left {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .back-link {
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      padding: 4px 8px;
-      border-radius: var(--radius-sm);
-      background: transparent;
-      margin-left: -8px;
-    }
-
-    .back-link:hover {
-      color: var(--teal);
-      background: var(--paper-strong);
-    }
-
-    .back-link svg {
-      transition: transform 0.2s ease;
-    }
-
-    .back-link:hover svg {
-      transform: translateX(-4px);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, var(--text) 30%, var(--teal) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* 布局 */
-    .container {
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
-    }
-
-    /* 侧边导航 */
-    .sidebar {
-      width: 240px;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      position: sticky;
-      top: 40px;
-    }
-
-    .tab-btn {
-      display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 16px;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
       border-radius: var(--radius-sm);
-      border: none;
-      background: transparent;
-      color: var(--text);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .tab-btn:hover {
+      transition: all 0.2s ease;
       background: var(--paper-strong);
-      color: var(--teal);
-      transform: translateX(4px);
-    }
-
-    .tab-btn.active {
-      background: var(--teal);
-      color: var(--btn-text);
-      box-shadow: 0 4px 12px rgba(45, 120, 108, 0.25);
-    }
-
-    .tab-icon {
-      font-size: 18px;
-    }
-
-    /* 内容展示区 */
-    .content-area {
-      flex: 1;
-      background: var(--paper);
       border: 1px solid var(--line);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      min-height: 500px;
+    }
+
+    .back-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      transform: translateX(-1px);
+    }
+
+    .tool-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(45, 120, 108, 0.12);
+      color: var(--teal);
+      border: 1px solid rgba(45, 120, 108, 0.25);
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      max-width: 55vw;
+    }
+
+    .header-center::-webkit-scrollbar {
+      display: none;
+    }
+
+    .header-pill-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--paper-strong);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .header-pill-tab:hover {
+      color: var(--text);
+      border-color: var(--teal);
+    }
+
+    .header-pill-tab.active {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+      box-shadow: 0 2px 8px rgba(45, 120, 108, 0.25);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-nav-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      background: var(--paper-strong);
+      color: var(--text);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav-action:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .kbd-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 1px 5px;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--muted);
+    }
+
+    /* 100vh 主工作区 */
+    .workbench-main {
+      flex: 1;
+      height: calc(100vh - var(--header-h) - var(--footer-h));
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* 左侧分类导航栏 */
+    .workbench-sidebar {
+      width: var(--sidebar-w);
+      background: var(--paper);
+      border-right: 1px solid var(--line);
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      flex-shrink: 0;
+      overflow: hidden;
     }
 
-    .panel-header {
+    .sidebar-search-box {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper-strong);
+    }
+
+    .search-input-wrapper {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      border-bottom: 1px dashed var(--line);
-      padding-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 16px;
+      gap: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
     }
 
-    .panel-title-wrapper {
+    .search-input-wrapper input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 12px;
+      color: var(--text);
+      width: 100%;
+    }
+
+    .category-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .panel-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
+    .category-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .panel-desc {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* 检索过滤 */
-    .search-wrapper {
-      display: flex;
-      align-items: center;
-      background: var(--input-bg);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 8px 14px;
-      gap: 8px;
-      width: 240px;
-      transition: all 0.2s;
-    }
-
-    .search-wrapper:focus-within {
-      border-color: var(--teal);
-      background: var(--paper-strong);
-      width: 280px;
-    }
-
-    .search-input {
-      border: none;
-      background: transparent;
-      outline: none;
-      font-size: 14px;
-      color: var(--text);
-      width: 100%;
-    }
-
-    /* 联动网格 */
-    .unit-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
-    }
-
-    .unit-card {
-      background: var(--paper-strong);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      transition: all 0.25s ease;
-      position: relative;
-    }
-
-    .unit-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--teal);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .unit-card.active-input {
-      border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.15);
-    }
-
-    .unit-info {
-      display: flex;
       justify-content: space-between;
-      align-items: baseline;
-    }
-
-    .unit-name {
-      font-size: 14px;
-      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
       color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      font-size: 13px;
     }
 
-    .unit-symbol {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      background: var(--input-bg);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: "JetBrains Mono", monospace;
+    .category-item:hover {
+      background: var(--paper-strong);
+      border-color: var(--line);
     }
 
-    .input-wrapper {
+    .category-item.active {
+      background: rgba(45, 120, 108, 0.12);
+      border-color: var(--teal);
+      color: var(--teal);
+      font-weight: 700;
+    }
+
+    .cat-title-group {
       display: flex;
       align-items: center;
-      background: var(--input-bg);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      transition: border-color 0.2s;
+      gap: 9px;
     }
 
-    .input-wrapper:focus-within {
-      border-color: var(--teal);
-      background: var(--paper);
-    }
-
-    .unit-input {
-      flex: 1;
-      border: none;
-      padding: 10px 12px;
-      background: transparent;
-      font-size: 15px;
-      color: var(--text);
-      outline: none;
-      font-family: "JetBrains Mono", monospace;
-      width: 100%;
-    }
-
-    .copy-btn {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 8px 10px;
+    .cat-icon {
+      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
     }
 
-    .copy-btn:hover {
-      color: var(--teal);
-      background: rgba(45, 120, 108, 0.08);
+    .cat-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--muted);
+      background: var(--paper-strong);
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
     }
 
-    /* 进制转换特化界面 */
-    .base-spec-panel {
+    .category-item.active .cat-badge {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+    }
+
+    /* 右侧中央主视口 */
+    .workbench-content {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      padding: 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      margin-top: 10px;
+      gap: 18px;
+      background: var(--bg);
     }
 
-    .bit-visualization {
-      background: var(--input-bg);
+    /* 顶部 Banner 与预设栏 */
+    .panel-banner {
+      background: var(--paper);
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
-      padding: 20px;
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .bit-title {
-      font-size: 14px;
-      font-weight: 700;
+    .banner-top {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      color: var(--text);
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .bit-grid-container {
+    .banner-title-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .banner-icon {
+      font-size: 26px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .banner-texts h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .banner-texts p {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .banner-presets {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .preset-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .preset-tag {
+      font-size: 11.5px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-tag:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: rgba(45, 120, 108, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* 特化看板卡片容器 */
+    .special-panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .special-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* 程序员特化：Bit 阵列控制器 */
+    .bit-grid-wrapper {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .bit-row {
+    .bit-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .bit-btn {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .bit-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .bit-matrix {
       display: grid;
       grid-template-columns: repeat(16, 1fr);
       gap: 4px;
     }
 
-    .bit-box-wrapper {
+    .bit-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
+    }
+
+    .bit-num-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--muted);
     }
 
     .bit-box {
@@ -391,434 +456,673 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 700;
       border-radius: 4px;
       border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--muted);
       cursor: pointer;
       user-select: none;
       transition: all 0.15s;
     }
 
-    .bit-box.bit-0 {
-      background: var(--paper-strong);
-      color: var(--muted);
+    .bit-box:hover {
+      transform: scale(1.08);
+      border-color: var(--teal);
     }
 
-    .bit-box.bit-1 {
+    .bit-box.active {
       background: var(--teal);
-      color: var(--btn-text);
+      color: #fff;
       border-color: var(--teal);
-      box-shadow: 0 2px 6px rgba(45, 120, 108, 0.2);
+      box-shadow: 0 2px 6px rgba(45, 120, 108, 0.35);
     }
 
     .bit-box.sign-bit {
       border-color: var(--accent);
     }
-    .bit-box.sign-bit.bit-1 {
+
+    .bit-box.sign-bit.active {
       background: var(--accent);
-      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 2px 6px rgba(191, 91, 50, 0.35);
     }
 
-    .bit-idx {
-      font-size: 9px;
-      color: var(--muted);
-      font-family: "JetBrains Mono", monospace;
+    /* 内存 TypedArray 视图 */
+    .typed-array-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
     }
 
-    .bit-legends {
+    .typed-card {
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
       display: flex;
-      gap: 16px;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .typed-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .typed-val {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+      user-select: all;
+    }
+
+    /* 前端 CSS 视口特化 */
+    .css-calc-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .config-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .config-input-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .config-input-control {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+    }
+
+    .config-input-control input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      color: var(--text);
+      width: 100%;
+    }
+
+    .config-unit {
       font-size: 11px;
       color: var(--muted);
+      font-weight: 700;
+    }
+
+    .clamp-generator-card {
+      background: var(--input-bg);
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .clamp-code-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--paper-strong);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--teal);
+      border: 1px solid var(--line);
+    }
+
+    /* 网络带宽与传输特化 */
+    .bandwidth-eta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .bandwidth-eta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .eta-box {
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .eta-stat-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .eta-time-large {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    /* 货币汇率双币互转特化 */
+    .quick-swap-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .swap-currency-group {
+      flex: 1;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .currency-select-btn {
+      background: var(--paper-strong);
+      border: none;
+      border-right: 1px solid var(--line);
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      min-width: 130px;
+    }
+
+    .swap-currency-group input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .btn-swap-round {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn-swap-round:hover {
+      background: var(--teal);
+      color: #fff;
+      transform: rotate(180deg);
+      border-color: var(--teal);
+    }
+
+    /* 通用单位卡片网格 */
+    .unit-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .unit-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: 4px;
     }
 
-    .legend-item {
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .unit-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .unit-card:hover {
+      border-color: rgba(45, 120, 108, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    }
+
+    .unit-card.active-input {
+      border-color: var(--teal);
+      background: var(--paper);
+      box-shadow: 0 0 0 2px rgba(45, 120, 108, 0.18);
+    }
+
+    .unit-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .unit-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-      border: 1px solid var(--line);
-    }
-
-    /* 状态提示 */
-    .status-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 20px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .status-badge.success {
-      background: rgba(45, 120, 108, 0.12);
+    .unit-card-symbol {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
       color: var(--teal);
+      background: rgba(45, 120, 108, 0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
     }
 
-    /* Toast */
-    .toast {
+    .unit-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .unit-input-wrapper:focus-within {
+      border-color: var(--teal);
+      background: var(--paper-strong);
+    }
+
+    .unit-input-field {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 9px 11px;
+      font-family: var(--font-mono);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+    }
+
+    .btn-card-copy {
+      background: transparent;
+      border: none;
+      padding: 8px 10px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-card-copy:hover {
+      color: var(--teal);
+      background: rgba(45, 120, 108, 0.1);
+    }
+
+    .unit-formula-hint {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 底部 32px 状态监控栏 */
+    .workbench-footer {
+      height: var(--footer-h);
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--muted);
+      flex-shrink: 0;
+      z-index: 90;
+    }
+
+    .footer-left,
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .precision-select {
+      background: var(--input-bg);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--text);
+      font-size: 11px;
+      padding: 1px 4px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* 气泡提示 Toast */
+    .toast-tip {
       position: fixed;
-      bottom: 30px;
+      bottom: 46px;
       left: 50%;
-      transform: translateX(-50%) translateY(20px);
+      transform: translateX(-50%) translateY(10px);
       background: var(--text);
       color: var(--bg);
-      padding: 10px 24px;
-      border-radius: 30px;
-      font-size: 14px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
       font-weight: 600;
       opacity: 0;
       pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 1000;
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     }
 
-    .toast.show {
+    .toast-tip.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
 
-    /* 汇率特化快速转换区 */
-    .currency-spec-panel {
-      background: var(--input-bg);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-top: 10px;
-    }
-
-    .quick-swap-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .quick-swap-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .quick-swap-group {
-      display: flex;
-      align-items: center;
-      background: var(--paper-strong);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      flex: 1;
-      min-width: 220px;
-      transition: border-color 0.2s;
-    }
-
-    .quick-swap-group:focus-within {
-      border-color: var(--teal);
-    }
-
-    .quick-select {
-      background: var(--input-bg);
-      color: var(--text);
-      border: none;
-      border-right: 1px solid var(--line);
-      padding: 12px 16px;
-      font-weight: 700;
-      outline: none;
-      font-size: 14px;
-      cursor: pointer;
-      width: 155px;
-    }
-
-    .quick-select option {
-      background: var(--paper-strong);
-      color: var(--text);
-    }
-
-    .quick-input {
-      flex: 1;
-      border: none;
-      padding: 12px 16px;
-      background: transparent;
-      font-size: 16px;
-      color: var(--text);
-      outline: none;
-      font-family: "JetBrains Mono", monospace;
-      width: 100%;
-    }
-
-    .swap-btn {
-      background: var(--teal);
-      color: var(--btn-text);
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(45, 120, 108, 0.25);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .swap-btn:hover {
-      transform: rotate(180deg) scale(1.05);
-      background: var(--accent);
-      box-shadow: 0 4px 12px rgba(191, 91, 50, 0.25);
-    }
-
-    /* 移动端适配 */
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
+      .workbench-sidebar {
+        width: 60px;
       }
-
-      .sidebar {
-        width: 100%;
-        position: static;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 8px;
-        gap: 6px;
+      .category-item span:not(.cat-icon) {
+        display: none;
       }
-
-      .tab-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        flex-shrink: 0;
+      .category-item {
+        justify-content: center;
+        padding: 10px 0;
       }
-
-      .tab-btn:hover {
-        transform: none;
+      .sidebar-search-box {
+        display: none;
       }
-
-      .content-area {
-        padding: 20px;
-      }
-
-      .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .search-wrapper {
-        width: 100%;
-      }
-
-      .bit-row {
+      .bit-matrix {
         grid-template-columns: repeat(8, 1fr);
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="header">
-      <div class="header-left">
-        <a href="../index.html" class="back-link">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          返回首页
-        </a>
-        <h1>智能单位换算控制台</h1>
+
+  <!-- 顶部 56px 导航栏 -->
+  <header class="workbench-header">
+    <div class="header-left">
+      <a href="../index.html" class="back-btn" title="返回控制台首页">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>返回首页</span>
+      </a>
+      <div class="tool-title">
+        <span>📐 单位换算工坊</span>
+        <span class="badge-pill">Unit Studio v2.0</span>
       </div>
+    </div>
+
+    <!-- 顶部快速分类胶囊 -->
+    <nav class="header-center" id="headerPills">
+      <button class="header-pill-tab active" data-cat="radix" onclick="switchCategory('radix')">💻 程序员进制与内存</button>
+      <button class="header-pill-tab" data-cat="css_unit" onclick="switchCategory('css_unit')">🎨 前端 CSS & 视口</button>
+      <button class="header-pill-tab" data-cat="bandwidth" onclick="switchCategory('bandwidth')">🚀 网络带宽与耗时</button>
+      <button class="header-pill-tab" data-cat="data" onclick="switchCategory('data')">💾 数据存储 (1000/1024)</button>
+      <button class="header-pill-tab" data-cat="physics" onclick="switchCategory('physics')">🌡️ 物理与工程度量</button>
+      <button class="header-pill-tab" data-cat="daily" onclick="switchCategory('daily')">📏 日常通用度量</button>
+      <button class="header-pill-tab" data-cat="currency" onclick="switchCategory('currency')">💱 世界外汇汇率</button>
+    </nav>
+
+    <div class="header-right nav-right">
+      <button class="btn-nav-action" onclick="resetCurrentCategory()" title="重置当前分类为默认初始值">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path></svg>
+        <span>重置</span>
+      </button>
+      <button id="theme-toggle" class="btn-nav-action" style="padding: 6px 10px;" title="切换明亮/暗黑主题">
+        <svg class="sun-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 100vh 主工作台 -->
+  <main class="workbench-main">
+
+    <!-- 左侧分类侧边栏 -->
+    <aside class="workbench-sidebar">
+      <div class="sidebar-search-box">
+        <div class="search-input-wrapper">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="categoryFilterInput" placeholder="过滤度量分类..." oninput="filterCategories(this.value)">
+        </div>
+      </div>
+
+      <nav class="category-list" id="categoryNavList">
+        <button class="category-item active" data-cat="radix" onclick="switchCategory('radix')">
+          <div class="cat-title-group">
+            <span class="cat-icon">💻</span>
+            <span>程序员进制与内存</span>
+          </div>
+          <span class="cat-badge">Radix</span>
+        </button>
+
+        <button class="category-item" data-cat="css_unit" onclick="switchCategory('css_unit')">
+          <div class="cat-title-group">
+            <span class="cat-icon">🎨</span>
+            <span>前端 CSS & 视口</span>
+          </div>
+          <span class="cat-badge">CSS</span>
+        </button>
+
+        <button class="category-item" data-cat="bandwidth" onclick="switchCategory('bandwidth')">
+          <div class="cat-title-group">
+            <span class="cat-icon">🚀</span>
+            <span>网络带宽与耗时</span>
+          </div>
+          <span class="cat-badge">Net</span>
+        </button>
+
+        <button class="category-item" data-cat="data" onclick="switchCategory('data')">
+          <div class="cat-title-group">
+            <span class="cat-icon">💾</span>
+            <span>数据容量存储</span>
+          </div>
+          <span class="cat-badge">Disk</span>
+        </button>
+
+        <button class="category-item" data-cat="physics" onclick="switchCategory('physics')">
+          <div class="cat-title-group">
+            <span class="cat-icon">🌡️</span>
+            <span>物理与工程度量</span>
+          </div>
+          <span class="cat-badge">Physics</span>
+        </button>
+
+        <button class="category-item" data-cat="daily" onclick="switchCategory('daily')">
+          <div class="cat-title-group">
+            <span class="cat-icon">📏</span>
+            <span>日常生活通用度量</span>
+          </div>
+          <span class="cat-badge">Daily</span>
+        </button>
+
+        <button class="category-item" data-cat="currency" onclick="switchCategory('currency')">
+          <div class="cat-title-group">
+            <span class="cat-icon">💱</span>
+            <span>世界外汇汇率</span>
+          </div>
+          <span class="cat-badge">FX</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- 右侧内容主视口 -->
+    <section class="workbench-content" id="workbenchContent">
       
-      <!-- 主题切换占位，由 theme.js 会接管逻辑，如果首页有统一的主题按钮 -->
+      <!-- 动态 Banner 头部 -->
+      <div class="panel-banner" id="panelBanner">
+        <div class="banner-top">
+          <div class="banner-title-area">
+            <div class="banner-icon" id="bannerIcon">💻</div>
+            <div class="banner-texts">
+              <h2 id="bannerTitle">程序员进制与内存工坊 (Radix Studio)</h2>
+              <p id="bannerDesc">支持 2~36 任意进制、32位可交互 Bit 阵列、整型有符号溢出视图与 IEEE-754 浮点二进制解析。</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="search-input-wrapper" style="width: 200px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="unitSearchInput" placeholder="查找当前单位..." oninput="filterCurrentUnits(this.value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-presets" id="bannerPresets">
+          <!-- 动态预设胶囊插入点 -->
+        </div>
+      </div>
+
+      <!-- 特化面板插槽 (根据分类动态展现) -->
+      <div id="specialPanelContainer"></div>
+
+      <!-- 核心联动单位网格 -->
+      <div class="unit-cards-container">
+        <div class="unit-section-title">
+          <span>全单位联动矩阵 (在任意卡片输入即可动态换算)</span>
+          <span id="unitCountBadge" style="font-family: var(--font-mono); font-size: 11px;">10 个单位</span>
+        </div>
+
+        <div class="unit-grid" id="unitCardsGrid">
+          <!-- 动态卡片 -->
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- 底部 32px 状态监控栏 -->
+  <footer class="workbench-footer">
+    <div class="footer-left">
+      <div class="status-item">
+        <span class="status-dot"></span>
+        <span id="statusCategory">当前模式: 程序员进制与内存</span>
+      </div>
+      <div class="status-item">
+        <span>当前基准: <strong id="statusBaseUnit" style="font-family: var(--font-mono); color: var(--text);">DEC (十进制)</strong></span>
+      </div>
     </div>
 
-    <div class="container">
-      <!-- 侧边导航栏 -->
-      <aside class="sidebar">
-        <button class="tab-btn active" onclick="switchCategory('length')">
-          <span class="tab-icon">📏</span> 长度换算
-        </button>
-        <button class="tab-btn" onclick="switchCategory('area')">
-          <span class="tab-icon">📐</span> 面积换算
-        </button>
-        <button class="tab-btn" onclick="switchCategory('weight')">
-          <span class="tab-icon">⚖️</span> 质量换算
-        </button>
-        <button class="tab-btn" onclick="switchCategory('data')">
-          <span class="tab-icon">💾</span> 数据容量
-        </button>
-        <button class="tab-btn" onclick="switchCategory('base')">
-          <span class="tab-icon">💻</span> 进制转换
-        </button>
-        <button class="tab-btn" onclick="switchCategory('currency')">
-          <span class="tab-icon">💱</span> 实时汇率
-        </button>
-      </aside>
-
-      <!-- 主要内容区域 -->
-      <main class="content-area">
-        <div class="panel-header">
-          <div class="panel-title-wrapper">
-            <h2 class="panel-title" id="panel-title-text">📏 长度换算</h2>
-            <span class="panel-desc" id="panel-desc-text">一处输入数值，各单位全网实时联动。支持公制、英制与中国市制。</span>
-          </div>
-          
-          <!-- 右上角快捷状态或搜索框 -->
-          <div id="panel-header-action">
-            <!-- 动态生成 -->
-          </div>
-        </div>
-
-        <!-- 进制转换特化看板：二进制比特控制器 -->
-        <div class="base-spec-panel" id="base-spec-panel" style="display: none;">
-          <div class="bit-visualization">
-            <div class="bit-title">
-              <span>32位比特控制器 (可点击特定 Bit 交互翻转)</span>
-              <span id="bit-values-desc" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal);">DEC: 0 | HEX: 0x0</span>
-            </div>
-            <div class="bit-grid-container">
-              <!-- 高16位 -->
-              <div class="bit-row" id="bits-high"></div>
-              <!-- 低16位 -->
-              <div class="bit-row" id="bits-low"></div>
-            </div>
-            <div class="bit-legends">
-              <div class="legend-item">
-                <div class="legend-color sign-bit" style="background: var(--accent);"></div>
-                <span>符号位 (Bit 31)</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background: var(--teal);"></div>
-                <span>数据位 (1)</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background: var(--paper-strong);"></div>
-                <span>空位 (0)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 汇率转换特化面板：快速两币双向转换 -->
-        <div class="currency-spec-panel" id="currency-spec-panel" style="display: none;">
-          <div class="quick-swap-title">快速两币双向转换 (输入数值即可)</div>
-          <div class="quick-swap-wrapper">
-            <div class="quick-swap-group">
-              <select id="quick-select-a" class="quick-select" onchange="calculateQuickSwap('a')"></select>
-              <input type="text" id="quick-input-a" class="quick-input" placeholder="输入数值" oninput="calculateQuickSwap('a')">
-            </div>
-            
-            <button class="swap-btn" title="交换货币" onclick="swapQuickCurrency()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </button>
-
-            <div class="quick-swap-group">
-              <select id="quick-select-b" class="quick-select" onchange="calculateQuickSwap('b')"></select>
-              <input type="text" id="quick-input-b" class="quick-input" placeholder="输入数值" oninput="calculateQuickSwap('b')">
-            </div>
-          </div>
-        </div>
-
-        <!-- 联动计算输入网格 -->
-        <div class="unit-grid" id="unit-grid">
-          <!-- 动态卡片插槽 -->
-        </div>
-      </main>
+    <div class="footer-right">
+      <div class="status-item">
+        <span>显示精度:</span>
+        <select id="precisionSelect" class="precision-select" onchange="changePrecision(this.value)">
+          <option value="2">2 位小数</option>
+          <option value="4">4 位小数</option>
+          <option value="6" selected>6 位小数</option>
+          <option value="8">8 位小数</option>
+          <option value="10">10 位小数</option>
+          <option value="12">12 位小数</option>
+        </select>
+      </div>
+      <div class="status-item">
+        <span>纯前端离线本地安全计算</span>
+      </div>
     </div>
-  </div>
+  </footer>
 
-  <div class="toast" id="toast">已复制到剪贴板</div>
+  <!-- 复制 Toast 提示 -->
+  <div class="toast-tip" id="toastTip">已复制到剪贴板</div>
 
   <script>
     // ==========================================
-    // 1. 各维度换算配置项
+    // 全局状态与配置中心
     // ==========================================
-    
-    // 长度配置，以“米 (m)”为基准
-    const LENGTH_CONFIG = {
-      m: { name: '米', symbol: 'm', toBase: v => v, fromBase: v => v },
-      dm: { name: '分米', symbol: 'dm', toBase: v => v / 10, fromBase: v => v * 10 },
-      cm: { name: '厘米', symbol: 'cm', toBase: v => v / 100, fromBase: v => v * 100 },
-      mm: { name: '毫米', symbol: 'mm', toBase: v => v / 1000, fromBase: v => v * 1000 },
-      um: { name: '微米', symbol: 'μm', toBase: v => v / 1e6, fromBase: v => v * 1e6 },
-      nm: { name: '纳米', symbol: 'nm', toBase: v => v / 1e9, fromBase: v => v * 1e9 },
-      km: { name: '千米', symbol: 'km', toBase: v => v * 1000, fromBase: v => v / 1000 },
-      in: { name: '英寸', symbol: 'in', toBase: v => v * 0.0254, fromBase: v => v / 0.0254 },
-      ft: { name: '英尺', symbol: 'ft', toBase: v => v * 0.3048, fromBase: v => v / 0.3048 },
-      yd: { name: '码', symbol: 'yd', toBase: v => v * 0.9144, fromBase: v => v / 0.9144 },
-      mi: { name: '英里', symbol: 'mi', toBase: v => v * 1609.344, fromBase: v => v / 1609.344 },
-      nmi: { name: '海里', symbol: 'nmi', toBase: v => v * 1852, fromBase: v => v / 1852 },
-      li: { name: '里 (华里)', symbol: '里', toBase: v => v * 500, fromBase: v => v / 500 },
-      zhang: { name: '丈', symbol: '丈', toBase: v => v * (10 / 3), fromBase: v => v * (3 / 10) },
-      chi: { name: '尺', symbol: '尺', toBase: v => v * (1 / 3), fromBase: v => v * 3 },
-      cun: { name: '寸', symbol: '寸', toBase: v => v * (1 / 30), fromBase: v => v * 30 },
-      fen: { name: '分', symbol: '分', toBase: v => v * (1 / 300), fromBase: v => v * 300 }
-    };
+    let currentCategory = 'radix';
+    let currentPrecision = 6;
+    let unitSearchKeyword = '';
 
-    // 面积配置，以“平方米 (m²)”为基准
-    const AREA_CONFIG = {
-      m2: { name: '平方米', symbol: '㎡', toBase: v => v, fromBase: v => v },
-      dm2: { name: '平方分米', symbol: 'd㎡', toBase: v => v / 100, fromBase: v => v * 100 },
-      cm2: { name: '平方厘米', symbol: 'c㎡', toBase: v => v / 10000, fromBase: v => v * 10000 },
-      mm2: { name: '平方毫米', symbol: 'm㎡', toBase: v => v / 1e6, fromBase: v => v * 1e6 },
-      km2: { name: '平方千米', symbol: 'k㎡', toBase: v => v * 1e6, fromBase: v => v / 1e6 },
-      ha: { name: '公顷', symbol: 'ha', toBase: v => v * 10000, fromBase: v => v / 10000 },
-      mu: { name: '亩', symbol: '亩', toBase: v => v * (2000 / 3), fromBase: v => v * (3 / 2000) },
-      sq_in: { name: '平方英寸', symbol: 'sq in', toBase: v => v * 0.00064516, fromBase: v => v / 0.00064516 },
-      sq_ft: { name: '平方英尺', symbol: 'sq ft', toBase: v => v * 0.09290304, fromBase: v => v / 0.09290304 },
-      sq_yd: { name: '平方码', symbol: 'sq yd', toBase: v => v * 0.83612736, fromBase: v => v / 0.83612736 },
-      ac: { name: '英亩', symbol: 'ac', toBase: v => v * 4046.856422, fromBase: v => v / 4046.856422 },
-      sq_mi: { name: '平方英里', symbol: 'sq mi', toBase: v => v * 2589988.11, fromBase: v => v / 2589988.11 }
-    };
+    // 程序员模式特化状态
+    let radixCurrentDec = 255n; // 默认十进制 255
+    let endianMode = 'little'; // 'little' | 'big'
 
-    // 质量配置，以“千克 (kg)”为基准
-    const WEIGHT_CONFIG = {
-      kg: { name: '千克 (公斤)', symbol: 'kg', toBase: v => v, fromBase: v => v },
-      g: { name: '克', symbol: 'g', toBase: v => v / 1000, fromBase: v => v * 1000 },
-      mg: { name: '毫克', symbol: 'mg', toBase: v => v / 1e6, fromBase: v => v * 1e6 },
-      ug: { name: '微克', symbol: 'μg', toBase: v => v / 1e9, fromBase: v => v * 1e9 },
-      t: { name: '吨', symbol: 't', toBase: v => v * 1000, fromBase: v => v / 1000 },
-      lb: { name: '磅', symbol: 'lb', toBase: v => v * 0.45359237, fromBase: v => v / 0.45359237 },
-      oz: { name: '盎司', symbol: 'oz', toBase: v => v * 0.028349523, fromBase: v => v / 0.028349523 },
-      gr: { name: '格令', symbol: 'gr', toBase: v => v * 0.0000647989, fromBase: v => v / 0.0000647989 },
-      ct: { name: '克拉', symbol: 'ct', toBase: v => v * 0.0002, fromBase: v => v / 0.0002 },
-      jin: { name: '市斤', symbol: '斤', toBase: v => v * 0.5, fromBase: v => v / 0.5 },
-      liang: { name: '两', symbol: '两', toBase: v => v * 0.05, fromBase: v => v / 0.05 },
-      qian: { name: '钱', symbol: '钱', toBase: v => v * 0.005, fromBase: v => v / 0.005 }
-    };
+    // 前端 CSS 视口基准
+    let cssBaseFontSize = 16;
+    let cssViewportWidth = 1920;
+    let cssViewportHeight = 1080;
 
-    // 数据容量配置，以“比特 (b)”为基准
-    const DATA_CONFIG = {
-      b: { name: '比特 (bit)', symbol: 'b', toBase: v => v, fromBase: v => v },
-      B: { name: '字节 (Byte)', symbol: 'B', toBase: v => v * 8, fromBase: v => v / 8 },
-      KB: { name: '千字节 (KB - 1000)', symbol: 'KB', toBase: v => v * 8000, fromBase: v => v / 8000 },
-      MB: { name: '兆字节 (MB - 1000)', symbol: 'MB', toBase: v => v * 8e6, fromBase: v => v / 8e6 },
-      GB: { name: '吉字节 (GB - 1000)', symbol: 'GB', toBase: v => v * 8e9, fromBase: v => v / 8e9 },
-      TB: { name: '太字节 (TB - 1000)', symbol: 'TB', toBase: v => v * 8e12, fromBase: v => v / 8e12 },
-      PB: { name: '拍字节 (PB - 1000)', symbol: 'PB', toBase: v => v * 8e15, fromBase: v => v / 8e15 },
-      KiB: { name: '千字节 (KiB - 1024)', symbol: 'KiB', toBase: v => v * 8 * 1024, fromBase: v => v / (8 * 1024) },
-      MiB: { name: '兆字节 (MiB - 1024)', symbol: 'MiB', toBase: v => v * 8 * 1024 * 1024, fromBase: v => v / (8 * 1024 * 1024) },
-      GiB: { name: '吉字节 (GiB - 1024)', symbol: 'GiB', toBase: v => v * 8 * Math.pow(1024, 3), fromBase: v => v / (8 * Math.pow(1024, 3)) },
-      TiB: { name: '太字节 (TiB - 1024)', symbol: 'TiB', toBase: v => v * 8 * Math.pow(1024, 4), fromBase: v => v / (8 * Math.pow(1024, 4)) },
-      PiB: { name: '拍字节 (PiB - 1024)', symbol: 'PiB', toBase: v => v * 8 * Math.pow(1024, 5), fromBase: v => v / (8 * Math.pow(1024, 5)) }
-    };
+    // 网络带宽传输计算
+    let bandwidthMbps = 1000; // 默认千兆 1000 Mbps
+    let transferFileSizeMB = 51200; // 默认 50 GB
 
-    // 默认静态参考汇率，以 CNY 为基准
-    const STATIC_RATES_FALLBACK = {
+    // 汇率静态参考（CNY 为基准）
+    const STATIC_RATES = {
       CNY: 1.0,
       USD: 0.138,
       EUR: 0.128,
-      JPY: 21.6,
+      JPY: 21.60,
       GBP: 0.108,
       HKD: 1.08,
       TWD: 4.45,
@@ -848,685 +1152,1361 @@
     };
 
     const CURRENCY_NAMES = {
-      CNY: '人民币 (CNY)',
-      USD: '美元 (USD)',
-      EUR: '欧元 (EUR)',
-      JPY: '日元 (JPY)',
-      GBP: '英镑 (GBP)',
-      HKD: '港币 (HKD)',
-      TWD: '新台币 (TWD)',
-      AUD: '澳元 (AUD)',
-      CAD: '加元 (CAD)',
-      SGD: '新加坡元 (SGD)',
-      KRW: '韩元 (KRW)',
+      CNY: '人民币 (CNY ¥)',
+      USD: '美元 (USD $)',
+      EUR: '欧元 (EUR €)',
+      JPY: '日元 (JPY ¥)',
+      GBP: '英镑 (GBP £)',
+      HKD: '港币 (HKD HK$)',
+      TWD: '新台币 (TWD NT$)',
+      AUD: '澳元 (AUD A$)',
+      CAD: '加元 (CAD C$)',
+      SGD: '新加坡元 (SGD S$)',
+      KRW: '韩元 (KRW ₩)',
       CHF: '瑞士法郎 (CHF)',
-      NZD: '新西兰元 (NZD)',
-      THB: '泰铢 (THB)',
-      MYR: '马来西亚林吉特 (MYR)',
-      RUB: '俄罗斯卢布 (RUB)',
-      ZAR: '南非兰特 (ZAR)',
-      BRL: '巴西雷亚尔 (BRL)',
-      INR: '印度卢比 (INR)',
-      PHP: '菲律宾比索 (PHP)',
+      NZD: '新西兰元 (NZD NZ$)',
+      THB: '泰铢 (THB ฿)',
+      MYR: '马来西亚林吉特 (MYR RM)',
+      RUB: '俄罗斯卢布 (RUB ₽)',
+      ZAR: '南非兰特 (ZAR R)',
+      BRL: '巴西雷亚尔 (BRL R$)',
+      INR: '印度卢比 (INR ₹)',
+      PHP: '菲律宾比索 (PHP ₱)',
       AED: '阿联酋迪拉姆 (AED)',
       SAR: '沙特里亚尔 (SAR)',
-      MOP: '澳门元 (MOP)',
-      MXN: '墨西哥比索 (MXN)',
-      DKK: '丹麦克朗 (DKK)',
-      SEK: '瑞典克朗 (SEK)',
-      NOK: '挪威克朗 (NOK)',
-      PLN: '波兰兹罗提 (PLN)',
-      TRY: '土耳其里拉 (TRY)',
-      ILS: '以色列新谢克尔 (ILS)'
+      MOP: '澳门元 (MOP MOP$)',
+      MXN: '墨西哥比索 (MXN Mex$)',
+      DKK: '丹麦克朗 (DKK kr)',
+      SEK: '瑞典克朗 (SEK kr)',
+      NOK: '挪威克朗 (NOK kr)',
+      PLN: '波兰兹罗提 (PLN zł)',
+      TRY: '土耳其里拉 (TRY ₺)',
+      ILS: '以色列新谢克尔 (ILS ₪)'
     };
 
     // ==========================================
-    // 2. 状态与逻辑全局变量
+    // 各分类单位定义与换算系数配置
     // ==========================================
-    let currentCategory = 'length';
-    let loadedRates = { ...STATIC_RATES_FALLBACK };
-    let rateStatus = 'fallback'; // 'live' | 'fallback'
-    let rateUpdateTime = null;
-    let baseSearchQuery = '';
+    const CATEGORIES_CONFIG = {
+      // 1. 程序员进制
+      radix: {
+        title: '程序员进制与内存工坊 (Radix & Memory Studio)',
+        desc: '支持 2~36 任意进制互转、32位可点按交互 Bit 阵列、整型有符号溢出视图与 IEEE-754 浮点二进制解析。',
+        icon: '💻',
+        presets: [
+          { label: '十进制 255 (0xFF)', val: '255', key: 'dec' },
+          { label: '端口 8080', val: '8080', key: 'dec' },
+          { label: 'Int16 上限 32767', val: '32767', key: 'dec' },
+          { label: 'Int32 上限 2147483647', val: '2147483647', key: 'dec' },
+          { label: '字节掩码 0xAAAA', val: '43690', key: 'dec' },
+          { label: 'IP 255.255.255.0', val: '4294967040', key: 'dec' }
+        ],
+        units: [
+          { id: 'bin', name: '二进制', symbol: 'BIN (Base 2)', hint: '以 0b 或纯 0/1 表达' },
+          { id: 'oct', name: '八进制', symbol: 'OCT (Base 8)', hint: '以 0o 表达，Unix 文件权限常用' },
+          { id: 'dec', name: '十进制', symbol: 'DEC (Base 10)', hint: '人类自然进位基数' },
+          { id: 'hex', name: '十六进制', symbol: 'HEX (Base 16)', hint: '0~9 与 A~F，字节表示基石' },
+          { id: 'base32', name: '三十二进制', symbol: 'Base 32', hint: '常用于 TOTP 与安全哈希编码' },
+          { id: 'base36', name: '三十六进制', symbol: 'Base 36', hint: '0~9 与 a~z，短链常用' }
+        ]
+      },
+
+      // 2. 前端 CSS & 视口
+      css_unit: {
+        title: '前端 CSS & 视口排版工坊 (Web Units Studio)',
+        desc: 'px、rem、em、pt、vw、vh 全量动态换算，支持自定义根字号与基准视口，并提供 CSS clamp() 流体字号生成。',
+        icon: '🎨',
+        presets: [
+          { label: '正文字号 16px', val: 16, key: 'px' },
+          { label: '小标题 24px', val: 24, key: 'px' },
+          { label: '一级标题 36px', val: 36, key: 'px' },
+          { label: '半屏宽度 960px', val: 960, key: 'px' },
+          { label: '移动端全宽 375px', val: 375, key: 'px' },
+          { label: '常规边距 8px', val: 8, key: 'px' }
+        ],
+        units: [
+          { id: 'px', name: '像素', symbol: 'px', hint: 'CSS 基础逻辑像素 (基准单位)' },
+          { id: 'rem', name: '根元素相对尺寸', symbol: 'rem', hint: '相对于 html 根元素 font-size' },
+          { id: 'em', name: '父元素相对尺寸', symbol: 'em', hint: '相对于当前元素继承 font-size' },
+          { id: 'pt', name: '磅 (印刷排版点)', symbol: 'pt', hint: '1 pt = 1/72 英寸 ≈ 1.333 px' },
+          { id: 'vw', name: '视口宽度百分比', symbol: 'vw', hint: '1 vw = 1% 视口当前宽度' },
+          { id: 'vh', name: '视口高度百分比', symbol: 'vh', hint: '1 vh = 1% 视口当前高度' },
+          { id: 'cqw', name: '容器查询宽度', symbol: 'cqw', hint: '1 cqw = 1% 容器上下文宽度' },
+          { id: 'inch', name: '英寸', symbol: 'in', hint: '1 in = 96 px = 2.54 cm' },
+          { id: 'cm', name: '厘米', symbol: 'cm', hint: '1 cm ≈ 37.795 px' }
+        ]
+      },
+
+      // 3. 网络带宽与传输
+      bandwidth: {
+        title: '网络带宽与下载耗时推导 (Bandwidth & Transfer)',
+        desc: '精确换算宽带通信比特率与磁盘存储速率，提供千兆光纤、5G 蜂窝理论与实测速率对比及大文件下载耗时。',
+        icon: '🚀',
+        presets: [
+          { label: '百兆家庭宽带 100M', val: 100, key: 'mbps' },
+          { label: '300M 宽带', val: 300, key: 'mbps' },
+          { label: '千兆光纤 1000M', val: 1000, key: 'mbps' },
+          { label: '2.5G 电竞网口', val: 2500, key: 'mbps' },
+          { label: '万兆专线 10Gbps', val: 10000, key: 'mbps' }
+        ],
+        units: [
+          { id: 'bps', name: '比特每秒', symbol: 'bps', hint: '通信底层基础比特流速率' },
+          { id: 'kbps', name: '千比特每秒', symbol: 'Kbps', hint: '1 Kbps = 1000 bps' },
+          { id: 'mbps', name: '兆比特每秒 (宽带速率)', symbol: 'Mbps', hint: '运营商所称的 100M/1000M 宽带' },
+          { id: 'gbps', name: '吉比特每秒', symbol: 'Gbps', hint: '1 Gbps = 1000 Mbps' },
+          { id: 'tbps', name: '太比特每秒', symbol: 'Tbps', hint: '主干网交换骨干速率' },
+          { id: 'Bps', name: '字节每秒', symbol: 'B/s', hint: '1 Byte/s = 8 bps' },
+          { id: 'KBps', name: '千字节每秒', symbol: 'KB/s', hint: '1 KB/s = 8 Kbps' },
+          { id: 'MBps', name: '兆字节每秒 (下载速度)', symbol: 'MB/s', hint: '下载软件显示的实际传输速率' },
+          { id: 'GBps', name: '吉字节每秒', symbol: 'GB/s', hint: '1 GB/s = 8 Gbps' }
+        ]
+      },
+
+      // 4. 数据存储容量
+      data: {
+        title: '数据存储容量工坊 (Data Storage Matrix)',
+        desc: '清晰对比 1000 进制 (SI 硬盘标准) 与 1024 进制 (IEC 计算机标准)，彻底揭秘 1TB 移动硬盘的“缩水”之谜。',
+        icon: '💾',
+        presets: [
+          { label: '1 Byte (8 bits)', val: 8, key: 'b' },
+          { label: '1 MiB 内存', val: 8388608, key: 'b' },
+          { label: '4 GiB 内存条', val: 34359738368, key: 'b' },
+          { label: '1 TB 机械硬盘', val: 8000000000000, key: 'b' },
+          { label: '4.7 GB DVD 光盘', val: 37600000000, key: 'b' }
+        ],
+        units: [
+          { id: 'b', name: '比特 (最小单位)', symbol: 'bit', toBase: v => v, fromBase: v => v, hint: '1 个二进制位 0 或 1' },
+          { id: 'B', name: '字节', symbol: 'Byte', toBase: v => v * 8, fromBase: v => v / 8, hint: '1 Byte = 8 bits' },
+          { id: 'KB', name: '千字节 (SI 1000)', symbol: 'KB', toBase: v => v * 8000, fromBase: v => v / 8000, hint: '1 KB = 1,000 Bytes' },
+          { id: 'MB', name: '兆字节 (SI 1000)', symbol: 'MB', toBase: v => v * 8e6, fromBase: v => v / 8e6, hint: '1 MB = 1,000,000 Bytes' },
+          { id: 'GB', name: '吉字节 (SI 1000)', symbol: 'GB', toBase: v => v * 8e9, fromBase: v => v / 8e9, hint: '1 GB = 1,000,000,000 Bytes' },
+          { id: 'TB', name: '太字节 (SI 1000)', symbol: 'TB', toBase: v => v * 8e12, fromBase: v => v / 8e12, hint: '硬盘标称常用标准' },
+          { id: 'PB', name: '拍字节 (SI 1000)', symbol: 'PB', toBase: v => v * 8e15, fromBase: v => v / 8e15, hint: '大数据机房存储规模' },
+          { id: 'KiB', name: '二进制千字节 (IEC 1024)', symbol: 'KiB', toBase: v => v * 8 * 1024, fromBase: v => v / (8 * 1024), hint: '1 KiB = 1,024 Bytes' },
+          { id: 'MiB', name: '二进制兆字节 (IEC 1024)', symbol: 'MiB', toBase: v => v * 8 * 1024 * 1024, fromBase: v => v / (8 * 1024 * 1024), hint: '操作系统内核实际识别标准' },
+          { id: 'GiB', name: '二进制吉字节 (IEC 1024)', symbol: 'GiB', toBase: v => v * 8 * Math.pow(1024, 3), fromBase: v => v / (8 * Math.pow(1024, 3)), hint: '1 GiB ≈ 1.074 GB' },
+          { id: 'TiB', name: '二进制太字节 (IEC 1024)', symbol: 'TiB', toBase: v => v * 8 * Math.pow(1024, 4), fromBase: v => v / (8 * Math.pow(1024, 4)), hint: '1 TB 硬盘在电脑里等于 0.909 TiB' }
+        ]
+      },
+
+      // 5. 物理与工程度量
+      physics: {
+        title: '物理与工程科学度量衡 (Physics & Engineering)',
+        desc: '温度 (℃/℉/K)、超微颗粒度时间 (ns/μs/ms) 与对应频率 (Hz/MHz)、角度与压强标准单位精确联动。',
+        icon: '🌡️',
+        presets: [
+          { label: '水冰点 0 ℃', val: 0, key: 'celsius' },
+          { label: '人体正常体温 37 ℃', val: 37, key: 'celsius' },
+          { label: '水沸点 100 ℃', val: 100, key: 'celsius' },
+          { label: 'CPU 频率 3.6 GHz', val: 3.6e9, key: 'hz' },
+          { label: '1 标准大气压 1 atm', val: 101325, key: 'pa' },
+          { label: '轮胎胎压 2.5 bar', val: 250000, key: 'pa' }
+        ],
+        subGroups: [
+          {
+            name: '🌡️ 温度度量 (Temperature)',
+            units: [
+              { id: 'celsius', name: '摄氏度', symbol: '℃', hint: '日常与科学主流温标' },
+              { id: 'fahrenheit', name: '华氏度', symbol: '℉', hint: '℉ = ℃ × 1.8 + 32' },
+              { id: 'kelvin', name: '开尔文 (热力学温标)', symbol: 'K', hint: 'K = ℃ + 273.15 (绝对零度基准)' },
+              { id: 'rankine', name: '兰氏度', symbol: '°R', hint: '°R = (℃ + 273.15) × 1.8' }
+            ]
+          },
+          {
+            name: '⏱️ 时间微细颗粒度与频率 (Time & Frequency)',
+            units: [
+              { id: 'ns', name: '纳秒', symbol: 'ns', hint: '1 秒 = 10^9 纳秒 (内存读写延迟)' },
+              { id: 'us', name: '微秒', symbol: 'μs', hint: '1 秒 = 10^6 微秒 (SSD 闪存读写)' },
+              { id: 'ms', name: '毫秒', symbol: 'ms', hint: '1 秒 = 1000 毫秒 (网络 Ping 延迟)' },
+              { id: 's', name: '秒', symbol: 's', hint: '国际标准时间单位' },
+              { id: 'min', name: '分钟', symbol: 'min', hint: '1 min = 60 s' },
+              { id: 'hour', name: '小时', symbol: 'h', hint: '1 h = 3600 s' },
+              { id: 'day', name: '天', symbol: 'd', hint: '1 d = 86400 s' },
+              { id: 'hz', name: '赫兹 (频率)', symbol: 'Hz', hint: '1 Hz = 1 次/秒' },
+              { id: 'khz', name: '千赫兹', symbol: 'kHz', hint: '1 kHz = 1000 Hz' },
+              { id: 'mhz', name: '兆赫兹', symbol: 'MHz', hint: '1 MHz = 10^6 Hz' },
+              { id: 'ghz', name: '吉赫兹', symbol: 'GHz', hint: 'CPU 主频常用单位' }
+            ]
+          },
+          {
+            name: '🧭 角度与压强 (Angle & Pressure)',
+            units: [
+              { id: 'deg', name: '度 (角度)', symbol: '° (deg)', hint: '圆周分为 360 度' },
+              { id: 'rad', name: '弧度', symbol: 'rad', hint: '1 rad ≈ 57.2958° (2π rad = 360°)' },
+              { id: 'grad', name: '百分度', symbol: 'grad', hint: '直角 = 100 grad' },
+              { id: 'pa', name: '帕斯卡', symbol: 'Pa', hint: '国际标准压力单位 (N/m²)' },
+              { id: 'kpa', name: '千帕', symbol: 'kPa', hint: '1 kPa = 1,000 Pa' },
+              { id: 'mpa', name: '兆帕', symbol: 'MPa', hint: '1 MPa = 1,000,000 Pa' },
+              { id: 'bar', name: '巴', symbol: 'bar', hint: '1 bar = 100 kPa ≈ 0.987 atm' },
+              { id: 'atm', name: '标准大气压', symbol: 'atm', hint: '1 atm = 101,325 Pa' },
+              { id: 'psi', name: '磅力每平方英寸', symbol: 'psi', hint: '美制胎压常用 (1 bar ≈ 14.5 psi)' },
+              { id: 'mmhg', name: '毫米汞柱', symbol: 'mmHg', hint: '医学血压常用单位' }
+            ]
+          }
+        ]
+      },
+
+      // 6. 日常生活通用度量衡
+      daily: {
+        title: '日常生活通用度量衡 (Daily Common Units)',
+        desc: '长度、面积、质量与体积全覆盖，兼顾公制 (米/克)、英制 (英尺/磅) 与中国市制传统度量 (丈尺寸/斤两钱)。',
+        icon: '📏',
+        presets: [
+          { label: '标准长跑 5 km', val: 5000, key: 'len_m' },
+          { label: '篮球场长 28 m', val: 28, key: 'len_m' },
+          { label: '1 英亩土地', val: 4046.856, key: 'area_m2' },
+          { label: '标准 1 市亩', val: 666.667, key: 'area_m2' },
+          { label: '1 磅牛排', val: 0.45359, key: 'wt_kg' },
+          { label: '1 桶石油 (42加仑)', val: 158.987, key: 'vol_l' }
+        ],
+        subGroups: [
+          {
+            name: '📐 长度与距离 (Length)',
+            units: [
+              { id: 'len_m', name: '米', symbol: 'm', toBase: v => v, fromBase: v => v, hint: '国际长度基准单位' },
+              { id: 'len_km', name: '千米 (公里)', symbol: 'km', toBase: v => v * 1000, fromBase: v => v / 1000, hint: '1 km = 1000 m' },
+              { id: 'len_cm', name: '厘米', symbol: 'cm', toBase: v => v / 100, fromBase: v => v * 100, hint: '1 cm = 0.01 m' },
+              { id: 'len_mm', name: '毫米', symbol: 'mm', toBase: v => v / 1000, fromBase: v => v * 1000, hint: '1 mm = 0.001 m' },
+              { id: 'len_in', name: '英寸', symbol: 'in', toBase: v => v * 0.0254, fromBase: v => v / 0.0254, hint: '1 in = 2.54 cm' },
+              { id: 'len_ft', name: '英尺', symbol: 'ft', toBase: v => v * 0.3048, fromBase: v => v / 0.3048, hint: '1 ft = 12 in = 30.48 cm' },
+              { id: 'len_yd', name: '码', symbol: 'yd', toBase: v => v * 0.9144, fromBase: v => v / 0.9144, hint: '1 yd = 3 ft = 0.9144 m' },
+              { id: 'len_mi', name: '英里', symbol: 'mi', toBase: v => v * 1609.344, fromBase: v => v / 1609.344, hint: '1 mi ≈ 1.609 km' },
+              { id: 'len_nmi', name: '海里', symbol: 'nmi', toBase: v => v * 1852, fromBase: v => v / 1852, hint: '航海标准 1 nmi = 1852 m' },
+              { id: 'len_li', name: '市里 (华里)', symbol: '里', toBase: v => v * 500, fromBase: v => v / 500, hint: '1 华里 = 500 米' },
+              { id: 'len_zhang', name: '丈', symbol: '丈', toBase: v => v * (10 / 3), fromBase: v => v * (3 / 10), hint: '1 丈 = 10 尺 ≈ 3.333 米' },
+              { id: 'len_chi', name: '市尺', symbol: '尺', toBase: v => v * (1 / 3), fromBase: v => v * 3, hint: '1 尺 = 1/3 米 ≈ 33.33 cm' },
+              { id: 'len_cun', name: '市寸', symbol: '寸', toBase: v => v * (1 / 30), fromBase: v => v * 30, hint: '1 寸 = 3.333 cm' }
+            ]
+          },
+          {
+            name: '🗺️ 面积与土地 (Area)',
+            units: [
+              { id: 'area_m2', name: '平方米', symbol: '㎡', toBase: v => v, fromBase: v => v, hint: '房屋与地面面积基准' },
+              { id: 'area_km2', name: '平方千米', symbol: 'k㎡', toBase: v => v * 1e6, fromBase: v => v / 1e6, hint: '1 k㎡ = 100 万平方米' },
+              { id: 'area_ha', name: '公顷', symbol: 'ha', toBase: v => v * 10000, fromBase: v => v / 10000, hint: '1 公顷 = 10,000 ㎡ = 15 亩' },
+              { id: 'area_mu', name: '市亩', symbol: '亩', toBase: v => v * (2000 / 3), fromBase: v => v * (3 / 2000), hint: '1 亩 ≈ 666.67 平方米' },
+              { id: 'area_sqft', name: '平方英尺', symbol: 'sq ft', toBase: v => v * 0.09290304, fromBase: v => v / 0.09290304, hint: '欧美房产常用 (1 ㎡ ≈ 10.76 sq ft)' },
+              { id: 'area_acre', name: '英亩', symbol: 'ac', toBase: v => v * 4046.856422, fromBase: v => v / 4046.856422, hint: '1 英亩 ≈ 4046.86 ㎡ ≈ 6.07 亩' }
+            ]
+          },
+          {
+            name: '⚖️ 质量与重量 (Weight)',
+            units: [
+              { id: 'wt_kg', name: '千克 (公斤)', symbol: 'kg', toBase: v => v, fromBase: v => v, hint: '国际质量基准' },
+              { id: 'wt_g', name: '克', symbol: 'g', toBase: v => v / 1000, fromBase: v => v * 1000, hint: '1 g = 0.001 kg' },
+              { id: 'wt_mg', name: '毫克', symbol: 'mg', toBase: v => v / 1e6, fromBase: v => v * 1e6, hint: '1 mg = 0.001 g' },
+              { id: 'wt_t', name: '公吨', symbol: 't', toBase: v => v * 1000, fromBase: v => v / 1000, hint: '1 t = 1000 kg' },
+              { id: 'wt_lb', name: '磅', symbol: 'lb', toBase: v => v * 0.45359237, fromBase: v => v / 0.45359237, hint: '1 lb ≈ 0.4536 kg' },
+              { id: 'wt_oz', name: '盎司', symbol: 'oz', toBase: v => v * 0.028349523, fromBase: v => v / 0.028349523, hint: '1 lb = 16 oz ≈ 28.35 g' },
+              { id: 'wt_ct', name: '克拉 (珠宝)', symbol: 'ct', toBase: v => v * 0.0002, fromBase: v => v / 0.0002, hint: '1 克拉 = 0.2 克' },
+              { id: 'wt_jin', name: '市斤', symbol: '斤', toBase: v => v * 0.5, fromBase: v => v / 0.5, hint: '1 斤 = 500 克 = 10 两' },
+              { id: 'wt_liang', name: '市两', symbol: '两', toBase: v => v * 0.05, fromBase: v => v / 0.05, hint: '1 两 = 50 克 = 10 钱' },
+              { id: 'wt_qian', name: '市钱', symbol: '钱', toBase: v => v * 0.005, fromBase: v => v / 0.005, hint: '1 钱 = 5 克' }
+            ]
+          },
+          {
+            name: '🥛 容积与体积 (Volume)',
+            units: [
+              { id: 'vol_l', name: '升', symbol: 'L', toBase: v => v, fromBase: v => v, hint: '1 L = 1 立方分米' },
+              { id: 'vol_ml', name: '毫升', symbol: 'mL', toBase: v => v / 1000, fromBase: v => v * 1000, hint: '1 mL = 1 立方厘米' },
+              { id: 'vol_m3', name: '立方米', symbol: 'm³', toBase: v => v * 1000, fromBase: v => v / 1000, hint: '1 m³ = 1000 L' },
+              { id: 'vol_gal', name: '美制加仑', symbol: 'gal', toBase: v => v * 3.785411784, fromBase: v => v / 3.785411784, hint: '美制液体加仑 ≈ 3.785 L' },
+              { id: 'vol_floz', name: '美制液量盎司', symbol: 'fl oz', toBase: v => v * 0.02957352956, fromBase: v => v / 0.02957352956, hint: '饮料常用 1 fl oz ≈ 29.57 mL' }
+            ]
+          }
+        ]
+      },
+
+      // 7. 世界外汇汇率
+      currency: {
+        title: '全球主要货币汇率工坊 (Currency Studio)',
+        desc: '支持 30+ 种主流国际货币实时双向联动，具备本地离线基础汇率兜底，保证在任何网络环境下均可稳定计算。',
+        icon: '💱',
+        presets: [
+          { label: '100 美元 (USD)', val: 100, key: 'USD' },
+          { label: '1000 人民币 (CNY)', val: 1000, key: 'CNY' },
+          { label: '100 欧元 (EUR)', val: 100, key: 'EUR' },
+          { label: '10,000 日元 (JPY)', val: 10000, key: 'JPY' },
+          { label: '100 英镑 (GBP)', val: 100, key: 'GBP' },
+          { label: '1000 港币 (HKD)', val: 1000, key: 'HKD' }
+        ],
+        units: Object.keys(STATIC_RATES).map(code => ({
+          id: code,
+          name: CURRENCY_NAMES[code] || code,
+          symbol: code,
+          hint: `参考基准: 1 CNY ≈ ${STATIC_RATES[code]} ${code}`
+        }))
+      }
+    };
 
     // ==========================================
-    // 3. 核心精度控制函数
+    // 精度格式化工具
     // ==========================================
     function formatNumber(num) {
+      if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '';
       if (num === 0) return '0';
-      if (isNaN(num) || !isFinite(num)) return '';
-      
-      // 避免科学计数法或超长浮点误差，在安全精度范围内处理
-      let str = num.toFixed(10);
-      // 去除尾随的 0 与小数点
-      str = str.replace(/\.?0+$/, '');
-      
-      // 如果格式化后是 0，但原值不为 0（高精度极小值），保留科学计数法
-      if (str === '0' && num !== 0) {
-        return num.toPrecision(6);
+
+      const abs = Math.abs(num);
+      // 极大或极小值，使用科学计数法
+      if (abs >= 1e15 || (abs < 1e-6 && abs > 0)) {
+        return num.toExponential(currentPrecision).replace(/\.?0+e/, 'e');
       }
-      return str;
+
+      let str = Number(num).toFixed(currentPrecision);
+      str = str.replace(/\.?0+$/, '');
+      return str === '-0' ? '0' : str;
     }
 
     // ==========================================
-    // 4. UI 渲染与切换
+    // 分类切换与整体渲染
     // ==========================================
-    function switchCategory(category) {
-      currentCategory = category;
-      baseSearchQuery = ''; // 重置检索
-      
-      // 切换 Tab Active 状态
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('onclick').includes(`'${category}'`)) {
-          btn.classList.add('active');
-        }
+    function switchCategory(cat) {
+      if (!CATEGORIES_CONFIG[cat]) return;
+      currentCategory = cat;
+      unitSearchKeyword = '';
+      const filterInput = document.getElementById('unitSearchInput');
+      if (filterInput) filterInput.value = '';
+
+      // 更新顶部胶囊
+      document.querySelectorAll('.header-pill-tab').forEach(pill => {
+        pill.classList.toggle('active', pill.getAttribute('data-cat') === cat);
       });
 
-      // 调整特化面板与基础信息的显示
-      const panelTitleText = document.getElementById('panel-title-text');
-      const panelDescText = document.getElementById('panel-desc-text');
-      const specPanel = document.getElementById('base-spec-panel');
-      const currencySpecPanel = document.getElementById('currency-spec-panel');
-      const headerAction = document.getElementById('panel-header-action');
-      
-      headerAction.innerHTML = '';
-      specPanel.style.display = 'none';
-      if (currencySpecPanel) currencySpecPanel.style.display = 'none';
+      // 更新左侧侧边栏
+      document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-cat') === cat);
+      });
 
-      switch(category) {
-        case 'length':
-          panelTitleText.innerHTML = '📏 长度换算';
-          panelDescText.innerText = '一处输入数值，各单位全网实时联动。支持公制、英制与中国市制。';
-          renderGrid(LENGTH_CONFIG);
-          break;
-        case 'area':
-          panelTitleText.innerHTML = '📐 面积换算';
-          panelDescText.innerText = '平方公里、平方米、亩、公顷等，支持海量公英制面积单位双向极速联动。';
-          renderGrid(AREA_CONFIG);
-          break;
-        case 'weight':
-          panelTitleText.innerHTML = '⚖️ 质量换算';
-          panelDescText.innerText = '质量（重量）换算，包含公制、英制与中国传统司马斤两钱换算。';
-          renderGrid(WEIGHT_CONFIG);
-          break;
-        case 'data':
-          panelTitleText.innerHTML = '💾 数据容量';
-          panelDescText.innerText = '支持比特、字节，区分 1000 进制（硬盘标准）与 1024 进制（操作系统标准）。';
-          renderGrid(DATA_CONFIG);
-          break;
-        case 'base':
-          panelTitleText.innerHTML = '💻 进制转换';
-          panelDescText.innerText = '支持 2~36 任意进制的计算互转。搭配下方 32 位二进制比特控制器，适合开发者调试。';
-          specPanel.style.display = 'block';
-          renderBaseGrid();
-          initBitControls();
-          break;
-        case 'currency':
-          panelTitleText.innerHTML = '💱 实时汇率';
-          const updateStr = rateUpdateTime ? ` (更新时间: ${rateUpdateTime})` : '';
-          panelDescText.innerText = `基于实时外汇汇率计算。本地缓存 12 小时。${updateStr}`;
-          
-          if (currencySpecPanel) currencySpecPanel.style.display = 'flex';
-          
-          // 渲染右上角状态标志与检索输入框
-          const statusClass = rateStatus === 'live' ? 'success' : '';
-          const statusText = rateStatus === 'live' ? '● 实时汇率' : '● 离线汇率模式';
-          headerAction.innerHTML = `
-            <div style="display: flex; gap: 12px; align-items: center;">
-              <span class="status-badge ${statusClass}">${statusText}</span>
-              <div class="search-wrapper">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" class="search-input" placeholder="检索货币名称..." oninput="handleCurrencySearch(this.value)">
+      // 更新 Banner
+      const config = CATEGORIES_CONFIG[cat];
+      document.getElementById('bannerIcon').innerText = config.icon;
+      document.getElementById('bannerTitle').innerText = config.title;
+      document.getElementById('bannerDesc').innerText = config.desc;
+
+      // 渲染预设标签
+      renderPresets(config.presets);
+
+      // 更新底部状态
+      document.getElementById('statusCategory').innerText = `当前模式: ${config.title.split(' ')[0]}`;
+
+      // 渲染特化面板
+      renderSpecialPanel(cat);
+
+      // 渲染主网格卡片
+      renderUnitGrid(cat);
+    }
+
+    function renderPresets(presets) {
+      const container = document.getElementById('bannerPresets');
+      if (!presets || presets.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'flex';
+      container.innerHTML = `
+        <span class="preset-label">⚡ 常用预设:</span>
+        ${presets.map(p => `
+          <button class="preset-tag" onclick="applyPreset('${p.key}', '${p.val}')">${p.label}</button>
+        `).join('')}
+      `;
+    }
+
+    // ==========================================
+    // 关键修复：预设装载与全局联动
+    // ==========================================
+    function applyPreset(key, val) {
+      // 1. 将预设值显式填入目标输入框
+      const targetInput = document.getElementById(`input-${key}`);
+      if (targetInput) {
+        targetInput.value = val;
+      }
+
+      // 2. 更新底部状态栏基准
+      const item = findUnitById(key);
+      if (item) {
+        document.getElementById('statusBaseUnit').innerText = `${item.symbol} (${item.name})`;
+      }
+
+      // 3. 驱动各分类逻辑（isPreset = true）
+      if (currentCategory === 'radix') {
+        radixCurrentDec = BigInt(val);
+        updateRadixViews();
+      } else if (currentCategory === 'css_unit') {
+        handleCssLiveInput(key, val, true);
+      } else if (currentCategory === 'bandwidth') {
+        handleBandwidthLiveInput(key, val, true);
+      } else if (currentCategory === 'physics') {
+        handlePhysicsLiveInput(key, val, true);
+      } else if (currentCategory === 'daily') {
+        handleDailyLiveInput(key, val, true);
+      } else if (currentCategory === 'currency') {
+        handleCurrencyLiveInput(key, val, true);
+      } else if (currentCategory === 'data') {
+        handleDataLiveInput(key, val, true);
+      }
+      showToast(`已装载预设: ${val}`);
+    }
+
+    function resetCurrentCategory() {
+      if (currentCategory === 'radix') {
+        radixCurrentDec = 255n;
+        updateRadixViews();
+      } else if (currentCategory === 'css_unit') {
+        cssBaseFontSize = 16;
+        cssViewportWidth = 1920;
+        cssViewportHeight = 1080;
+        switchCategory('css_unit');
+        handleCssLiveInput('px', 16, true);
+      } else if (currentCategory === 'bandwidth') {
+        bandwidthMbps = 1000;
+        transferFileSizeMB = 51200;
+        switchCategory('bandwidth');
+        handleBandwidthLiveInput('mbps', 1000, true);
+      } else if (currentCategory === 'data') {
+        handleDataLiveInput('GB', 1, true);
+      } else if (currentCategory === 'physics') {
+        handlePhysicsLiveInput('celsius', 100, true);
+      } else if (currentCategory === 'daily') {
+        handleDailyLiveInput('len_m', 1, true);
+      } else if (currentCategory === 'currency') {
+        handleCurrencyLiveInput('CNY', 1000, true);
+      }
+      showToast('已重置当前分类为默认状态');
+    }
+
+    // ==========================================
+    // 特化面板动态渲染中心
+    // ==========================================
+    function renderSpecialPanel(cat) {
+      const container = document.getElementById('specialPanelContainer');
+      container.innerHTML = '';
+
+      if (cat === 'radix') {
+        container.innerHTML = `
+          <div class="special-panel">
+            <div class="special-header">
+              <span>🎛️ 32 位交互式 Bit 比特控制器 (直接点击 Bit 可翻转 0 / 1)</span>
+              <div class="bit-toolbar">
+                <button class="bit-btn" onclick="radixBitAll(1)">全部置 1</button>
+                <button class="bit-btn" onclick="radixBitAll(0)">全部清 0</button>
+                <button class="bit-btn" onclick="radixBitInvert()">按位取反 (~)</button>
+                <button class="bit-btn" onclick="radixBitShift('left')">左移 1 位 (<<)</button>
+                <button class="bit-btn" onclick="radixBitShift('right')">右移 1 位 (>>)</button>
+                <button class="bit-btn" onclick="toggleEndian()">端序: <strong id="endianLabel" style="color:var(--teal)">小端序 (Little)</strong></button>
               </div>
             </div>
-          `;
-          
-          initQuickCurrencySelects();
-          renderCurrencyGrid();
-          break;
-      }
-    }
 
-    // 通用常规网格渲染 (长度、面积、质量、容量)
-    function renderGrid(config, defaultVal = 1) {
-      const grid = document.getElementById('unit-grid');
-      grid.innerHTML = '';
+            <div class="bit-grid-wrapper">
+              <div class="bit-matrix" id="bitMatrix32"></div>
+            </div>
 
-      // 以第一个单位作为基准，计算默认初始显示值
-      const keys = Object.keys(config);
-      const baseKey = keys[0];
-      const baseValue = config[baseKey].toBase(defaultVal);
-
-      keys.forEach(key => {
-        const item = config[key];
-        const val = item.fromBase(baseValue);
-        const card = document.createElement('div');
-        card.className = 'unit-card';
-        card.id = `card-${key}`;
-        card.innerHTML = `
-          <div class="unit-info">
-            <span class="unit-name">${item.name}</span>
-            <span class="unit-symbol">${item.symbol}</span>
-          </div>
-          <div class="input-wrapper">
-            <input type="text" 
-                   class="unit-input" 
-                   data-key="${key}" 
-                   value="${formatNumber(val)}" 
-                   oninput="handleLiveUpdate('${key}', this.value)"
-                   onfocus="highlightCard('${key}', true)"
-                   onblur="highlightCard('${key}', false)">
-            <button class="copy-btn" title="复制数值" onclick="copyText(this)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
+            <!-- 内存 TypedArray 视图 -->
+            <div class="special-header" style="margin-top: 6px;">
+              <span>🧠 程序员内存 TypedArray 视图 & 有符号溢出解析</span>
+              <span id="ieee754Float" style="font-family: var(--font-mono); font-size: 11px; color: var(--teal);"></span>
+            </div>
+            <div class="typed-array-grid" id="typedArrayGrid"></div>
           </div>
         `;
-        grid.appendChild(card);
-      });
-    }
+        initBitControls();
+        updateRadixViews();
+      } else if (cat === 'css_unit') {
+        container.innerHTML = `
+          <div class="special-panel">
+            <div class="special-header">
+              <span>⚙️ 前端响应式排版基准控制台 (Base & Viewport Settings)</span>
+              <span style="font-size: 11.5px; color: var(--muted);">修改下方基准，全量单位与 clamp() 代码自动联动</span>
+            </div>
 
-    function highlightCard(key, isFocus) {
-      const card = document.getElementById(`card-${key}`);
-      if (card) {
-        if (isFocus) {
-          card.classList.add('active-input');
-        } else {
-          card.classList.remove('active-input');
-        }
+            <div class="css-calc-bar">
+              <div class="config-input-group">
+                <label>根字体大小 (Base Font Size)</label>
+                <div class="config-input-control">
+                  <input type="number" id="baseFontInput" value="${cssBaseFontSize}" oninput="updateCssBase(this.value, 'font')">
+                  <span class="config-unit">px</span>
+                </div>
+              </div>
+
+              <div class="config-input-group">
+                <label>参考视口宽度 (Viewport Width)</label>
+                <div class="config-input-control">
+                  <input type="number" id="vwInput" value="${cssViewportWidth}" oninput="updateCssBase(this.value, 'vw')">
+                  <span class="config-unit">px</span>
+                </div>
+              </div>
+
+              <div class="config-input-group">
+                <label>参考视口高度 (Viewport Height)</label>
+                <div class="config-input-control">
+                  <input type="number" id="vhInput" value="${cssViewportHeight}" oninput="updateCssBase(this.value, 'vh')">
+                  <span class="config-unit">px</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CSS clamp() 响应式生成器 -->
+            <div class="clamp-generator-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 12.5px;">📐 现代 CSS 流体字号生成器 (CSS clamp())</strong>
+                <span style="font-size: 11px; color: var(--muted);">范围: 375px(14px) ~ 1920px(24px)</span>
+              </div>
+              <div class="clamp-code-row">
+                <code id="clampResultCode">font-size: clamp(0.875rem, 0.72rem + 0.65vw, 1.5rem);</code>
+                <button class="btn-card-copy" onclick="copySnippet(document.getElementById('clampResultCode').innerText)" title="复制 CSS clamp 代码">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        recalcCssClamp();
+      } else if (cat === 'bandwidth') {
+        container.innerHTML = `
+          <div class="special-panel">
+            <div class="special-header">
+              <span>🚀 网络带宽与大文件传输耗时推导器 (Bandwidth & Transfer ETA)</span>
+              <span style="font-size: 11.5px; color: var(--muted);">根据当前网络速率精准测算大文件完成时间</span>
+            </div>
+
+            <div class="bandwidth-eta-grid">
+              <div class="eta-box">
+                <div class="eta-stat-row">
+                  <span style="font-size: 12.5px; font-weight: 600; color: var(--muted);">理论极限下载速率 (100%)</span>
+                  <span id="theorySpeed" style="font-family: var(--font-mono); font-weight: 700; color: var(--teal); font-size: 16px;">125 MB/s</span>
+                </div>
+                <div class="eta-stat-row">
+                  <span style="font-size: 12.5px; font-weight: 600; color: var(--muted);">实际有效速率 (约 88% TCP 开销)</span>
+                  <span id="realSpeed" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent); font-size: 16px;">110 MB/s</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4;">
+                  提示：运营商带宽以 bps (比特) 为单位，而下载软件显示的是 B/s (字节)。1 Byte = 8 bits，因此千兆 (1000 Mbps) 宽带除以 8 理论峰值为 125 MB/s。
+                </div>
+              </div>
+
+              <div class="eta-box">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; font-weight: 600;">设定待传输文件大小 (MB):</span>
+                  <input type="number" id="etaFileSizeInput" value="${transferFileSizeMB}" style="background:var(--paper-strong); border:1px solid var(--line); padding:4px 8px; border-radius:4px; font-family:var(--font-mono); font-size:12px; width:120px; color:var(--text);" oninput="updateEtaFileSize(this.value)">
+                </div>
+
+                <div class="eta-stat-row" style="margin-top: 4px;">
+                  <span style="font-size: 12px; color: var(--muted);">预计所需耗时 (实测速率下):</span>
+                </div>
+                <div class="eta-time-large" id="etaTimeDisplay">7分 45秒</div>
+              </div>
+            </div>
+          </div>
+        `;
+        recalcBandwidthEta();
+      } else if (cat === 'currency') {
+        container.innerHTML = `
+          <div class="special-panel">
+            <div class="special-header">
+              <span>💱 常用两币快速双向兑换器</span>
+              <span style="font-size: 11.5px; color: var(--teal);">● 实时全量联动下方各货币卡片</span>
+            </div>
+
+            <div class="quick-swap-container">
+              <div class="swap-currency-group">
+                <select id="quickCurrA" class="currency-select-btn" onchange="runQuickCurrencySwap('a')">
+                  ${Object.keys(STATIC_RATES).map(c => `<option value="${c}" ${c === 'CNY' ? 'selected' : ''}>${c} - ${CURRENCY_NAMES[c].split(' ')[0]}</option>`).join('')}
+                </select>
+                <input type="number" id="quickCurrValA" value="1000" placeholder="数值" oninput="runQuickCurrencySwap('a')">
+              </div>
+
+              <button class="btn-swap-round" onclick="flipQuickCurrency()" title="互换两国货币">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/></svg>
+              </button>
+
+              <div class="swap-currency-group">
+                <select id="quickCurrB" class="currency-select-btn" onchange="runQuickCurrencySwap('b')">
+                  ${Object.keys(STATIC_RATES).map(c => `<option value="${c}" ${c === 'USD' ? 'selected' : ''}>${c} - ${CURRENCY_NAMES[c].split(' ')[0]}</option>`).join('')}
+                </select>
+                <input type="number" id="quickCurrValB" value="138" placeholder="数值" oninput="runQuickCurrencySwap('b')">
+              </div>
+            </div>
+          </div>
+        `;
+        runQuickCurrencySwap('a', false);
       }
-    }
-
-    // 处理实时输入联动逻辑
-    function handleLiveUpdate(inputKey, valueStr) {
-      const config = currentCategory === 'length' ? LENGTH_CONFIG :
-                     currentCategory === 'area' ? AREA_CONFIG :
-                     currentCategory === 'weight' ? WEIGHT_CONFIG : DATA_CONFIG;
-                     
-      const cleanValStr = valueStr.trim();
-      if (cleanValStr === '') {
-        // 全空时，清空其他所有输入框
-        document.querySelectorAll('.unit-input').forEach(inp => {
-          if (inp.getAttribute('data-key') !== inputKey) {
-            inp.value = '';
-          }
-        });
-        return;
-      }
-
-      const val = parseFloat(cleanValStr);
-      if (isNaN(val)) return;
-
-      const toBaseFn = config[inputKey].toBase;
-      const baseValue = toBaseFn(val);
-
-      // 同步更新其他输入框
-      Object.keys(config).forEach(key => {
-        if (key !== inputKey) {
-          const inputEl = document.querySelector(`.unit-input[data-key="${key}"]`);
-          if (inputEl) {
-            const calculated = config[key].fromBase(baseValue);
-            inputEl.value = formatNumber(calculated);
-          }
-        }
-      });
     }
 
     // ==========================================
-    // 5. 进制转换模块逻辑
+    // 渲染单位卡片网格
     // ==========================================
-    let currentDecVal = 0n; // 用 BigInt 保持十进制的绝对精度
-
-    const BASE_ITEMS = [
-      { name: '二进制', symbol: 'BIN (Base 2)', base: 2 },
-      { name: '八进制', symbol: 'OCT (Base 8)', base: 8 },
-      { name: '十进制', symbol: 'DEC (Base 10)', base: 10 },
-      { name: '十六进制', symbol: 'HEX (Base 16)', base: 16 },
-      { name: '三十二进制', symbol: 'Base 32', base: 32 },
-      { name: '三十六进制', symbol: 'Base 36', base: 36 }
-    ];
-
-    function renderBaseGrid() {
-      const grid = document.getElementById('unit-grid');
+    function renderUnitGrid(cat) {
+      const grid = document.getElementById('unitCardsGrid');
       grid.innerHTML = '';
+      const config = CATEGORIES_CONFIG[cat];
+      let totalUnits = 0;
 
-      BASE_ITEMS.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'unit-card';
-        card.id = `card-base-${item.base}`;
-        card.innerHTML = `
-          <div class="unit-info">
-            <span class="unit-name">${item.name}</span>
-            <span class="unit-symbol">${item.symbol}</span>
-          </div>
-          <div class="input-wrapper">
-            <input type="text" 
-                   class="unit-input base-input" 
-                   data-base="${item.base}" 
-                   value="${currentDecVal.toString(item.base)}"
-                   oninput="handleBaseUpdate(${item.base}, this.value)"
-                   onfocus="highlightCard('base-${item.base}', true)"
-                   onblur="highlightCard('base-${item.base}', false)">
-            <button class="copy-btn" title="复制数值" onclick="copyText(this)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
+      if (config.subGroups) {
+        config.subGroups.forEach(group => {
+          const groupHeader = document.createElement('div');
+          groupHeader.style.gridColumn = '1 / -1';
+          groupHeader.innerHTML = `<h3 style="font-size:13.5px; font-weight:700; color:var(--teal); margin: 10px 0 4px 0;">${group.name}</h3>`;
+          grid.appendChild(groupHeader);
 
-    function handleBaseUpdate(base, valStr) {
-      const cleanStr = valStr.trim().toLowerCase();
-      if (!cleanStr) {
-        // 清空所有
-        document.querySelectorAll('.base-input').forEach(inp => {
-          if (parseInt(inp.getAttribute('data-base')) !== base) {
-            inp.value = '';
-          }
+          group.units.forEach(u => {
+            totalUnits++;
+            grid.appendChild(createUnitCardElement(u, cat));
+          });
         });
-        currentDecVal = 0n;
-        updateBitViews();
-        return;
+      } else {
+        config.units.forEach(u => {
+          totalUnits++;
+          grid.appendChild(createUnitCardElement(u, cat));
+        });
       }
 
-      // 检测进制输入合法性
-      const validChars = "0123456789abcdefghijklmnopqrstuvwxyz".slice(0, base);
-      for (let char of cleanStr) {
-        if (!validChars.includes(char)) {
-          // 非法字符高亮红色闪烁提示
-          const card = document.getElementById(`card-base-${base}`);
-          card.style.borderColor = 'var(--accent)';
-          setTimeout(() => { card.style.borderColor = ''; }, 400);
-          return;
-        }
+      document.getElementById('unitCountBadge').innerText = `${totalUnits} 个单位`;
+
+      // 填充默认值
+      if (cat === 'radix') {
+        updateRadixViews();
+      } else if (cat === 'css_unit') {
+        handleCssLiveInput('px', 16, true);
+      } else if (cat === 'bandwidth') {
+        handleBandwidthLiveInput('mbps', 1000, true);
+      } else if (cat === 'data') {
+        handleDataLiveInput('GB', 1, true);
+      } else if (cat === 'physics') {
+        handlePhysicsLiveInput('celsius', 100, true);
+      } else if (cat === 'daily') {
+        handleDailyLiveInput('len_m', 1, true);
+      } else if (cat === 'currency') {
+        handleCurrencyLiveInput('CNY', 1000, true);
       }
-
-      // 解析为 BigInt 十进制
-      let decimal = 0n;
-      const baseBig = BigInt(base);
-      for (let i = 0; i < cleanStr.length; i++) {
-        const char = cleanStr[i];
-        const digit = BigInt(validChars.indexOf(char));
-        decimal = decimal * baseBig + digit;
-      }
-
-      currentDecVal = decimal;
-
-      // 更新其他框
-      document.querySelectorAll('.base-input').forEach(inp => {
-        const currentInpBase = parseInt(inp.getAttribute('data-base'));
-        if (currentInpBase !== base) {
-          inp.value = currentDecVal.toString(currentInpBase);
-        }
-      });
-
-      // 更新 Bit 控制器
-      updateBitViews();
     }
 
-    // Bit 可视化操作
+    function createUnitCardElement(item, cat) {
+      const card = document.createElement('div');
+      card.className = 'unit-card';
+      card.id = `card-${item.id}`;
+      card.setAttribute('data-unit-id', item.id);
+      card.setAttribute('data-unit-name', (item.name + item.symbol).toLowerCase());
+
+      card.innerHTML = `
+        <div class="unit-card-header">
+          <span class="unit-card-name">
+            <span>${item.name}</span>
+          </span>
+          <span class="unit-card-symbol">${item.symbol}</span>
+        </div>
+        <div class="unit-input-wrapper">
+          <input type="text" 
+                 class="unit-input-field" 
+                 id="input-${item.id}" 
+                 data-unit="${item.id}"
+                 placeholder="输入数值..."
+                 oninput="dispatchLiveInput('${item.id}', this.value)"
+                 onfocus="onInputFocus('${item.id}')"
+                 onblur="onInputBlur('${item.id}')">
+          <button class="btn-card-copy" title="复制数值" onclick="copyCardValue('${item.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+        </div>
+        <div class="unit-formula-hint" title="${item.hint || ''}">${item.hint || ''}</div>
+      `;
+      return card;
+    }
+
+    function onInputFocus(unitId) {
+      const card = document.getElementById(`card-${unitId}`);
+      if (card) card.classList.add('active-input');
+      const item = findUnitById(unitId);
+      if (item) {
+        document.getElementById('statusBaseUnit').innerText = `${item.symbol} (${item.name})`;
+      }
+    }
+
+    function onInputBlur(unitId) {
+      const card = document.getElementById(`card-${unitId}`);
+      if (card) card.classList.remove('active-input');
+    }
+
+    function findUnitById(unitId) {
+      const config = CATEGORIES_CONFIG[currentCategory];
+      if (config.units) return config.units.find(u => u.id === unitId);
+      if (config.subGroups) {
+        for (const g of config.subGroups) {
+          const found = g.units.find(u => u.id === unitId);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    // ==========================================
+    // 调度分发用户手动输入
+    // ==========================================
+    function dispatchLiveInput(unitId, valStr) {
+      if (currentCategory === 'radix') {
+        handleRadixLiveInput(unitId, valStr);
+      } else if (currentCategory === 'css_unit') {
+        handleCssLiveInput(unitId, valStr, false);
+      } else if (currentCategory === 'bandwidth') {
+        handleBandwidthLiveInput(unitId, valStr, false);
+      } else if (currentCategory === 'data') {
+        handleDataLiveInput(unitId, valStr, false);
+      } else if (currentCategory === 'physics') {
+        handlePhysicsLiveInput(unitId, valStr, false);
+      } else if (currentCategory === 'daily') {
+        handleDailyLiveInput(unitId, valStr, false);
+      } else if (currentCategory === 'currency') {
+        handleCurrencyLiveInput(unitId, valStr, false);
+      }
+    }
+
+    // ==========================================
+    // 1. 程序员进制与内存 (Radix) 核心计算
+    // ==========================================
     function initBitControls() {
-      const highRow = document.getElementById('bits-high');
-      const lowRow = document.getElementById('bits-low');
-      
-      highRow.innerHTML = '';
-      lowRow.innerHTML = '';
+      const matrix = document.getElementById('bitMatrix32');
+      if (!matrix) return;
+      matrix.innerHTML = '';
 
-      for(let i = 31; i >= 0; i--) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'bit-box-wrapper';
-        
-        const isSign = i === 31;
-        const boxClass = `bit-box bit-0 ${isSign ? 'sign-bit' : ''}`;
-        
-        wrapper.innerHTML = `
-          <div class="${boxClass}" data-bit="${i}" onclick="toggleBit(${i})">0</div>
-          <span class="bit-idx">${i}</span>
+      for (let i = 31; i >= 0; i--) {
+        const item = document.createElement('div');
+        item.className = 'bit-item';
+        item.innerHTML = `
+          <span class="bit-num-label">${i}</span>
+          <div class="bit-box ${i === 31 ? 'sign-bit' : ''}" id="bit-${i}" onclick="toggleBit(${i})">0</div>
         `;
-
-        if (i >= 16) {
-          highRow.appendChild(wrapper);
-        } else {
-          lowRow.appendChild(wrapper);
-        }
-      }
-      updateBitViews();
-    }
-
-    function toggleBit(bitIndex) {
-      // 通过 Bit 位异或翻转对应数值
-      const mask = 1n << BigInt(bitIndex);
-      currentDecVal = currentDecVal ^ mask;
-
-      // 强限制在 32 位无符号整数区间 (为了比特逻辑的正确演示)
-      currentDecVal = currentDecVal & 0xFFFFFFFFn;
-
-      // 更新所有进制输入框
-      document.querySelectorAll('.base-input').forEach(inp => {
-        const base = parseInt(inp.getAttribute('data-base'));
-        inp.value = currentDecVal.toString(base);
-      });
-
-      updateBitViews();
-    }
-
-    function updateBitViews() {
-      const decStr = currentDecVal.toString(10);
-      const hexStr = '0x' + currentDecVal.toString(16).toUpperCase();
-      document.getElementById('bit-values-desc').innerText = `DEC: ${decStr} | HEX: ${hexStr}`;
-
-      // 更新 32 个 Bit 框的渲染
-      for (let i = 0; i < 32; i++) {
-        const bitBox = document.querySelector(`.bit-box[data-bit="${i}"]`);
-        if (bitBox) {
-          const bitVal = (currentDecVal & (1n << BigInt(i))) ? 1 : 0;
-          bitBox.innerText = bitVal;
-          if (bitVal === 1) {
-            bitBox.className = `bit-box bit-1 ${i === 31 ? 'sign-bit' : ''}`;
-          } else {
-            bitBox.className = `bit-box bit-0 ${i === 31 ? 'sign-bit' : ''}`;
-          }
-        }
+        matrix.appendChild(item);
       }
     }
 
-    // ==========================================
-    // 6. 实时汇率模块逻辑
-    // ==========================================
-    async function loadLiveRates() {
-      const EXCHANGE_RATE_API = "https://open.er-api.com/v6/latest/CNY";
-      const CACHE_KEY = "cf_tools_exchange_rates";
-      const CACHE_EXPIRE_MS = 12 * 60 * 60 * 1000; // 12小时
+    function toggleBit(index) {
+      const mask = 1n << BigInt(index);
+      radixCurrentDec = radixCurrentDec ^ mask;
+      updateRadixViews();
+    }
 
-      // A. 尝试获取本地缓存
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        try {
-          const { timestamp, rates } = JSON.parse(cached);
-          if (Date.now() - timestamp < CACHE_EXPIRE_MS) {
-            loadedRates = rates;
-            rateStatus = 'live';
-            const cacheDate = new Date(timestamp);
-            rateUpdateTime = cacheDate.toLocaleDateString() + ' ' + cacheDate.toLocaleTimeString();
-            return;
-          }
-        } catch(e) {
-          console.warn("读取汇率缓存解析失败，尝试重新请求");
-        }
+    function radixBitAll(val) {
+      radixCurrentDec = val === 1 ? 0xFFFFFFFFn : 0n;
+      updateRadixViews();
+    }
+
+    function radixBitInvert() {
+      radixCurrentDec = (~radixCurrentDec) & 0xFFFFFFFFn;
+      updateRadixViews();
+    }
+
+    function radixBitShift(dir) {
+      if (dir === 'left') {
+        radixCurrentDec = (radixCurrentDec << 1n) & 0xFFFFFFFFn;
+      } else {
+        radixCurrentDec = (radixCurrentDec >> 1n) & 0xFFFFFFFFn;
       }
+      updateRadixViews();
+    }
 
-      // B. 网络拉取最新数据
+    function toggleEndian() {
+      endianMode = endianMode === 'little' ? 'big' : 'little';
+      const el = document.getElementById('endianLabel');
+      if (el) el.innerText = endianMode === 'little' ? '小端序 (Little)' : '大端序 (Big)';
+      updateRadixViews();
+    }
+
+    function handleRadixLiveInput(unitId, valStr) {
+      const clean = valStr.trim();
+      if (clean === '') return;
+
       try {
-        const res = await fetch(EXCHANGE_RATE_API);
-        if (!res.ok) throw new Error("API 加载失败");
-        const data = await res.json();
-        
-        if (data && data.rates) {
-          loadedRates = data.rates;
-          rateStatus = 'live';
-          const now = new Date();
-          rateUpdateTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-          
-          // 写入本地缓存
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            timestamp: now.getTime(),
-            rates: loadedRates
-          }));
+        if (unitId === 'bin') {
+          radixCurrentDec = BigInt('0b' + clean.replace(/^0b/i, ''));
+        } else if (unitId === 'oct') {
+          radixCurrentDec = BigInt('0o' + clean.replace(/^0o/i, ''));
+        } else if (unitId === 'dec') {
+          radixCurrentDec = BigInt(clean);
+        } else if (unitId === 'hex') {
+          radixCurrentDec = BigInt('0x' + clean.replace(/^0x/i, ''));
+        } else if (unitId === 'base32') {
+          radixCurrentDec = BigInt(parseInt(clean, 32));
+        } else if (unitId === 'base36') {
+          radixCurrentDec = BigInt(parseInt(clean, 36));
         }
-      } catch (err) {
-        console.warn("获取实时汇率出错，启用备用静态汇率快照:", err);
-        loadedRates = { ...STATIC_RATES_FALLBACK };
-        rateStatus = 'fallback';
-        rateUpdateTime = "静态预设快照 (未联网)";
+        updateRadixViews(unitId);
+      } catch (e) {
+        // 输入不完整或非法字符时静默
       }
     }
 
-    function renderCurrencyGrid(defaultVal = 100) {
-      const grid = document.getElementById('unit-grid');
-      grid.innerHTML = '';
+    function updateRadixViews(excludeUnitId = null) {
+      const dec = radixCurrentDec;
 
-      // 以 人民币 (CNY) 为输入基准算默认初始值
-      const baseValueCNY = defaultVal; 
+      const map = {
+        bin: dec.toString(2),
+        oct: dec.toString(8),
+        dec: dec.toString(10),
+        hex: '0x' + dec.toString(16).toUpperCase(),
+        base32: dec <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(dec).toString(32).toUpperCase() : '超出安全范围',
+        base36: dec <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(dec).toString(36).toUpperCase() : '超出安全范围'
+      };
 
-      Object.keys(loadedRates).forEach(currency => {
-        // 如果不在常用展示词典里，跳过，只显示支持的 30+ 种主流货币
-        if (!CURRENCY_NAMES[currency]) return;
-
-        // 检索词过滤
-        const name = CURRENCY_NAMES[currency];
-        if (baseSearchQuery) {
-          const lowerQuery = baseSearchQuery.toLowerCase();
-          const matches = name.toLowerCase().includes(lowerQuery) || currency.toLowerCase().includes(lowerQuery);
-          if (!matches) return;
+      Object.keys(map).forEach(key => {
+        if (key !== excludeUnitId) {
+          const inp = document.getElementById(`input-${key}`);
+          if (inp) inp.value = map[key];
         }
+      });
 
-        // 换算结果：CNY 为基准时，1 CNY = rates[currency] 个目标币
-        const val = baseValueCNY * loadedRates[currency];
+      const safe32 = Number(dec & 0xFFFFFFFFn);
+      for (let i = 0; i < 32; i++) {
+        const bitVal = (safe32 >> i) & 1;
+        const bitBox = document.getElementById(`bit-${i}`);
+        if (bitBox) {
+          bitBox.innerText = bitVal;
+          bitBox.classList.toggle('active', bitVal === 1);
+        }
+      }
 
-        const card = document.createElement('div');
-        card.className = 'unit-card';
-        card.id = `card-currency-${currency}`;
-        card.innerHTML = `
-          <div class="unit-info">
-            <span class="unit-name">${CURRENCY_NAMES[currency]}</span>
-            <span class="unit-symbol">${currency}</span>
+      updateTypedArrayCards(safe32);
+    }
+
+    function updateTypedArrayCards(val32) {
+      const container = document.getElementById('typedArrayGrid');
+      if (!container) return;
+
+      const buf = new ArrayBuffer(8);
+      const view = new DataView(buf);
+      const isLittle = (endianMode === 'little');
+      view.setUint32(0, val32, isLittle);
+
+      const floatVal = view.getFloat32(0, isLittle);
+      const int8 = view.getInt8(0);
+      const uint8 = view.getUint8(0);
+      const int16 = view.getInt16(0, isLittle);
+      const uint16 = view.getUint16(0, isLittle);
+      const int32 = view.getInt32(0, isLittle);
+      const uint32 = val32 >>> 0;
+
+      const signBit = (val32 >>> 31) & 1;
+      const expBits = (val32 >>> 23) & 0xFF;
+      const mantissaBits = val32 & 0x7FFFFF;
+
+      const ieeeEl = document.getElementById('ieee754Float');
+      if (ieeeEl) {
+        ieeeEl.innerHTML = `Float32: <strong>${floatVal.toPrecision(6)}</strong> (S: ${signBit} | E: ${expBits} | M: ${mantissaBits})`;
+      }
+
+      const types = [
+        { name: 'Uint8 (无符号字节)', val: uint8, range: '0 ~ 255' },
+        { name: 'Int8 (有符号字节)', val: int8, range: '-128 ~ 127' },
+        { name: 'Uint16 (无符号短整型)', val: uint16, range: '0 ~ 65535' },
+        { name: 'Int16 (有符号短整型)', val: int16, range: '-32768 ~ 32767' },
+        { name: 'Uint32 (无符号整型)', val: uint32, range: '0 ~ 4294967295' },
+        { name: 'Int32 (有符号整型)', val: int32, range: '-2147483648 ~ 2147483647' },
+        { name: 'Float32 (单精度浮点)', val: floatVal.toFixed(4), range: 'IEEE-754 32-bit' },
+        { name: 'Hex 字节排列 (' + endianMode + ')', val: '0x' + Array.from(new Uint8Array(buf.slice(0, 4))).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' '), range: '内存存储流' }
+      ];
+
+      container.innerHTML = types.map(t => `
+        <div class="typed-card">
+          <div class="typed-label">
+            <span>${t.name}</span>
+            <span style="font-size:10px;">${t.range}</span>
           </div>
-          <div class="input-wrapper">
-            <input type="text" 
-                   class="unit-input currency-input" 
-                   data-currency="${currency}" 
-                   value="${formatNumber(val)}" 
-                   oninput="handleCurrencyUpdate('${currency}', this.value)"
-                   onfocus="highlightCard('currency-${currency}', true)"
-                   onblur="highlightCard('currency-${currency}', false)">
-            <button class="copy-btn" title="复制数值" onclick="copyText(this)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-          </div>
-        `;
-        grid.appendChild(card);
+          <div class="typed-val">${t.val}</div>
+        </div>
+      `).join('');
+    }
+
+    // ==========================================
+    // 2. 前端 CSS & 视口换算
+    // ==========================================
+    function updateCssBase(val, type) {
+      const num = parseFloat(val) || 1;
+      if (type === 'font') cssBaseFontSize = num;
+      if (type === 'vw') cssViewportWidth = num;
+      if (type === 'vh') cssViewportHeight = num;
+
+      const currentPx = parseFloat(document.getElementById('input-px')?.value) || 16;
+      handleCssLiveInput('px', currentPx, true);
+      recalcCssClamp();
+    }
+
+    function handleCssLiveInput(unitId, val, updateSelf = false) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+
+      let px = 0;
+      switch (unitId) {
+        case 'px': px = num; break;
+        case 'rem': px = num * cssBaseFontSize; break;
+        case 'em': px = num * cssBaseFontSize; break;
+        case 'pt': px = num * (4 / 3); break;
+        case 'vw': px = (num / 100) * cssViewportWidth; break;
+        case 'vh': px = (num / 100) * cssViewportHeight; break;
+        case 'cqw': px = (num / 100) * cssViewportWidth; break;
+        case 'inch': px = num * 96; break;
+        case 'cm': px = num * (96 / 2.54); break;
+      }
+
+      const results = {
+        px: px,
+        rem: px / cssBaseFontSize,
+        em: px / cssBaseFontSize,
+        pt: px * 0.75,
+        vw: (px / cssViewportWidth) * 100,
+        vh: (px / cssViewportHeight) * 100,
+        cqw: (px / cssViewportWidth) * 100,
+        inch: px / 96,
+        cm: px / (96 / 2.54)
+      };
+
+      Object.keys(results).forEach(key => {
+        if (key !== unitId || updateSelf) {
+          const inp = document.getElementById(`input-${key}`);
+          if (inp) inp.value = formatNumber(results[key]);
+        }
+      });
+
+      recalcCssClamp(px);
+    }
+
+    function recalcCssClamp(currentPx = 16) {
+      const clampCode = document.getElementById('clampResultCode');
+      if (!clampCode) return;
+
+      const minW = 375;
+      const maxW = cssViewportWidth || 1920;
+      const minFont = 14;
+      const maxFont = Math.max(minFont + 4, currentPx);
+
+      const slope = (maxFont - minFont) / (maxW - minW);
+      const yAxisIntersection = -minW * slope + minFont;
+
+      const minRem = (minFont / cssBaseFontSize).toFixed(3) + 'rem';
+      const maxRem = (maxFont / cssBaseFontSize).toFixed(3) + 'rem';
+      const yRem = (yAxisIntersection / cssBaseFontSize).toFixed(3) + 'rem';
+      const vwPart = (slope * 100).toFixed(2) + 'vw';
+
+      clampCode.innerText = `font-size: clamp(${minRem}, ${yRem} + ${vwPart}, ${maxRem});`;
+    }
+
+    // ==========================================
+    // 3. 网络带宽与传输耗时计算
+    // ==========================================
+    function handleBandwidthLiveInput(unitId, val, updateSelf = false) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+
+      let bps = 0;
+      switch (unitId) {
+        case 'bps': bps = num; break;
+        case 'kbps': bps = num * 1e3; break;
+        case 'mbps': bps = num * 1e6; break;
+        case 'gbps': bps = num * 1e9; break;
+        case 'tbps': bps = num * 1e12; break;
+        case 'Bps': bps = num * 8; break;
+        case 'KBps': bps = num * 8 * 1e3; break;
+        case 'MBps': bps = num * 8 * 1e6; break;
+        case 'GBps': bps = num * 8 * 1e9; break;
+      }
+
+      bandwidthMbps = bps / 1e6;
+
+      const results = {
+        bps: bps,
+        kbps: bps / 1e3,
+        mbps: bps / 1e6,
+        gbps: bps / 1e9,
+        tbps: bps / 1e12,
+        Bps: bps / 8,
+        KBps: bps / 8000,
+        MBps: bps / 8e6,
+        GBps: bps / 8e9
+      };
+
+      Object.keys(results).forEach(key => {
+        if (key !== unitId || updateSelf) {
+          const inp = document.getElementById(`input-${key}`);
+          if (inp) inp.value = formatNumber(results[key]);
+        }
+      });
+
+      recalcBandwidthEta();
+    }
+
+    function updateEtaFileSize(val) {
+      transferFileSizeMB = parseFloat(val) || 1;
+      recalcBandwidthEta();
+    }
+
+    function recalcBandwidthEta() {
+      const theoryEl = document.getElementById('theorySpeed');
+      const realEl = document.getElementById('realSpeed');
+      const etaDisplay = document.getElementById('etaTimeDisplay');
+      if (!theoryEl || !realEl || !etaDisplay) return;
+
+      const theoryMBs = bandwidthMbps / 8;
+      const realMBs = theoryMBs * 0.88;
+
+      theoryEl.innerText = `${formatNumber(theoryMBs)} MB/s`;
+      realEl.innerText = `${formatNumber(realMBs)} MB/s`;
+
+      if (realMBs <= 0) {
+        etaDisplay.innerText = '无法测算';
+        return;
+      }
+
+      const totalSeconds = transferFileSizeMB / realMBs;
+      etaDisplay.innerText = formatDuration(totalSeconds);
+    }
+
+    function formatDuration(seconds) {
+      if (seconds < 1) return '小于 1 秒 (极速完成)';
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = Math.floor(seconds % 60);
+
+      const parts = [];
+      if (d > 0) parts.push(`${d}天`);
+      if (h > 0) parts.push(`${h}小时`);
+      if (m > 0) parts.push(`${m}分`);
+      if (s > 0 || parts.length === 0) parts.push(`${s}秒`);
+      return parts.join(' ');
+    }
+
+    // ==========================================
+    // 4. 数据存储容量计算 (1000 vs 1024)
+    // ==========================================
+    function handleDataLiveInput(unitId, val, updateSelf = false) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+
+      const config = CATEGORIES_CONFIG.data.units;
+      const currentItem = config.find(u => u.id === unitId);
+      if (!currentItem) return;
+
+      const baseBits = currentItem.toBase(num);
+
+      config.forEach(u => {
+        if (u.id !== unitId || updateSelf) {
+          const calculated = u.fromBase(baseBits);
+          const inp = document.getElementById(`input-${u.id}`);
+          if (inp) inp.value = formatNumber(calculated);
+        }
       });
     }
 
-    function handleCurrencyUpdate(activeCurrency, valStr) {
-      const cleanStr = valStr.trim();
-      if (!cleanStr) {
-        document.querySelectorAll('.currency-input').forEach(inp => {
-          if (inp.getAttribute('data-currency') !== activeCurrency) {
-            inp.value = '';
+    // ==========================================
+    // 5. 物理与工程度量 (温度/时间纳秒/频率/压强)
+    // ==========================================
+    function handlePhysicsLiveInput(unitId, val, updateSelf = false) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+
+      const isTemp = ['celsius', 'fahrenheit', 'kelvin', 'rankine'].includes(unitId);
+      const isTime = ['ns', 'us', 'ms', 's', 'min', 'hour', 'day', 'hz', 'khz', 'mhz', 'ghz'].includes(unitId);
+      const isAngleOrPress = ['deg', 'rad', 'grad', 'pa', 'kpa', 'mpa', 'bar', 'atm', 'psi', 'mmhg'].includes(unitId);
+
+      if (isTemp) {
+        let celsius = 0;
+        if (unitId === 'celsius') celsius = num;
+        else if (unitId === 'fahrenheit') celsius = (num - 32) / 1.8;
+        else if (unitId === 'kelvin') celsius = num - 273.15;
+        else if (unitId === 'rankine') celsius = (num - 491.67) / 1.8;
+
+        const results = {
+          celsius: celsius,
+          fahrenheit: celsius * 1.8 + 32,
+          kelvin: celsius + 273.15,
+          rankine: (celsius + 273.15) * 1.8
+        };
+
+        Object.keys(results).forEach(k => {
+          if (k !== unitId || updateSelf) {
+            const inp = document.getElementById(`input-${k}`);
+            if (inp) inp.value = formatNumber(results[k]);
           }
         });
-        document.getElementById('quick-input-a').value = '';
-        document.getElementById('quick-input-b').value = '';
-        return;
-      }
-
-      const val = parseFloat(cleanStr);
-      if (isNaN(val)) return;
-
-      // 换算回 CNY 基准： 基准值 (CNY) = 输入值 / (1 CNY 兑 activeCurrency 的率)
-      const baseValueCNY = val / loadedRates[activeCurrency];
-
-      // 同步更新其他货币卡片
-      document.querySelectorAll('.currency-input').forEach(inp => {
-        const targetCurrency = inp.getAttribute('data-currency');
-        if (targetCurrency !== activeCurrency) {
-          const calculatedVal = baseValueCNY * loadedRates[targetCurrency];
-          inp.value = formatNumber(calculatedVal);
+      } else if (isTime) {
+        let s = 0;
+        switch (unitId) {
+          case 'ns': s = num / 1e9; break;
+          case 'us': s = num / 1e6; break;
+          case 'ms': s = num / 1e3; break;
+          case 's': s = num; break;
+          case 'min': s = num * 60; break;
+          case 'hour': s = num * 3600; break;
+          case 'day': s = num * 86400; break;
+          case 'hz': s = num > 0 ? 1 / num : 0; break;
+          case 'khz': s = num > 0 ? 1 / (num * 1e3) : 0; break;
+          case 'mhz': s = num > 0 ? 1 / (num * 1e6) : 0; break;
+          case 'ghz': s = num > 0 ? 1 / (num * 1e9) : 0; break;
         }
-      });
 
-      syncQuickInputsFromBase();
-    }
+        const results = {
+          ns: s * 1e9,
+          us: s * 1e6,
+          ms: s * 1e3,
+          s: s,
+          min: s / 60,
+          hour: s / 3600,
+          day: s / 86400,
+          hz: s > 0 ? 1 / s : 0,
+          khz: s > 0 ? (1 / s) / 1e3 : 0,
+          mhz: s > 0 ? (1 / s) / 1e6 : 0,
+          ghz: s > 0 ? (1 / s) / 1e9 : 0
+        };
 
-    function handleCurrencySearch(query) {
-      baseSearchQuery = query.trim();
-      // 获取当前焦点所在的输入框以及它的对应 CNY 数值，以便保留数值过滤
-      const activeInput = document.activeElement;
-      let defaultVal = 100;
-      if (activeInput && activeInput.classList.contains('currency-input')) {
-        const val = parseFloat(activeInput.value);
-        const cur = activeInput.getAttribute('data-currency');
-        if (!isNaN(val) && loadedRates[cur]) {
-          defaultVal = val / loadedRates[cur]; // 转换为 CNY
+        Object.keys(results).forEach(k => {
+          if (k !== unitId || updateSelf) {
+            const inp = document.getElementById(`input-${k}`);
+            if (inp) inp.value = formatNumber(results[k]);
+          }
+        });
+      } else if (isAngleOrPress) {
+        if (['deg', 'rad', 'grad'].includes(unitId)) {
+          let deg = 0;
+          if (unitId === 'deg') deg = num;
+          else if (unitId === 'rad') deg = num * (180 / Math.PI);
+          else if (unitId === 'grad') deg = num * 0.9;
+
+          const results = {
+            deg: deg,
+            rad: deg * (Math.PI / 180),
+            grad: deg / 0.9
+          };
+          Object.keys(results).forEach(k => {
+            if (k !== unitId || updateSelf) {
+              const inp = document.getElementById(`input-${k}`);
+              if (inp) inp.value = formatNumber(results[k]);
+            }
+          });
+        } else {
+          let pa = 0;
+          switch (unitId) {
+            case 'pa': pa = num; break;
+            case 'kpa': pa = num * 1e3; break;
+            case 'mpa': pa = num * 1e6; break;
+            case 'bar': pa = num * 1e5; break;
+            case 'atm': pa = num * 101325; break;
+            case 'psi': pa = num * 6894.757; break;
+            case 'mmhg': pa = num * 133.322; break;
+          }
+
+          const results = {
+            pa: pa,
+            kpa: pa / 1e3,
+            mpa: pa / 1e6,
+            bar: pa / 1e5,
+            atm: pa / 101325,
+            psi: pa / 6894.757,
+            mmhg: pa / 133.322
+          };
+          Object.keys(results).forEach(k => {
+            if (k !== unitId || updateSelf) {
+              const inp = document.getElementById(`input-${k}`);
+              if (inp) inp.value = formatNumber(results[k]);
+            }
+          });
         }
       }
-      renderCurrencyGrid(defaultVal);
     }
 
     // ==========================================
-    // 6.2 实时汇率 - 快捷两币转换辅助函数
+    // 6. 日常生活通用度量 (长度/面积/重量/体积)
     // ==========================================
-    function initQuickCurrencySelects() {
-      const selA = document.getElementById('quick-select-a');
-      const selB = document.getElementById('quick-select-b');
-      
-      if (selA.options.length > 0) {
-        syncQuickInputsFromBase();
-        return;
+    function handleDailyLiveInput(unitId, val, updateSelf = false) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+
+      const subGroups = CATEGORIES_CONFIG.daily.subGroups;
+      let targetGroup = null;
+      let targetUnit = null;
+
+      for (const g of subGroups) {
+        const found = g.units.find(u => u.id === unitId);
+        if (found) {
+          targetGroup = g;
+          targetUnit = found;
+          break;
+        }
       }
 
-      selA.innerHTML = '';
-      selB.innerHTML = '';
+      if (!targetGroup || !targetUnit) return;
 
-      Object.keys(CURRENCY_NAMES).forEach(currency => {
-        const optA = document.createElement('option');
-        optA.value = currency;
-        optA.innerText = CURRENCY_NAMES[currency];
-        optA.title = CURRENCY_NAMES[currency];
-        
-        const optB = optA.cloneNode(true);
-        
-        selA.appendChild(optA);
-        selB.appendChild(optB);
+      const baseVal = targetUnit.toBase(num);
+      targetGroup.units.forEach(u => {
+        if (u.id !== unitId || updateSelf) {
+          const calculated = u.fromBase(baseVal);
+          const inp = document.getElementById(`input-${u.id}`);
+          if (inp) inp.value = formatNumber(calculated);
+        }
       });
-
-      selA.value = 'CNY';
-      selB.value = 'USD';
-      
-      document.getElementById('quick-input-a').value = '100';
-      calculateQuickSwap('a');
     }
 
-    function calculateQuickSwap(source) {
-      const selA = document.getElementById('quick-select-a').value;
-      const selB = document.getElementById('quick-select-b').value;
-      const inpA = document.getElementById('quick-input-a');
-      const inpB = document.getElementById('quick-input-b');
+    // ==========================================
+    // 7. 世界外汇汇率计算与全双向联动
+    // ==========================================
+    function handleCurrencyLiveInput(code, val, isPresetOrExternal = false) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+
+      const rateToCNY = STATIC_RATES[code] || 1;
+      const baseCNY = num / rateToCNY;
+
+      // 更新卡片网格
+      Object.keys(STATIC_RATES).forEach(c => {
+        const inp = document.getElementById(`input-${c}`);
+        if (inp) {
+          if (c === code) {
+            if (isPresetOrExternal) inp.value = formatNumber(num);
+          } else {
+            const calculated = baseCNY * STATIC_RATES[c];
+            inp.value = formatNumber(calculated);
+          }
+        }
+      });
+
+      // 同步更新上方的双币快速互换控制器
+      syncQuickCurrencyFromCards(code, num);
+    }
+
+    function syncQuickCurrencyFromCards(code, num) {
+      const selectA = document.getElementById('quickCurrA');
+      const selectB = document.getElementById('quickCurrB');
+      const inputA = document.getElementById('quickCurrValA');
+      const inputB = document.getElementById('quickCurrValB');
+      if (!selectA || !selectB || !inputA || !inputB) return;
+
+      if (selectA.value === code) {
+        inputA.value = num;
+        runQuickCurrencySwap('a', false);
+      } else if (selectB.value === code) {
+        inputB.value = num;
+        runQuickCurrencySwap('b', false);
+      } else {
+        selectA.value = code;
+        inputA.value = num;
+        runQuickCurrencySwap('a', false);
+      }
+    }
+
+    function runQuickCurrencySwap(source, syncToGrid = true) {
+      const selectA = document.getElementById('quickCurrA');
+      const selectB = document.getElementById('quickCurrB');
+      const inputA = document.getElementById('quickCurrValA');
+      const inputB = document.getElementById('quickCurrValB');
+      if (!selectA || !selectB || !inputA || !inputB) return;
+
+      const currA = selectA.value;
+      const currB = selectB.value;
+      const rateA = STATIC_RATES[currA] || 1;
+      const rateB = STATIC_RATES[currB] || 1;
 
       if (source === 'a') {
-        const valAStr = inpA.value.trim();
-        if (valAStr === '') {
-          inpB.value = '';
-          return;
+        const valA = parseFloat(inputA.value) || 0;
+        const cny = valA / rateA;
+        const valB = cny * rateB;
+        inputB.value = formatNumber(valB);
+        if (syncToGrid) {
+          handleCurrencyLiveInput(currA, valA, false);
         }
-        const valA = parseFloat(valAStr);
-        if (isNaN(valA)) return;
-
-        const baseCNY = valA / loadedRates[selA];
-        const valB = baseCNY * loadedRates[selB];
-        inpB.value = formatNumber(valB);
-
-        updateGridFromCNY(baseCNY);
       } else {
-        const valBStr = inpB.value.trim();
-        if (valBStr === '') {
-          inpA.value = '';
-          return;
+        const valB = parseFloat(inputB.value) || 0;
+        const cny = valB / rateB;
+        const valA = cny * rateA;
+        inputA.value = formatNumber(valA);
+        if (syncToGrid) {
+          handleCurrencyLiveInput(currB, valB, false);
         }
-        const valB = parseFloat(valBStr);
-        if (isNaN(valB)) return;
-
-        const baseCNY = valB / loadedRates[selB];
-        const valA = baseCNY * loadedRates[selA];
-        inpA.value = formatNumber(valA);
-
-        updateGridFromCNY(baseCNY);
       }
     }
 
-    function updateGridFromCNY(baseCNY) {
-      document.querySelectorAll('.currency-input').forEach(inp => {
-        const cur = inp.getAttribute('data-currency');
-        const calculatedVal = baseCNY * loadedRates[cur];
-        inp.value = formatNumber(calculatedVal);
+    function flipQuickCurrency() {
+      const selectA = document.getElementById('quickCurrA');
+      const selectB = document.getElementById('quickCurrB');
+      if (!selectA || !selectB) return;
+
+      const temp = selectA.value;
+      selectA.value = selectB.value;
+      selectB.value = temp;
+      runQuickCurrencySwap('a', true);
+      showToast('已交换两币种');
+    }
+
+    // ==========================================
+    // 搜索与过滤交互
+    // ==========================================
+    function filterCategories(query) {
+      const q = query.trim().toLowerCase();
+      document.querySelectorAll('.category-item').forEach(btn => {
+        const text = btn.innerText.toLowerCase();
+        btn.style.display = text.includes(q) ? 'flex' : 'none';
       });
     }
 
-    function syncQuickInputsFromBase() {
-      const selA = document.getElementById('quick-select-a').value;
-      const selB = document.getElementById('quick-select-b').value;
-      const inpA = document.getElementById('quick-input-a');
-      const inpB = document.getElementById('quick-input-b');
+    function filterCurrentUnits(query) {
+      const q = query.trim().toLowerCase();
+      document.querySelectorAll('.unit-card').forEach(card => {
+        const text = card.getAttribute('data-unit-name') || '';
+        card.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
 
-      const activeInp = document.activeElement;
-      if (activeInp && activeInp.classList.contains('currency-input')) {
-        const activeCur = activeInp.getAttribute('data-currency');
-        const val = parseFloat(activeInp.value);
-        if (!isNaN(val)) {
-          const baseCNY = val / loadedRates[activeCur];
-          inpA.value = formatNumber(baseCNY * loadedRates[selA]);
-          inpB.value = formatNumber(baseCNY * loadedRates[selB]);
-        }
+    function changePrecision(val) {
+      currentPrecision = parseInt(val, 10);
+      const firstInput = document.querySelector('.unit-input-field');
+      if (firstInput && firstInput.value) {
+        dispatchLiveInput(firstInput.getAttribute('data-unit'), firstInput.value);
+      }
+      showToast(`精度已设为: ${currentPrecision} 位小数`);
+    }
+
+    // ==========================================
+    // 剪贴板复制与 Toast
+    // ==========================================
+    function copyCardValue(unitId) {
+      const inp = document.getElementById(`input-${unitId}`);
+      if (inp && inp.value) {
+        copySnippet(inp.value);
       }
     }
 
-    function swapQuickCurrency() {
-      const selA = document.getElementById('quick-select-a');
-      const selB = document.getElementById('quick-select-b');
-      const inpA = document.getElementById('quick-input-a');
-      const inpB = document.getElementById('quick-input-b');
-
-      const tempSel = selA.value;
-      selA.value = selB.value;
-      selB.value = tempSel;
-
-      const tempInp = inpA.value;
-      inpA.value = inpB.value;
-      inpB.value = tempInp;
-
-      calculateQuickSwap('a');
-    }
-
-    // ==========================================
-    // 7. 通用复制功能
-    // ==========================================
-    function copyText(btnElement) {
-      const inputEl = btnElement.parentElement.querySelector('input');
-      if (!inputEl || !inputEl.value) return;
-
-      inputEl.select();
-      // 现代 API 复制
-      navigator.clipboard.writeText(inputEl.value).then(() => {
-        showToast("已复制: " + inputEl.value);
-      }).catch(err => {
-        // 兜底降级方案
-        document.execCommand("copy");
-        showToast("已复制: " + inputEl.value);
+    function copySnippet(text) {
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`已复制: ${text}`);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(`已复制: ${text}`);
       });
     }
 
     function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2000);
+      const tip = document.getElementById('toastTip');
+      if (!tip) return;
+      tip.innerText = msg;
+      tip.classList.add('show');
+      setTimeout(() => tip.classList.remove('show'), 2000);
     }
 
     // ==========================================
-    // 8. 页面初始化
+    // 工具箱抽屉统一调用
     // ==========================================
-    async function init() {
-      // 1. 静默拉取汇率（不阻碍页面主流程渲染）
-      await loadLiveRates();
-      // 2. 载入默认的长度换算分类
-      switchCategory('length');
+    function toggleToolboxDrawer() {
+      if (window.ToolSwitcher && typeof window.ToolSwitcher.open === 'function') {
+        window.ToolSwitcher.open();
+      } else {
+        showToast('正在呼出工具箱 (Ctrl+K)...');
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', init);
+    // 初始化运行
+    document.addEventListener('DOMContentLoaded', () => {
+      switchCategory('radix');
+    });
   </script>
 </body>
 </html>
