@@ -31,7 +31,7 @@
         // 生活效率与图形
         { id: 'image_tool', title: '图片处理工坊', category: 'daily', icon: '🖼️', desc: '本地压缩、格式转换与 Base64', url: '/tool/image_tool.html', tags: ['image', 'compress', 'tupian', 'png', 'jpg'], gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)' },
         { id: 'qrcode_tool', title: '二维码工具', category: 'daily', icon: '📷', desc: '快速生成与拖拽识别二维码', url: '/tool/qrcode_tool.html', tags: ['qrcode', 'scan', 'erweima'], gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' },
-        { id: 'color_tool', title: '颜色转换器', category: 'daily', icon: '🎨', desc: 'HEX/RGB/HSL 多格式互转调色', url: '/tool/color_tool.html', tags: ['color', 'rgb', 'hex', 'yanse'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+        { id: 'color_tool', title: '调色与设计工坊', category: 'daily', icon: '🎨', desc: '全格式色彩互转/WCAG对比度/设计色阶/CSS渐变', url: '/tool/color_tool.html', tags: ['color', 'rgb', 'hex', 'palette', 'wcag', 'gradient'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
         { id: 'unit_converter', title: '单位换算器', category: 'daily', icon: '📏', desc: '长度/进制/汇率/数据联动换算', url: '/tool/unit_converter.html', tags: ['unit', 'converter', 'danwei', 'huansuan'], gradient: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)' },
         { id: 'holiday_tool', title: '节假日计算', category: 'daily', icon: '📅', desc: '调休安排与法定节假日规划', url: '/tool/holiday_tool.html', tags: ['holiday', 'workday', 'jiejiari'], gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
         { id: 'shelf_life', title: '保质期计算', category: 'daily', icon: '⏳', desc: '临期提醒与物资周期管理', url: '/tool/shelf_life_tool.html', tags: ['shelflife', 'date', 'baozhiqi'], gradient: 'linear-gradient(135deg, #e6b980 0%, #eacda3 100%)' },
