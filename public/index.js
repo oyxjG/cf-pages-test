@@ -18,7 +18,8 @@
         { id: 'shelf_life', title: '保质期计算', category: 'daily', icon: '⏳', desc: '临期提醒与库存管理助手', url: '/tool/shelf_life_tool.html', tags: ['shelflife', 'date'], gradient: 'linear-gradient(135deg, #e6b980 0%, #eacda3 100%)', mobile: true },
         { id: 'unit_converter', title: '单位换算器', category: 'daily', icon: '📏', desc: '长度、面积、进制、汇率及数据联动换算', url: '/tool/unit_converter.html', tags: ['unit', 'converter'], gradient: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)', mobile: true },
         { id: 'opencv_beauty', title: 'OpenCV美颜', category: 'dev', icon: '✨', desc: 'WebAssembly 实时视频滤镜与磨皮', url: '/tool/opencv_beauty.html', tags: ['opencv', 'wasm', 'meiyan'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', mobile: false },
-        { id: 'image_tool', title: '图片处理工坊', category: 'daily', icon: '🖼️', desc: '本地安全处理，保障隐私安全，支持图片压缩、格式转换与 Base64', url: '/tool/image_tool.html', tags: ['image', 'compress'], gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)', mobile: false }
+        { id: 'image_tool', title: '图片处理工坊', category: 'daily', icon: '🖼️', desc: '本地安全处理，保障隐私安全，支持图片压缩、格式转换与 Base64', url: '/tool/image_tool.html', tags: ['image', 'compress'], gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)', mobile: false },
+        { id: 'jwt_tool', title: 'JWT 调试工坊', category: 'dev', icon: '🔐', desc: '三栏拆解、时效判定与HS256验签', url: '/tool/jwt_tool.html', tags: ['jwt', 'token', 'auth'], gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', mobile: true }
     ];
 
     // 2. 状态与用户信息

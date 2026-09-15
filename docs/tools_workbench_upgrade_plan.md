@@ -111,7 +111,7 @@ mindmap
       文本批量清洗与命名转换
 ```
 
-### 1. 🔐 JWT 调试与解码工坊 (JWT Debugger & Inspector)
+### 1. 🔐 JWT 调试与解码工坊 (JWT Debugger & Inspector) 【✅ 已完成】
 - **解决痛点**：排查 Token 鉴权问题时，无需再打开加载缓慢或有隐私泄露风险的第三方网站。
 - **功能特性**：
   - **三栏高亮拆解**：自动将 JWT 拆为 Header (红)、Payload (紫)、Signature (蓝)；

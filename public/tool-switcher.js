@@ -22,6 +22,7 @@
         { id: 'regex_tool', title: '正则测试器', category: 'dev', icon: '🔍', desc: '可视化捕获组测试与速查', url: '/tool/regex_tool.html', tags: ['regex', 'regexp', 'zhengze'], gradient: 'linear-gradient(135deg, #13547a 0%, #80d0c7 100%)' },
         { id: 'regex_gen', title: '正则生成器', category: 'dev', icon: '🧩', desc: '引导式规则配置快速拼装', url: '/tool/regex_generator_tool.html', tags: ['regex', 'builder', 'generator'], gradient: 'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)' },
         { id: 'lang_detect', title: '智能语种检测', category: 'dev', icon: '🌐', desc: 'AI 算法辨识多国语言/代码', url: '/tool/language_detector.html', tags: ['language', 'detect', 'yuyan'], gradient: 'linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)' },
+        { id: 'jwt_tool', title: 'JWT 调试工坊', category: 'dev', icon: '🔐', desc: '三栏拆解、时效判定与HS256验签', url: '/tool/jwt_tool.html', tags: ['jwt', 'token', 'auth', 'debug', 'decode'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
         { id: 'opencv_beauty', title: 'OpenCV 美颜实验', category: 'dev', icon: '✨', desc: 'WebAssembly 实时磨皮与滤镜', url: '/tool/opencv_beauty.html', tags: ['opencv', 'wasm', 'filter', 'meiyan'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
 
         // 安全与加密
