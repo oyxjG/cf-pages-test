@@ -23,6 +23,7 @@
         { id: 'regex_gen', title: '正则生成器', category: 'dev', icon: '🧩', desc: '引导式规则配置快速拼装', url: '/tool/regex_generator_tool.html', tags: ['regex', 'builder', 'generator'], gradient: 'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)' },
         { id: 'lang_detect', title: '智能语种检测', category: 'dev', icon: '🌐', desc: 'AI 算法辨识多国语言/代码', url: '/tool/language_detector.html', tags: ['language', 'detect', 'yuyan'], gradient: 'linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)' },
         { id: 'jwt_tool', title: 'JWT 调试工坊', category: 'dev', icon: '🔐', desc: '三栏拆解、时效判定与HS256验签', url: '/tool/jwt_tool.html', tags: ['jwt', 'token', 'auth', 'debug', 'decode'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+        { id: 'cron_tool', title: 'Cron 表达式工坊', category: 'dev', icon: '⏰', desc: '可视化积木配置/逆向解析/未来时间轴推算', url: '/tool/cron_tool.html', tags: ['cron', 'crontab', 'schedule', 'quartz', 'spring'], gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
         { id: 'opencv_beauty', title: 'OpenCV 美颜实验', category: 'dev', icon: '✨', desc: 'WebAssembly 实时磨皮与滤镜', url: '/tool/opencv_beauty.html', tags: ['opencv', 'wasm', 'filter', 'meiyan'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
 
         // 安全与加密

@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cron 表达式工坊 - 沉浸式模拟器与代码生成</title>
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../tool-switcher.css">
+  <script src="../theme.js"></script>
+  <script src="../tool-switcher.js" defer></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-light: rgba(99, 102, 241, 0.12);
+      --primary-hover: #4f46e5;
+      --accent: #0ea5e9;
+      --accent-light: rgba(14, 165, 233, 0.12);
+      --success: #10b981;
+      --success-light: rgba(16, 185, 129, 0.12);
+      --warning: #f59e0b;
+      --warning-light: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-light: rgba(239, 68, 68, 0.12);
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(226, 232, 240, 0.9);
+      --tag-bg: #f1f5f9;
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+    }
+
+    [data-theme="dark"] {
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(51, 65, 85, 0.85);
+      --tag-bg: #334155;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(99, 102, 241, 0.08), transparent 35%),
+        radial-gradient(circle at 88% 82%, rgba(14, 165, 233, 0.08), transparent 30%),
+        linear-gradient(135deg, var(--grad-start) 0%, var(--bg) 50%, var(--grad-end) 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部导航条 (56px) */
+    .workbench-header {
+      height: 56px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      z-index: 30;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm, 6px);
+      color: var(--muted);
+      text-decoration: none;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      color: var(--text);
+      background: var(--paper-strong);
+      border-color: var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      font-size: 22px;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.25));
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mode-pill-group {
+      display: flex;
+      align-items: center;
+      background: var(--paper-strong);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .mode-pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-pill.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+    }
+
+    .preset-select {
+      height: 30px;
+      padding: 0 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      background: var(--paper-strong);
+      color: var(--text);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-toggle-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm, 6px);
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--paper-strong);
+      border-color: var(--primary);
+      transform: rotate(15deg);
+    }
+
+    /* 主工作区 (双栏铺满) */
+    .workbench-main {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      padding: 12px;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    /* 左侧：积木可视化配置区 */
+    .config-panel {
+      flex: 0 0 54%;
+      display: flex;
+      flex-direction: column;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .tabs-header {
+      display: flex;
+      background: var(--paper-strong);
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 72px;
+      padding: 10px 4px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(99, 102, 241, 0.04);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .tab-val {
+      font-size: 11px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--tag-bg);
+      color: var(--text);
+      max-width: 75px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active .tab-val {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .config-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* 模式单选行卡片 */
+    .mode-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .mode-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .mode-card.selected {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.03);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .mode-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .mode-card input[type="radio"] {
+      accent-color: var(--primary);
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+    }
+
+    .mode-inline-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-left: 26px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .num-input {
+      width: 70px;
+      height: 30px;
+      padding: 0 8px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 13px;
+      text-align: center;
+      outline: none;
+    }
+
+    .num-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    /* 多选点阵网格 */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 6px;
+      padding-left: 26px;
+      margin-top: 4px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .grid-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .grid-item:hover {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .grid-item.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+    }
+
+    .grid-actions {
+      display: flex;
+      gap: 6px;
+      padding-left: 26px;
+      margin-top: 6px;
+    }
+
+    .grid-btn {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .grid-btn:hover {
+      color: var(--text);
+      background: var(--line);
+    }
+
+    /* 右侧：实时看板与时间轴预测 */
+    .preview-panel {
+      flex: 0 0 46%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    /* 表达式主看板卡片 */
+    .expression-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cron-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .cron-main-input {
+      width: 100%;
+      height: 46px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0 95px 0 14px;
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+      background: var(--code-bg);
+      color: #38bdf8;
+      outline: none;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+      transition: border-color 0.2s;
+    }
+
+    .cron-main-input.invalid {
+      border-color: var(--danger);
+      color: #f87171;
+    }
+
+    .cron-copy-btn {
+      position: absolute;
+      right: 8px;
+      height: 32px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .cron-copy-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* 字段拆分胶囊展示 */
+    .segment-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .segment-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .segment-chip:hover {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .segment-chip.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .segment-chip .val {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* 中文大白话翻译卡片 */
+    .human-explain-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(14, 165, 233, 0.06));
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .explain-icon {
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .explain-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* 未来执行时间轴预测 */
+    .timeline-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      min-height: 240px;
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      max-height: 260px;
+      padding-right: 4px;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12.5px;
+      transition: all 0.2s;
+    }
+
+    .timeline-item:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: var(--paper-strong);
+    }
+
+    .timeline-index {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      width: 28px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background: var(--primary-light);
+    }
+
+    .timeline-time {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-weight: 600;
+      color: var(--text);
+      margin-left: 8px;
+    }
+
+    .timeline-countdown {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--tag-bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* 代码导出卡片 */
+    .code-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .code-lang-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .code-tab-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .code-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .code-pre-box {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .code-copy-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* 底部状态栏 (32px) */
+    .workbench-footer {
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+      z-index: 30;
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .status-dot.error {
+      background: var(--danger);
+      box-shadow: 0 0 6px var(--danger);
+    }
+
+    /* Toast 通知 */
+    .toast-msg {
+      position: fixed;
+      bottom: 44px;
+      right: 20px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #1e1e2e;
+      color: #fff;
+      font-size: 13px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航栏 (56px) -->
+  <header class="workbench-header">
+    <div class="header-left">
+      <a href="../index.html" class="back-btn" title="返回首页">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div class="brand">
+        <span class="brand-icon">⏰</span>
+        <span class="brand-title">Cron 表达式工坊</span>
+        <span class="brand-badge">v2.0 PRO</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="mode-pill-group">
+        <button class="mode-pill active" id="btnModeCrontab" data-mode="5">Linux Crontab (5段)</button>
+        <button class="mode-pill" id="btnModeQuartz" data-mode="6">Quartz / Spring (6段)</button>
+        <button class="mode-pill" id="btnModeQuartz7" data-mode="7">Quartz + 年 (7段)</button>
+      </div>
+
+      <select class="preset-select" id="presetSelect" title="快速填入经典实战模板">
+        <option value="">⚡ 经典场景预设模板...</option>
+        <option value="* * * * *">每 1 分钟执行一次</option>
+        <option value="*/5 * * * *">每 5 分钟执行一次</option>
+        <option value="0 * * * *">每 1 小时整点执行</option>
+        <option value="0 0 * * *">每天凌晨 00:00 执行</option>
+        <option value="0 2 * * *">每天凌晨 02:00 (夜间数据归档)</option>
+        <option value="0 9 * * 1-5">工作日周一至周五 09:00 (打卡提醒)</option>
+        <option value="*/15 9-18 * * 1-5">工作日 9:00~18:00 每 15 分钟巡检</option>
+        <option value="0 18 * * 5">每周五下午 18:00 (周报提交)</option>
+        <option value="0 10 * * 1">每周一上午 10:00 (周会日程)</option>
+        <option value="0 0 1 * *">每月 1 号零点 (月度结转)</option>
+        <option value="0 0 L * *">每月最后一天零点</option>
+        <option value="0 0 1 1,4,7,10 *">每季度初第 1 天零点</option>
+      </select>
+    </div>
+
+    <div class="header-right">
+      <!-- 统一由 tool-switcher.js 挂载标准 🧰 工具箱 Ctrl+K -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" title="切换深浅主题">🌓</button>
+    </div>
+  </header>
+
+  <!-- 主工作区 (100vh 双栏响应式) -->
+  <main class="workbench-main">
+
+    <!-- 左侧：字段积木配置区 -->
+    <section class="config-panel">
+      <!-- 字段 Tabs -->
+      <div class="tabs-header" id="tabsHeader">
+        <!-- 动态生成 tabs -->
+      </div>
+
+      <!-- 激活字段的模式配置项滚动区 -->
+      <div class="config-scroll" id="configContent">
+        <!-- 动态渲染当前选中的字段模式配置 -->
+      </div>
+    </section>
+
+    <!-- 右侧：实时表达式看板与预测模拟 -->
+    <section class="preview-panel">
+      <!-- 表达式主输入与复制卡片 -->
+      <div class="expression-card">
+        <div class="card-title-row">
+          <span class="card-title">
+            <span>🎯 表达式生成与双向逆向解析</span>
+          </span>
+          <div class="segment-chips" id="segmentChips">
+            <!-- 动态渲染各字段小胶囊 -->
+          </div>
+        </div>
+
+        <div class="cron-input-wrapper">
+          <input 
+            type="text" 
+            id="cronExpressionInput" 
+            class="cron-main-input" 
+            value="* * * * *" 
+            spellcheck="false"
+            autocomplete="off"
+            placeholder="在此输入或生成 Cron 表达式..."
+          />
+          <button class="cron-copy-btn" id="btnCopyCron" title="复制 Cron 表达式">
+            <span>📋 复制</span>
+          </button>
+        </div>
+
+        <!-- 中文大白话智能解释 -->
+        <div class="human-explain-box">
+          <span class="explain-icon">💡</span>
+          <div class="explain-text" id="humanExplainText">
+            每分钟触发一次
+          </div>
+        </div>
+      </div>
+
+      <!-- 未来前 10 次执行时间预测轴 -->
+      <div class="timeline-card">
+        <div class="timeline-header">
+          <span class="card-title">
+            <span>⏳ 未来前 10 次执行时间模拟推算</span>
+          </span>
+          <span style="font-size: 11px; color: var(--muted);" id="timelineBaseTime">
+            以当前系统时钟为基准
+          </span>
+        </div>
+
+        <div class="timeline-list" id="timelineList">
+          <!-- 动态推导并渲染前 10 次调度列表 -->
+        </div>
+      </div>
+
+      <!-- 多语言调用代码导出 -->
+      <div class="code-card">
+        <div class="card-title-row">
+          <span class="card-title">
+            <span>💻 多语言定时任务调用代码</span>
+          </span>
+          <div class="code-lang-tabs" id="codeLangTabs">
+            <button class="code-tab-btn active" data-lang="crontab">Linux Crontab</button>
+            <button class="code-tab-btn" data-lang="python">Python (APScheduler)</button>
+            <button class="code-tab-btn" data-lang="nodejs">Node.js (node-cron)</button>
+            <button class="code-tab-btn" data-lang="golang">Go (robfig/cron)</button>
+            <button class="code-tab-btn" data-lang="java">Java (Spring)</button>
+          </div>
+        </div>
+
+        <div class="code-pre-box">
+          <button class="code-copy-btn" id="btnCopyCode">复制代码</button>
+          <pre><code id="codeSnippetText"># Linux Crontab 定时配置
+* * * * * /usr/bin/python3 /opt/scripts/my_job.py >> /var/log/my_job.log 2>&1</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部状态监控栏 (32px) -->
+  <footer class="workbench-footer">
+    <div class="footer-item">
+      <span class="status-dot" id="footerStatusDot"></span>
+      <span id="footerSyntaxStatus">表达式语法合法 (Linux Crontab 5段)</span>
+    </div>
+    <div class="footer-item">
+      <span id="footerNextRun">下次执行: 计算中...</span>
+    </div>
+    <div class="footer-item">
+      <span>纯前端本地高精度计算 · 零上云</span>
+    </div>
+  </footer>
+
+  <!-- Toast 提示 -->
+  <div class="toast-msg" id="toastMsg">已复制到剪贴板</div>
+
+  <script>
+    // ==========================================
+    // 1. 数据模型与字段元数据定义
+    // ==========================================
+    const FIELD_DEFS = {
+      second: {
+        id: 'second',
+        name: '秒',
+        min: 0,
+        max: 59,
+        defaultVal: '0',
+        allowedSpecial: ['*', '/', '-', ',']
+      },
+      minute: {
+        id: 'minute',
+        name: '分',
+        min: 0,
+        max: 59,
+        defaultVal: '*',
+        allowedSpecial: ['*', '/', '-', ',']
+      },
+      hour: {
+        id: 'hour',
+        name: '时',
+        min: 0,
+        max: 23,
+        defaultVal: '*',
+        allowedSpecial: ['*', '/', '-', ',']
+      },
+      day: {
+        id: 'day',
+        name: '日',
+        min: 1,
+        max: 31,
+        defaultVal: '*',
+        allowedSpecial: ['*', '/', '-', ',', '?', 'L', 'W']
+      },
+      month: {
+        id: 'month',
+        name: '月',
+        min: 1,
+        max: 12,
+        defaultVal: '*',
+        allowedSpecial: ['*', '/', '-', ',']
+      },
+      week: {
+        id: 'week',
+        name: '周',
+        min: 1,
+        max: 7, // 1: 周日 或 周一 (根据模式), 此处按 1=周一, 7=周日 或 1=SUN, 7=SAT 统一展示
+        defaultVal: '*',
+        allowedSpecial: ['*', '/', '-', ',', '?', 'L', '#']
+      },
+      year: {
+        id: 'year',
+        name: '年',
+        min: new Date().getFullYear(),
+        max: new Date().getFullYear() + 50,
+        defaultVal: '*',
+        allowedSpecial: ['*', '/', '-', ',']
+      }
+    };
+
+    const WEEK_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+    // 当前状态
+    const state = {
+      mode: 5, // 5: Linux 5段, 6: Quartz 6段, 7: Quartz 7段
+      activeField: 'minute',
+      // 各字段状态对象
+      fields: {
+        second: { mode: 'every', start: 0, step: 5, rangeStart: 0, rangeEnd: 30, specified: [] },
+        minute: { mode: 'every', start: 0, step: 15, rangeStart: 0, rangeEnd: 30, specified: [] },
+        hour: { mode: 'every', start: 0, step: 2, rangeStart: 9, rangeEnd: 18, specified: [] },
+        day: { mode: 'every', start: 1, step: 2, rangeStart: 1, rangeEnd: 15, specified: [], special: 'none' },
+        month: { mode: 'every', start: 1, step: 2, rangeStart: 1, rangeEnd: 6, specified: [] },
+        week: { mode: 'every', start: 1, step: 2, rangeStart: 1, rangeEnd: 5, specified: [], special: 'none' },
+        year: { mode: 'every', start: new Date().getFullYear(), step: 1, rangeStart: new Date().getFullYear(), rangeEnd: new Date().getFullYear() + 5, specified: [] }
+      },
+      currentCodeLang: 'crontab',
+      isInternalSyncing: false
+    };
+
+    // 获取当前模式下的活动字段列表
+    function getActiveFieldKeys() {
+      if (state.mode === 5) return ['minute', 'hour', 'day', 'month', 'week'];
+      if (state.mode === 6) return ['second', 'minute', 'hour', 'day', 'month', 'week'];
+      return ['second', 'minute', 'hour', 'day', 'month', 'week', 'year'];
+    }
+
+    // ==========================================
+    // 2. DOM 元素缓存
+    // ==========================================
+    const tabsHeader = document.getElementById('tabsHeader');
+    const configContent = document.getElementById('configContent');
+    const cronInput = document.getElementById('cronExpressionInput');
+    const segmentChips = document.getElementById('segmentChips');
+    const humanExplainText = document.getElementById('humanExplainText');
+    const timelineList = document.getElementById('timelineList');
+    const presetSelect = document.getElementById('presetSelect');
+    const codeSnippetText = document.getElementById('codeSnippetText');
+    const codeLangTabs = document.getElementById('codeLangTabs');
+    const footerStatusDot = document.getElementById('footerStatusDot');
+    const footerSyntaxStatus = document.getElementById('footerSyntaxStatus');
+    const footerNextRun = document.getElementById('footerNextRun');
+    const toastMsg = document.getElementById('toastMsg');
+
+    // ==========================================
+    // 3. UI 交互：字段选项卡渲染与切换
+    // ==========================================
+    function renderTabs() {
+      const keys = getActiveFieldKeys();
+      if (!keys.includes(state.activeField)) {
+        state.activeField = keys[0];
+      }
+
+      tabsHeader.innerHTML = keys.map(key => {
+        const def = FIELD_DEFS[key];
+        const val = buildFieldCron(key);
+        const isActive = key === state.activeField;
+        return `
+          <button class="tab-btn ${isActive ? 'active' : ''}" data-field="${key}">
+            <span>${def.name}</span>
+            <span class="tab-val">${escapeHtml(val)}</span>
+          </button>
+        `;
+      }).join('');
+
+      tabsHeader.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.activeField = btn.dataset.field;
+          renderTabs();
+          renderConfigPanel();
+        });
+      });
+
+      renderSegmentChips();
+    }
+
+    // 渲染右侧拆解字段小胶囊
+    function renderSegmentChips() {
+      const keys = getActiveFieldKeys();
+      segmentChips.innerHTML = keys.map(key => {
+        const def = FIELD_DEFS[key];
+        const val = buildFieldCron(key);
+        const isActive = key === state.activeField;
+        return `
+          <div class="segment-chip ${isActive ? 'active' : ''}" data-field="${key}" title="点击配置该字段">
+            <span>${def.name}:</span>
+            <span class="val">${escapeHtml(val)}</span>
+          </div>
+        `;
+      }).join('');
+
+      segmentChips.querySelectorAll('.segment-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          state.activeField = chip.dataset.field;
+          renderTabs();
+          renderConfigPanel();
+        });
+      });
+    }
+
+    // ==========================================
+    // 4. 正向生成 Cron 表达式逻辑
+    // ==========================================
+    function buildFieldCron(fieldKey) {
+      const f = state.fields[fieldKey];
+      if (!f) return '*';
+
+      if (f.mode === 'every') {
+        return '*';
+      } else if (f.mode === 'cycle') {
+        const start = f.start !== undefined ? f.start : 0;
+        const step = f.step || 1;
+        return `${start}/${step}`;
+      } else if (f.mode === 'range') {
+        const s = f.rangeStart !== undefined ? f.rangeStart : 0;
+        const e = f.rangeEnd !== undefined ? f.rangeEnd : 1;
+        return `${s}-${e}`;
+      } else if (f.mode === 'specified') {
+        if (!f.specified || f.specified.length === 0) return '*';
+        const sorted = [...f.specified].sort((a, b) => a - b);
+        return sorted.join(',');
+      } else if (f.mode === 'special') {
+        if (fieldKey === 'day') {
+          if (f.special === 'no_specific') return '?';
+          if (f.special === 'last_day') return 'L';
+          if (f.special === 'last_workday') return 'LW';
+        } else if (fieldKey === 'week') {
+          if (f.special === 'no_specific') return '?';
+          if (f.special === 'last_week') return '7L';
+        }
+        return '*';
+      }
+      return '*';
+    }
+
+    function buildFullCron() {
+      const keys = getActiveFieldKeys();
+      return keys.map(k => buildFieldCron(k)).join(' ');
+    }
+
+    // 触发正向更新
+    function onConfigChange() {
+      if (state.isInternalSyncing) return;
+      const cronStr = buildFullCron();
+      cronInput.value = cronStr;
+      cronInput.classList.remove('invalid');
+      renderTabs();
+      updateAnalysisAndTimeline(cronStr);
+    }
+
+    // ==========================================
+    // 5. 渲染左侧激活字段的具体配置面板
+    // ==========================================
+    function renderConfigPanel() {
+      const key = state.activeField;
+      const def = FIELD_DEFS[key];
+      const f = state.fields[key];
+
+      let html = '';
+
+      // 1. 每一单位通配符卡片
+      html += `
+        <div class="mode-card ${f.mode === 'every' ? 'selected' : ''}" data-mode="every">
+          <label class="mode-card-header">
+            <input type="radio" name="fieldMode" value="every" ${f.mode === 'every' ? 'checked' : ''}>
+            <span>每一${def.name}允许 (通配符 <code>*</code>)</span>
+          </label>
+        </div>
+      `;
+
+      // 2. 周期循环卡片
+      html += `
+        <div class="mode-card ${f.mode === 'cycle' ? 'selected' : ''}" data-mode="cycle">
+          <label class="mode-card-header">
+            <input type="radio" name="fieldMode" value="cycle" ${f.mode === 'cycle' ? 'checked' : ''}>
+            <span>周期循环 (从 n 开始，每隔 m)</span>
+          </label>
+          <div class="mode-inline-controls">
+            <span>从第</span>
+            <input type="number" class="num-input" id="cycleStart" min="${def.min}" max="${def.max}" value="${f.start}">
+            <span>${def.name}开始，每隔</span>
+            <input type="number" class="num-input" id="cycleStep" min="1" max="${def.max}" value="${f.step}">
+            <span>${def.name}执行一次</span>
+          </div>
+        </div>
+      `;
+
+      // 3. 连续范围卡片
+      html += `
+        <div class="mode-card ${f.mode === 'range' ? 'selected' : ''}" data-mode="range">
+          <label class="mode-card-header">
+            <input type="radio" name="fieldMode" value="range" ${f.mode === 'range' ? 'checked' : ''}>
+            <span>连续范围 (在 n 到 m 之间)</span>
+          </label>
+          <div class="mode-inline-controls">
+            <span>在第</span>
+            <input type="number" class="num-input" id="rangeStart" min="${def.min}" max="${def.max}" value="${f.rangeStart}">
+            <span>至</span>
+            <input type="number" class="num-input" id="rangeEnd" min="${def.min}" max="${def.max}" value="${f.rangeEnd}">
+            <span>${def.name}之间每单位执行</span>
+          </div>
+        </div>
+      `;
+
+      // 4. 点选指定矩阵卡片
+      html += `
+        <div class="mode-card ${f.mode === 'specified' ? 'selected' : ''}" data-mode="specified">
+          <label class="mode-card-header">
+            <input type="radio" name="fieldMode" value="specified" ${f.mode === 'specified' ? 'checked' : ''}>
+            <span>具体指定点选 (可多选，逗号分隔)</span>
+          </label>
+          <div class="grid-actions">
+            <button class="grid-btn" id="btnGridAll">全选</button>
+            <button class="grid-btn" id="btnGridClear">清空</button>
+            <button class="grid-btn" id="btnGridOdd">奇数</button>
+            <button class="grid-btn" id="btnGridEven">偶数</button>
+          </div>
+          <div class="grid-container" id="gridContainer">
+            ${generateGridItems(key, def, f.specified)}
+          </div>
+        </div>
+      `;
+
+      // 5. 特殊指令卡片 (日、周专有)
+      if (key === 'day' || key === 'week') {
+        html += `
+          <div class="mode-card ${f.mode === 'special' ? 'selected' : ''}" data-mode="special">
+            <label class="mode-card-header">
+              <input type="radio" name="fieldMode" value="special" ${f.mode === 'special' ? 'checked' : ''}>
+              <span>特殊规则</span>
+            </label>
+            <div class="mode-inline-controls">
+              <label style="margin-right: 12px; cursor: pointer;">
+                <input type="radio" name="specialOpt" value="no_specific" ${f.special === 'no_specific' ? 'checked' : ''}> 不指定 (<code>?</code>)
+              </label>
+              ${key === 'day' ? `
+                <label style="margin-right: 12px; cursor: pointer;">
+                  <input type="radio" name="specialOpt" value="last_day" ${f.special === 'last_day' ? 'checked' : ''}> 本月最后一天 (<code>L</code>)
+                </label>
+                <label style="cursor: pointer;">
+                  <input type="radio" name="specialOpt" value="last_workday" ${f.special === 'last_workday' ? 'checked' : ''}> 本月最后工作日 (<code>LW</code>)
+                </label>
+              ` : `
+                <label style="cursor: pointer;">
+                  <input type="radio" name="specialOpt" value="last_week" ${f.special === 'last_week' ? 'checked' : ''}> 本月最后一个星期日 (<code>7L</code>)
+                </label>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      configContent.innerHTML = html;
+
+      // 绑定面板事件
+      bindConfigPanelEvents(key, def, f);
+    }
+
+    function generateGridItems(fieldKey, def, specifiedList) {
+      let items = [];
+      const specSet = new Set(specifiedList || []);
+      for (let i = def.min; i <= def.max; i++) {
+        let label = i < 10 ? '0' + i : '' + i;
+        if (fieldKey === 'week') {
+          // 1:周一, 7:周日
+          const wIdx = i - 1;
+          label = WEEK_NAMES[wIdx] || `${i}`;
+        }
+        const isActive = specSet.has(i) ? 'active' : '';
+        items.push(`<div class="grid-item ${isActive}" data-val="${i}">${label}</div>`);
+      }
+      return items.join('');
+    }
+
+    function bindConfigPanelEvents(fieldKey, def, f) {
+      // 模式卡片切换
+      configContent.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (['INPUT', 'BUTTON'].includes(e.target.tagName)) return;
+          const targetMode = card.dataset.mode;
+          f.mode = targetMode;
+          card.querySelector('input[name="fieldMode"]').checked = true;
+          renderConfigPanel();
+          onConfigChange();
+        });
+
+        const radio = card.querySelector('input[name="fieldMode"]');
+        if (radio) {
+          radio.addEventListener('change', () => {
+            f.mode = radio.value;
+            renderConfigPanel();
+            onConfigChange();
+          });
+        }
+      });
+
+      // 周期控制
+      const cycleStart = document.getElementById('cycleStart');
+      const cycleStep = document.getElementById('cycleStep');
+      if (cycleStart && cycleStep) {
+        const updateCycle = () => {
+          f.start = parseInt(cycleStart.value, 10) || 0;
+          f.step = parseInt(cycleStep.value, 10) || 1;
+          f.mode = 'cycle';
+          onConfigChange();
+        };
+        cycleStart.addEventListener('input', updateCycle);
+        cycleStep.addEventListener('input', updateCycle);
+      }
+
+      // 连续区间控制
+      const rangeStart = document.getElementById('rangeStart');
+      const rangeEnd = document.getElementById('rangeEnd');
+      if (rangeStart && rangeEnd) {
+        const updateRange = () => {
+          f.rangeStart = parseInt(rangeStart.value, 10) || def.min;
+          f.rangeEnd = parseInt(rangeEnd.value, 10) || def.max;
+          f.mode = 'range';
+          onConfigChange();
+        };
+        rangeStart.addEventListener('input', updateRange);
+        rangeEnd.addEventListener('input', updateRange);
+      }
+
+      // 多选点阵控制
+      const gridContainer = document.getElementById('gridContainer');
+      if (gridContainer) {
+        gridContainer.querySelectorAll('.grid-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const val = parseInt(item.dataset.val, 10);
+            f.mode = 'specified';
+            if (!f.specified) f.specified = [];
+            const idx = f.specified.indexOf(val);
+            if (idx >= 0) {
+              f.specified.splice(idx, 1);
+              item.classList.remove('active');
+            } else {
+              f.specified.push(val);
+              item.classList.add('active');
+            }
+            onConfigChange();
+          });
+        });
+      }
+
+      // 快捷按钮：全选、清空、奇数、偶数
+      const btnAll = document.getElementById('btnGridAll');
+      const btnClear = document.getElementById('btnGridClear');
+      const btnOdd = document.getElementById('btnGridOdd');
+      const btnEven = document.getElementById('btnGridEven');
+
+      if (btnAll) {
+        btnAll.addEventListener('click', () => {
+          f.mode = 'specified';
+          f.specified = [];
+          for (let i = def.min; i <= def.max; i++) f.specified.push(i);
+          renderConfigPanel();
+          onConfigChange();
+        });
+      }
+      if (btnClear) {
+        btnClear.addEventListener('click', () => {
+          f.mode = 'specified';
+          f.specified = [];
+          renderConfigPanel();
+          onConfigChange();
+        });
+      }
+      if (btnOdd) {
+        btnOdd.addEventListener('click', () => {
+          f.mode = 'specified';
+          f.specified = [];
+          for (let i = def.min; i <= def.max; i++) {
+            if (i % 2 !== 0) f.specified.push(i);
+          }
+          renderConfigPanel();
+          onConfigChange();
+        });
+      }
+      if (btnEven) {
+        btnEven.addEventListener('click', () => {
+          f.mode = 'specified';
+          f.specified = [];
+          for (let i = def.min; i <= def.max; i++) {
+            if (i % 2 === 0) f.specified.push(i);
+          }
+          renderConfigPanel();
+          onConfigChange();
+        });
+      }
+
+      // 特殊指令单选
+      configContent.querySelectorAll('input[name="specialOpt"]').forEach(r => {
+        r.addEventListener('change', () => {
+          f.mode = 'special';
+          f.special = r.value;
+          onConfigChange();
+        });
+      });
+    }
+
+    // ==========================================
+    // 6. 逆向反向解析引擎 (Reverse Parser)
+    // ==========================================
+    function reverseParseCron(cronStr) {
+      if (!cronStr || typeof cronStr !== 'string') return false;
+      const parts = cronStr.trim().split(/\s+/);
+      const len = parts.length;
+
+      // 自动适应段数
+      if (len === 5 && state.mode !== 5) {
+        switchMode(5, false);
+      } else if (len === 6 && state.mode !== 6) {
+        switchMode(6, false);
+      } else if (len === 7 && state.mode !== 7) {
+        switchMode(7, false);
+      } else if (len < 5 || len > 7) {
+        return false;
+      }
+
+      const keys = getActiveFieldKeys();
+      if (keys.length !== len) return false;
+
+      state.isInternalSyncing = true;
+
+      for (let i = 0; i < len; i++) {
+        const key = keys[i];
+        const part = parts[i];
+        const def = FIELD_DEFS[key];
+        const f = state.fields[key];
+
+        if (part === '*') {
+          f.mode = 'every';
+        } else if (part === '?' || part === 'L' || part === 'LW' || part.endsWith('L')) {
+          f.mode = 'special';
+          if (part === '?') f.special = 'no_specific';
+          else if (part === 'L') f.special = 'last_day';
+          else if (part === 'LW') f.special = 'last_workday';
+          else if (part.endsWith('L')) f.special = 'last_week';
+        } else if (part.includes('/')) {
+          f.mode = 'cycle';
+          const [startStr, stepStr] = part.split('/');
+          f.start = startStr === '*' ? 0 : (parseInt(startStr, 10) || 0);
+          f.step = parseInt(stepStr, 10) || 1;
+        } else if (part.includes('-') && !part.includes(',')) {
+          f.mode = 'range';
+          const [startStr, endStr] = part.split('-');
+          f.rangeStart = parseInt(startStr, 10) || def.min;
+          f.rangeEnd = parseInt(endStr, 10) || def.max;
+        } else if (part.includes(',') || /^\d+$/.test(part)) {
+          f.mode = 'specified';
+          const nums = part.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+          f.specified = nums;
+        } else {
+          f.mode = 'every';
+        }
+      }
+
+      state.isInternalSyncing = false;
+      renderTabs();
+      renderConfigPanel();
+      return true;
+    }
+
+    // ==========================================
+    // 7. 大白话中文语义解释引擎 (Natural Explainer)
+    // ==========================================
+    function explainCron(cronStr) {
+      const parts = cronStr.trim().split(/\s+/);
+      const len = parts.length;
+      if (len < 5 || len > 7) return '表达式格式不符合标准 (应为 5 至 7 段)';
+
+      let sec = len >= 6 ? parts[0] : null;
+      let min = len >= 6 ? parts[1] : parts[0];
+      let hour = len >= 6 ? parts[2] : parts[1];
+      let day = len >= 6 ? parts[3] : parts[2];
+      let mon = len >= 6 ? parts[4] : parts[3];
+      let week = len >= 6 ? parts[5] : parts[4];
+      let yr = len === 7 ? parts[6] : null;
+
+      let desc = '';
+
+      if (yr && yr !== '*') {
+        desc += `在 ${yr} 年，`;
+      }
+
+      if (mon && mon !== '*') {
+        desc += `在 ${mon} 月，`;
+      }
+
+      // 日与周的处理
+      if (day === '*' && (week === '*' || week === '?')) {
+        desc += '每天 ';
+      } else if (day !== '*' && day !== '?') {
+        if (day === 'L') desc += '每月的最后一天 ';
+        else if (day === 'LW') desc += '每月的最后一个工作日 ';
+        else desc += `每月的第 ${day} 日 `;
+      }
+
+      if (week !== '*' && week !== '?') {
+        const weekMap = { '1': '周一', '2': '周二', '3': '周三', '4': '周四', '5': '周五', '6': '周六', '7': '周日', '0': '周日' };
+        if (week === '1-5') desc += '每周一至周五 ';
+        else if (week === '6,7' || week === '6-7') desc += '每个周末 ';
+        else {
+          const wStr = week.split(',').map(w => weekMap[w] || w).join('、');
+          desc += `每周 ${wStr} `;
+        }
+      }
+
+      // 时与分
+      if (hour === '*' && min === '*') {
+        desc += '每分钟运行一次';
+      } else if (hour === '*' && min.startsWith('*/')) {
+        desc += `每隔 ${min.replace('*/', '')} 分钟运行一次`;
+      } else if (hour !== '*' && min.startsWith('*/')) {
+        desc += `在 ${hour} 点期间，每隔 ${min.replace('*/', '')} 分钟运行一次`;
+      } else if (hour !== '*' && min !== '*') {
+        const hFormat = hour.padStart ? hour.padStart(2, '0') : hour;
+        const mFormat = min.padStart ? min.padStart(2, '0') : min;
+        desc += `在 ${hFormat}:${mFormat} 执行`;
+      } else if (hour === '*' && min !== '*') {
+        desc += `在每小时的第 ${min} 分执行`;
+      } else if (hour !== '*' && min === '*') {
+        desc += `在 ${hour} 点的每分钟执行`;
+      }
+
+      if (sec && sec !== '0' && sec !== '*') {
+        desc += ` (第 ${sec} 秒)`;
+      }
+
+      return desc || '自定义周期调度任务';
+    }
+
+    // ==========================================
+    // 8. 未来前 10 次执行时间推算模拟器
+    // ==========================================
+    function parseMatcher(fieldPattern, min, max) {
+      if (fieldPattern === '*' || fieldPattern === '?') {
+        return () => true;
+      }
+      if (fieldPattern.includes('/')) {
+        const [startStr, stepStr] = fieldPattern.split('/');
+        const start = startStr === '*' ? min : parseInt(startStr, 10);
+        const step = parseInt(stepStr, 10) || 1;
+        return (val) => val >= start && (val - start) % step === 0;
+      }
+      if (fieldPattern.includes('-') && !fieldPattern.includes(',')) {
+        const [s, e] = fieldPattern.split('-').map(Number);
+        return (val) => val >= s && val <= e;
+      }
+      if (fieldPattern.includes(',') || /^\d+$/.test(fieldPattern)) {
+        const set = new Set(fieldPattern.split(',').map(Number));
+        return (val) => set.has(val);
+      }
+      return () => true;
+    }
+
+    function calculateNextRuns(cronStr, count = 10) {
+      const parts = cronStr.trim().split(/\s+/);
+      const len = parts.length;
+      if (len < 5 || len > 7) return [];
+
+      const hasSecond = len >= 6;
+      const secPattern = hasSecond ? parts[0] : '0';
+      const minPattern = hasSecond ? parts[1] : parts[0];
+      const hourPattern = hasSecond ? parts[2] : parts[1];
+      const dayPattern = hasSecond ? parts[3] : parts[2];
+      const monPattern = hasSecond ? parts[4] : parts[3];
+      const weekPattern = hasSecond ? parts[5] : parts[4];
+      const yearPattern = len === 7 ? parts[6] : '*';
+
+      const secMatch = parseMatcher(secPattern, 0, 59);
+      const minMatch = parseMatcher(minPattern, 0, 59);
+      const hourMatch = parseMatcher(hourPattern, 0, 23);
+      const dayMatch = parseMatcher(dayPattern, 1, 31);
+      const monMatch = parseMatcher(monPattern, 1, 12);
+      const yearMatch = parseMatcher(yearPattern, 2020, 2099);
+
+      // 星期匹配 (1: 周一, 7: 周日)
+      const weekMatch = (d) => {
+        if (weekPattern === '*' || weekPattern === '?') return true;
+        // JS getDay(): 0 是周日, 1-6 是周一到周六
+        const jsDay = d.getDay();
+        const customWeek = jsDay === 0 ? 7 : jsDay;
+        const weekMatcher = parseMatcher(weekPattern, 1, 7);
+        return weekMatcher(customWeek);
+      };
+
+      const results = [];
+      let cur = new Date();
+      // 毫秒置零，向后步进 1 秒
+      cur.setMilliseconds(0);
+      cur.setSeconds(cur.getSeconds() + 1);
+
+      // 安全循环保护 (最多扫描 100,000 次步进，避免死循环)
+      let steps = 0;
+      const stepSeconds = hasSecond && secPattern !== '*' ? 1 : 60;
+      if (!hasSecond) cur.setSeconds(0);
+
+      while (results.length < count && steps < 120000) {
+        steps++;
+        const s = cur.getSeconds();
+        const m = cur.getMinutes();
+        const h = cur.getHours();
+        const d = cur.getDate();
+        const mo = cur.getMonth() + 1;
+        const y = cur.getFullYear();
+
+        if (
+          yearMatch(y) &&
+          monMatch(mo) &&
+          dayMatch(d) &&
+          weekMatch(cur) &&
+          hourMatch(h) &&
+          minMatch(m) &&
+          (!hasSecond || secMatch(s))
+        ) {
+          results.push(new Date(cur));
+          if (!hasSecond) {
+            cur.setMinutes(cur.getMinutes() + 1);
+            continue;
+          }
+        }
+
+        // 步进
+        if (hasSecond) {
+          cur.setSeconds(cur.getSeconds() + 1);
+        } else {
+          cur.setMinutes(cur.getMinutes() + 1);
+        }
+      }
+
+      return results;
+    }
+
+    function formatRelativeTime(targetDate) {
+      const now = new Date();
+      const diffMs = targetDate - now;
+      if (diffMs <= 0) return '刚刚';
+
+      const diffSec = Math.floor(diffMs / 1000);
+      if (diffSec < 60) return `${diffSec} 秒后`;
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin} 分钟后`;
+      const diffHour = Math.floor(diffMin / 60);
+      if (diffHour < 24) return `${diffHour} 小时 ${diffMin % 60} 分后`;
+      const diffDays = Math.floor(diffHour / 24);
+      return `${diffDays} 天后`;
+    }
+
+    function formatDate(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      const y = d.getFullYear();
+      const m = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const h = pad(d.getHours());
+      const min = pad(d.getMinutes());
+      const s = pad(d.getSeconds());
+      const weekName = WEEK_NAMES[d.getDay() === 0 ? 6 : d.getDay() - 1];
+      return `${y}-${m}-${day} ${h}:${min}:${s} (${weekName})`;
+    }
+
+    function renderTimeline(dates) {
+      if (!dates || dates.length === 0) {
+        timelineList.innerHTML = `
+          <div style="padding: 20px; text-align: center; color: var(--muted); font-size: 13px;">
+            ⚠️ 未能在近期模拟范围内匹配到符合条件的执行时间，请检查表达式日期与星期的兼容性。
+          </div>
+        `;
+        footerNextRun.textContent = '下次执行: 无可预测时间';
+        return;
+      }
+
+      footerNextRun.textContent = `下次执行: ${formatDate(dates[0])} (${formatRelativeTime(dates[0])})`;
+
+      timelineList.innerHTML = dates.map((d, idx) => {
+        return `
+          <div class="timeline-item">
+            <div style="display: flex; align-items: center;">
+              <span class="timeline-index">#${idx + 1}</span>
+              <span class="timeline-time">${formatDate(d)}</span>
+            </div>
+            <span class="timeline-countdown">${formatRelativeTime(d)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // 9. 多语言代码导出生成器
+    // ==========================================
+    function updateCodeSnippets(cronStr) {
+      const lang = state.currentCodeLang;
+      let code = '';
+
+      if (lang === 'crontab') {
+        code = `# 1. 打开当前用户的 crontab 编辑器:\ncrontab -e\n\n# 2. 粘贴以下配置 (每隔指定周期执行脚本):\n${cronStr} /usr/bin/python3 /opt/scripts/job.py >> /var/log/job.log 2>&1`;
+      } else if (lang === 'python') {
+        code = `from apscheduler.schedulers.blocking import BlockingScheduler
+
+scheduler = BlockingScheduler()
+
+# 注册 Cron 任务
+@scheduler.scheduled_job('cron', **cron_parse("${cronStr}"))
+def my_cron_job():
+    print("Cron 任务已触发执行!")
+
+if __name__ == '__main__':
+    scheduler.start()`;
+      } else if (lang === 'nodejs') {
+        code = `const cron = require('node-cron');
+
+// 调度执行 Cron 任务
+cron.schedule('${cronStr}', () => {
+  console.log('Cron 定时任务执行触发:', new Date().toLocaleString());
+}, {
+  scheduled: true,
+  timezone: "Asia/Shanghai"
+});`;
+      } else if (lang === 'golang') {
+        code = `package main
+
+import (
+\t"fmt"
+\t"github.com/robfig/cron/v3"
+)
+
+func main() {
+\tc := cron.New(cron.WithSeconds()) // 若为6段带秒需启用 WithSeconds
+\tc.AddFunc("${cronStr}", func() {
+\t\tfmt.Println("Cron 任务执行:", time.Now())
+\t})
+\tc.Start()
+\tselect {}
+}`;
+      } else if (lang === 'java') {
+        code = `import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ScheduledTasks {
+
+    @Scheduled(cron = "${cronStr}")
+    public void executeScheduledJob() {
+        System.out.println("Spring 定时任务触发: " + System.currentTimeMillis());
+    }
+}`;
+      }
+
+      codeSnippetText.textContent = code;
+    }
+
+    // ==========================================
+    // 10. 统一刷新综合看板与时间轴
+    // ==========================================
+    function updateAnalysisAndTimeline(cronStr) {
+      // 1. 大白话中文解释
+      const explain = explainCron(cronStr);
+      humanExplainText.textContent = explain;
+
+      // 2. 预测未来 10 次调度
+      const dates = calculateNextRuns(cronStr, 10);
+      renderTimeline(dates);
+
+      // 3. 刷新多语言代码
+      updateCodeSnippets(cronStr);
+
+      // 4. 底部状态指示
+      footerStatusDot.className = 'status-dot';
+      const modeLabel = state.mode === 5 ? 'Linux Crontab 5段' : (state.mode === 6 ? 'Quartz 6段' : 'Quartz 7段');
+      footerSyntaxStatus.textContent = `表达式合法 (${modeLabel})`;
+    }
+
+    // ==========================================
+    // 11. 切换段数模式 (5段 / 6段 / 7段)
+    // ==========================================
+    function switchMode(newMode, triggerSync = true) {
+      state.mode = newMode;
+      document.querySelectorAll('.mode-pill').forEach(pill => {
+        pill.classList.toggle('active', parseInt(pill.dataset.mode, 10) === newMode);
+      });
+
+      renderTabs();
+      renderConfigPanel();
+      if (triggerSync) {
+        onConfigChange();
+      }
+    }
+
+    // 辅助工具：安全转义
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Toast 提示
+    function showToast(text) {
+      toastMsg.textContent = text;
+      toastMsg.classList.add('show');
+      setTimeout(() => toastMsg.classList.remove('show'), 2000);
+    }
+
+    // ==========================================
+    // 12. 事件绑定与初始化
+    // ==========================================
+    function initEvents() {
+      // 模式切换
+      document.getElementById('btnModeCrontab').addEventListener('click', () => switchMode(5));
+      document.getElementById('btnModeQuartz').addEventListener('click', () => switchMode(6));
+      document.getElementById('btnModeQuartz7').addEventListener('click', () => switchMode(7));
+
+      // 预设模板选择
+      presetSelect.addEventListener('change', () => {
+        const val = presetSelect.value;
+        if (!val) return;
+        cronInput.value = val;
+        reverseParseCron(val);
+        updateAnalysisAndTimeline(val);
+        showToast('已载入经典场景预设');
+      });
+
+      // 逆向解析输入监听
+      cronInput.addEventListener('input', () => {
+        const val = cronInput.value.trim();
+        const success = reverseParseCron(val);
+        if (success) {
+          cronInput.classList.remove('invalid');
+          updateAnalysisAndTimeline(val);
+        } else {
+          cronInput.classList.add('invalid');
+          footerStatusDot.className = 'status-dot error';
+          footerSyntaxStatus.textContent = '表达式语法不合法，请检查段数与取值范围';
+        }
+      });
+
+      // 复制 Cron 表达式
+      document.getElementById('btnCopyCron').addEventListener('click', () => {
+        navigator.clipboard.writeText(cronInput.value.trim()).then(() => {
+          showToast('📋 已复制 Cron 表达式');
+        });
+      });
+
+      // 代码语言切换
+      codeLangTabs.querySelectorAll('.code-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          codeLangTabs.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.currentCodeLang = btn.dataset.lang;
+          updateCodeSnippets(cronInput.value.trim());
+        });
+      });
+
+      // 复制代码
+      document.getElementById('btnCopyCode').addEventListener('click', () => {
+        navigator.clipboard.writeText(codeSnippetText.textContent).then(() => {
+          showToast('💻 代码已复制到剪贴板');
+        });
+      });
+    }
+
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      initEvents();
+      renderTabs();
+      renderConfigPanel();
+      onConfigChange();
+    });
+  </script>
+</body>
+</html>

@@ -47,6 +47,7 @@ const PRECACHE_ASSETS = [
   '/tool/opencv_beauty.html',
   '/tool/image_tool.html',
   '/tool/jwt_tool.html',
+  '/tool/cron_tool.html',
 
   // 3. 工具本地依赖库与脚本
   '/tool/franc.js',
