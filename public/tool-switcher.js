@@ -31,6 +31,7 @@
         { id: 'sm2_tool', title: '国密安全解密', category: 'security', icon: '🛡️', desc: '本地高性能 SM2 秘钥对解析', url: '/tool/sm2_tool.html', tags: ['sm2', 'encrypt', 'guomi', 'crypto'], gradient: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
 
         // 生活效率与图形
+        { id: 'financial_tool', title: '财务与房贷精算', category: 'daily', icon: '💰', desc: '发票大写/增值税反推/房贷等额本息本金对比与提前还款', url: '/tool/financial_tool.html', tags: ['financial', 'rmb', 'caiwu', 'fangdai', 'vat', 'tax', 'loan'], gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
         { id: 'image_tool', title: '图片处理工坊', category: 'daily', icon: '🖼️', desc: '本地压缩、格式转换与 Base64', url: '/tool/image_tool.html', tags: ['image', 'compress', 'tupian', 'png', 'jpg'], gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)' },
         { id: 'qrcode_tool', title: '二维码工具', category: 'daily', icon: '📷', desc: '快速生成与拖拽识别二维码', url: '/tool/qrcode_tool.html', tags: ['qrcode', 'scan', 'erweima'], gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' },
         { id: 'color_tool', title: '调色与设计工坊', category: 'daily', icon: '🎨', desc: '全格式色彩互转/WCAG对比度/设计色阶/CSS渐变', url: '/tool/color_tool.html', tags: ['color', 'rgb', 'hex', 'palette', 'wcag', 'gradient'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },

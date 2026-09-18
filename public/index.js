@@ -20,7 +20,8 @@
         { id: 'opencv_beauty', title: 'OpenCV美颜', category: 'dev', icon: '✨', desc: 'WebAssembly 实时视频滤镜与磨皮', url: '/tool/opencv_beauty.html', tags: ['opencv', 'wasm', 'meiyan'], gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', mobile: false },
         { id: 'image_tool', title: '图片处理工坊', category: 'daily', icon: '🖼️', desc: '本地安全处理，保障隐私安全，支持图片压缩、格式转换与 Base64', url: '/tool/image_tool.html', tags: ['image', 'compress'], gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)', mobile: false },
         { id: 'jwt_tool', title: 'JWT 调试工坊', category: 'dev', icon: '🔐', desc: '三栏拆解、时效判定与HS256验签', url: '/tool/jwt_tool.html', tags: ['jwt', 'token', 'auth'], gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', mobile: true },
-        { id: 'cron_tool', title: 'Cron 表达式工坊', category: 'dev', icon: '⏰', desc: '可视化积木配置/逆向解析/未来时间轴推算', url: '/tool/cron_tool.html', tags: ['cron', 'crontab', 'schedule'], gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', mobile: true }
+        { id: 'cron_tool', title: 'Cron 表达式工坊', category: 'dev', icon: '⏰', desc: '可视化积木配置/逆向解析/未来时间轴推算', url: '/tool/cron_tool.html', tags: ['cron', 'crontab', 'schedule'], gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', mobile: true },
+        { id: 'financial_tool', title: '财务与房贷精算', category: 'daily', icon: '💰', desc: '发票大写/增值税反推/房贷对比与提前还款', url: '/tool/financial_tool.html', tags: ['financial', 'rmb', 'caiwu', 'fangdai', 'vat', 'tax', 'loan'], gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', mobile: true }
     ];
 
     // 2. 状态与用户信息
