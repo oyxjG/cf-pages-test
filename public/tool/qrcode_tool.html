@@ -407,17 +407,19 @@
     .decoder-drop-zone {
       border: 2px dashed var(--line);
       border-radius: var(--radius-sm);
-      padding: 20px 16px;
+      padding: 18px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 9px;
       text-align: center;
       cursor: pointer;
       background: var(--input-bg);
       transition: all 0.2s ease;
       position: relative;
+      outline: none;
+      user-select: none;
     }
 
     .decoder-drop-zone:hover, .decoder-drop-zone.dragover {
@@ -425,11 +427,58 @@
       background: rgba(42, 157, 143, 0.05);
     }
 
-    .decoder-drop-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
+    .decoder-drop-zone:focus,
+    .decoder-drop-zone.focused {
+      border-color: var(--teal);
+      background: rgba(42, 157, 143, 0.08);
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.18);
+    }
+
+    .decoder-drop-zone .kbd-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--teal);
+    }
+
+    .drop-zone-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .drop-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      color: var(--text);
       cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .drop-action-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: rgba(42, 157, 143, 0.08);
+    }
+
+    .decoder-drop-zone input[type="file"] {
+      display: none;
     }
 
     .decode-result-box {
@@ -949,11 +998,25 @@
           </span>
         </div>
 
-        <div class="decoder-drop-zone" id="dropZone">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--teal);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <div style="font-size: 12.5px; font-weight: 700; color: var(--text);">拖拽图片到此处，或 Ctrl+V 粘贴截图</div>
-          <div style="font-size: 11px; color: var(--muted);">支持点击选择本地 PNG / JPG / WebP 二维码图片</div>
-          <input type="file" accept="image/*" onchange="handleDecoderFile(event)">
+        <div class="decoder-drop-zone" id="dropZone" tabindex="0" role="region" aria-label="二维码解码识别区域" title="点击可聚焦激活此区域，支持拖拽或快捷键粘贴">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--teal);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px;">
+            <span>拖拽图片到此处，或</span>
+            <kbd class="kbd-badge" id="decoderPasteKeyHint">Ctrl+V</kbd>
+            <span>粘贴截图</span>
+          </div>
+          <div class="drop-zone-actions">
+            <button type="button" class="drop-action-btn" id="browseFileBtn" onclick="triggerDecoderFileInput(event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span>选择本地图片</span>
+            </button>
+            <button type="button" class="drop-action-btn" id="readClipboardBtn" onclick="handleClipboardReadClick(event)" title="直接从系统剪贴板读取图片">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>剪贴板识别</span>
+            </button>
+          </div>
+          <div style="font-size: 11px; color: var(--muted);" id="decoderDropSubtext">点击此区域激活聚焦后直接粘贴 · 支持 PNG / JPG / WebP</div>
+          <input type="file" id="decoderFileInput" accept="image/*" onchange="handleDecoderFile(event)">
         </div>
 
         <!-- 解码结果卡片 -->
@@ -996,7 +1059,7 @@
       </div>
       <div class="status-item">
         <span>快捷工具抽屉:</span>
-        <kbd style="background: var(--paper-strong); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; font-size: 10px;">Ctrl+K</kbd>
+        <kbd id="barDrawerShortcut" style="background: var(--paper-strong); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; font-size: 10px;">Ctrl+K</kbd>
       </div>
     </div>
   </footer>
@@ -1035,16 +1098,32 @@
     let lastGeneratedPayload = '';
     const HISTORY_KEY = 'qr_workbench_history';
 
+    // 智能识别操作系统快捷键 (Mac: ⌘V/⌘K, Win/Linux: Ctrl+V/Ctrl+K)
+    const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent);
+    const pasteKeyText = isMac ? '⌘V' : 'Ctrl+V';
+    const drawerKeyText = isMac ? '⌘K' : 'Ctrl+K';
+
     window.addEventListener('DOMContentLoaded', () => {
+      // 动态更新快捷键标签
+      updateShortcutLabels();
+
       // 监听全局截图粘贴
       document.addEventListener('paste', handleGlobalPaste);
 
-      // 监听拖拽事件
+      // 监听拖拽与点击激活聚焦交互
       setupDragDrop();
 
       // 初次渲染
       renderQr();
     });
+
+    function updateShortcutLabels() {
+      const pasteHint = document.getElementById('decoderPasteKeyHint');
+      if (pasteHint) pasteHint.textContent = pasteKeyText;
+
+      const drawerHint = document.getElementById('barDrawerShortcut');
+      if (drawerHint) drawerHint.textContent = drawerKeyText;
+    }
 
     // 切换模板
     function switchTemplate(tpl) {
@@ -1373,6 +1452,9 @@
     // 多源解析靶场 (Decoder) 逻辑
     function setupDragDrop() {
       const zone = document.getElementById('dropZone');
+      const subtext = document.getElementById('decoderDropSubtext');
+      const defaultSubtext = '点击此区域激活聚焦后直接粘贴 · 支持 PNG / JPG / WebP';
+
       ['dragenter', 'dragover'].forEach(name => {
         zone.addEventListener(name, (e) => {
           e.preventDefault();
@@ -1391,6 +1473,58 @@
           processDecoderFile(file);
         }
       });
+
+      // 点击靶场空白区域激活聚焦，绝不弹出本地文件选择
+      zone.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        zone.focus();
+      });
+
+      // 聚焦交互反馈
+      zone.addEventListener('focus', () => {
+        zone.classList.add('focused');
+        if (subtext) subtext.textContent = `🎯 区域已激活！请直接按下 ${pasteKeyText} 粘贴截图`;
+      });
+      zone.addEventListener('blur', () => {
+        zone.classList.remove('focused');
+        if (subtext) subtext.textContent = defaultSubtext;
+      });
+
+      // 区域内部监听 paste 事件
+      zone.addEventListener('paste', handleGlobalPaste);
+    }
+
+    function triggerDecoderFileInput(e) {
+      if (e) e.stopPropagation();
+      const fileInput = document.getElementById('decoderFileInput');
+      if (fileInput) fileInput.click();
+    }
+
+    async function handleClipboardReadClick(e) {
+      if (e) e.stopPropagation();
+      if (!navigator.clipboard || !navigator.clipboard.read) {
+        showToast(`当前浏览器未开放读取权限，请按快捷键 ${pasteKeyText} 直接粘贴`);
+        const zone = document.getElementById('dropZone');
+        if (zone) zone.focus();
+        return;
+      }
+
+      try {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          const imageType = item.types.find(t => t.startsWith('image/'));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            processDecoderFile(blob);
+            return;
+          }
+        }
+        showToast(`⚠️ 剪贴板未发现图片，请截图后按 ${pasteKeyText} 粘贴`);
+      } catch (err) {
+        showToast(`请先允许剪贴板访问，或直接按 ${pasteKeyText} 粘贴`);
+        const zone = document.getElementById('dropZone');
+        if (zone) zone.focus();
+      }
     }
 
     function handleDecoderFile(e) {
@@ -1400,12 +1534,34 @@
     }
 
     function handleGlobalPaste(e) {
-      const items = e.clipboardData.items;
+      const isInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+      const items = e.clipboardData ? e.clipboardData.items : null;
+      if (!items) return;
+
+      let hasImage = false;
       for (let i = 0; i < items.length; i++) {
-        if (items[i].type.startsWith('image/')) {
+        if (items[i].type && items[i].type.startsWith('image/')) {
           const file = items[i].getAsFile();
-          processDecoderFile(file);
-          return;
+          if (file) {
+            hasImage = true;
+            processDecoderFile(file);
+            e.preventDefault();
+            return;
+          }
+        }
+      }
+
+      // 如果未检测到图片文件且当前不在输入框中输入，尝试读取 data:image base64
+      if (!hasImage && !isInput) {
+        const text = e.clipboardData.getData('text');
+        if (text && text.trim().startsWith('data:image/')) {
+          fetch(text.trim())
+            .then(res => res.blob())
+            .then(blob => processDecoderFile(blob))
+            .catch(() => {});
+          e.preventDefault();
+        } else if (document.activeElement === document.getElementById('dropZone')) {
+          showToast(`⚠️ 剪贴板中未检测到图片，请先复制二维码截图后按 ${pasteKeyText} 粘贴`);
         }
       }
     }
