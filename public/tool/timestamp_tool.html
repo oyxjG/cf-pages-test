@@ -261,6 +261,70 @@
       flex-direction: column;
       gap: 14px;
       position: relative;
+      box-sizing: border-box;
+    }
+
+    /* 左栏卡片铺满自适应：前两张紧凑，第3张时区大盘弹性伸展充满底端 */
+    .col-left .card-parse,
+    .col-left .card-convert {
+      flex-shrink: 0;
+    }
+
+    .col-left .card-world-clock {
+      flex: 1;
+      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col-left .card-world-clock .world-clock-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      align-content: stretch;
+    }
+
+    .col-left .card-world-clock .zone-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    /* 右栏卡片铺满自适应 */
+    .col-right .panel-card {
+      flex: 1;
+      min-height: 340px;
+      box-sizing: border-box;
+    }
+
+    #tab-batch {
+      flex-direction: column;
+    }
+
+    #tab-batch .batch-input-group,
+    #tab-batch .batch-output-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 100px;
+    }
+
+    #tab-batch .batch-input-group .log-textarea,
+    #tab-batch .batch-output-group .log-textarea {
+      flex: 1;
+      min-height: 90px;
+      height: 100%;
+    }
+
+    #tab-delta {
+      flex-direction: column;
+    }
+
+    #tab-cheatsheet {
+      flex-direction: column;
     }
 
     .panel-header {
@@ -762,6 +826,13 @@
         height: auto;
         overflow: visible;
       }
+      .col-left .card-parse,
+      .col-left .card-convert,
+      .col-left .card-world-clock,
+      .col-right .panel-card {
+        flex: none;
+        min-height: auto;
+      }
       .header-center-clock {
         display: none;
       }
@@ -825,7 +896,7 @@
     <div class="col-left">
 
       <!-- 卡片 1: 时间戳 → 多格式时间 -->
-      <section class="panel-card">
+      <section class="panel-card card-parse">
         <div class="panel-header">
           <h2 class="panel-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -900,7 +971,7 @@
       </section>
 
       <!-- 卡片 2: 日期时间 → 时间戳 -->
-      <section class="panel-card">
+      <section class="panel-card card-convert">
         <div class="panel-header">
           <h2 class="panel-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -950,7 +1021,7 @@
       </section>
 
       <!-- 卡片 3: 全球核心时区大盘 (World Clock Matrix) -->
-      <section class="panel-card">
+      <section class="panel-card card-world-clock">
         <div class="panel-header">
           <h2 class="panel-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1003,18 +1074,20 @@
           贴入包含 10位或13位时间戳的服务器/K8s/应用日志，工具将自动正则匹配并批量替换为人类可读时间：
         </p>
 
-        <textarea id="log-input" class="log-textarea" placeholder="例如：
+        <div class="batch-input-group">
+          <textarea id="log-input" class="log-textarea" placeholder="例如：
 [1725865200] [WARN] worker instance restarted
 { &quot;time&quot;: 1725865200000, &quot;status&quot;: &quot;ok&quot; }"></textarea>
+        </div>
 
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;">
           <button class="action-btn primary" onclick="convertBatchLog('local')">批量替换为北京时间</button>
           <button class="action-btn" onclick="convertBatchLog('utc')">替换为 UTC 时间</button>
           <button class="action-btn" onclick="extractAllTimestamps()">提取所有时间戳</button>
           <button class="action-btn" onclick="copyBatchResult()" style="margin-left: auto;">复制结果</button>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div class="batch-output-group">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 12px; font-weight: 600; color: var(--muted);">转换结果：</span>
             <span id="batch-stats" style="font-size: 11px; color: var(--teal);">未执行</span>

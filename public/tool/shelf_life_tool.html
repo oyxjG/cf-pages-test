@@ -188,9 +188,19 @@
         min-width: auto;
         border-right: none;
         border-bottom: 1px solid var(--line);
+        height: auto;
       }
       .pane-right {
         height: auto;
+      }
+      #cardCalcConsole,
+      #cardPaoConsole,
+      #cardExpiryBoard {
+        flex: none;
+        min-height: auto;
+      }
+      .items-container {
+        max-height: 380px;
       }
     }
 
@@ -204,6 +214,38 @@
       flex-direction: column;
       gap: 14px;
       box-shadow: var(--shadow-sm);
+      box-sizing: border-box;
+    }
+
+    /* 左侧卡片高度自适应充满 */
+    #cardCalcConsole {
+      flex: 1.1;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #cardPaoConsole {
+      flex: 0.9;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 右侧卡片高度自适应充满 */
+    #calcDashboard {
+      flex-shrink: 0;
+    }
+
+    #cardExpiryBoard {
+      flex: 1;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #cardKnowledgeBase {
+      flex-shrink: 0;
     }
 
     .card-header-bar {
@@ -493,7 +535,8 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 480px;
+      flex: 1;
+      min-height: 120px;
       overflow-y: auto;
     }
 
