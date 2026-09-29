@@ -391,6 +391,42 @@
       min-width: max-content;
     }
 
+    /* 节点对象/数组块级级联高亮（悬浮在起始行或结束行时整体块级高亮与导轨虚线高亮） */
+    .json-node {
+      position: relative;
+      border-radius: 6px;
+      margin: 1px 0;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .json-node.json-node-active,
+    .json-node:has(> .json-node-header:hover),
+    .json-node:has(> .json-node-footer:hover) {
+      background: rgba(45, 120, 108, 0.07);
+      box-shadow: 0 0 0 2px rgba(45, 120, 108, 0.09);
+    }
+
+    [data-theme="dark"] .json-node.json-node-active,
+    [data-theme="dark"] .json-node:has(> .json-node-header:hover),
+    [data-theme="dark"] .json-node:has(> .json-node-footer:hover) {
+      background: rgba(129, 178, 154, 0.12);
+      box-shadow: 0 0 0 2px rgba(129, 178, 154, 0.15);
+    }
+
+    .json-node.json-node-active > .json-fold-content,
+    .json-node:has(> .json-node-header:hover) > .json-fold-content,
+    .json-node:has(> .json-node-footer:hover) > .json-fold-content {
+      border-left-color: rgba(45, 120, 108, 0.6);
+      border-left-width: 1.5px;
+    }
+
+    [data-theme="dark"] .json-node.json-node-active > .json-fold-content,
+    [data-theme="dark"] .json-node:has(> .json-node-header:hover) > .json-fold-content,
+    [data-theme="dark"] .json-node:has(> .json-node-footer:hover) > .json-fold-content {
+      border-left-color: rgba(129, 178, 154, 0.7);
+      border-left-width: 1.5px;
+    }
+
     /* 每一行结构：行号 + 内容 */
     .json-row {
       display: flex;
@@ -1131,6 +1167,25 @@
           collapsible.classList.toggle('collapsed');
         }
       }
+    }
+
+    // 级联高亮交互支持：当悬浮在开始行 Header 或结束行 Footer 时，整块节点及导轨虚线高亮
+    const outputContainer = document.getElementById('outputContainer');
+    if (outputContainer) {
+      outputContainer.addEventListener('mouseover', (e) => {
+        const row = e.target.closest('.json-node-header, .json-node-footer');
+        if (row) {
+          const node = row.closest('.json-node');
+          if (node) node.classList.add('json-node-active');
+        }
+      });
+      outputContainer.addEventListener('mouseout', (e) => {
+        const row = e.target.closest('.json-node-header, .json-node-footer');
+        if (row) {
+          const node = row.closest('.json-node');
+          if (node) node.classList.remove('json-node-active');
+        }
+      });
     }
 
     // 全部展开
