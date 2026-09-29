@@ -278,16 +278,71 @@
       background: var(--input-bg);
     }
 
-    /* 左侧纯净输入框（极致流畅，无多余 DOM 负担） */
+    /* 左侧编辑框容器（带行号） */
+    .editor-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #lineNumbers {
+      width: 48px;
+      min-width: 48px;
+      background: rgba(84, 66, 49, 0.03);
+      border-right: 1px solid var(--line);
+      padding: 16px 0;
+      text-align: right;
+      color: var(--muted);
+      opacity: 0.65;
+      font-size: 12px;
+      line-height: 1.65;
+      user-select: none;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    #lineNumbers div {
+      padding: 0 10px;
+      height: 1.65em;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: background 0.1s ease, color 0.1s ease;
+    }
+
+    #lineNumbers div:hover {
+      color: var(--accent);
+      background: rgba(191, 91, 50, 0.08);
+    }
+
+    #lineNumbers div.error-line {
+      background: rgba(220, 38, 38, 0.18) !important;
+      color: #dc2626 !important;
+      font-weight: bold;
+      position: relative;
+    }
+
+    #lineNumbers div.error-line::before {
+      content: "▶";
+      position: absolute;
+      left: 3px;
+      font-size: 9px;
+      top: 1px;
+    }
+
     .json-textarea {
-      width: 100%;
+      flex: 1;
       height: 100%;
       padding: 16px 20px;
       border: none;
       background: transparent;
-      font-family: "Fira Code", "Consolas", monospace;
-      font-size: 13.5px;
-      line-height: 1.65;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
       color: var(--text);
       resize: none;
       outline: none;
@@ -655,13 +710,17 @@
         </div>
       </div>
       <div class="panel-body">
-        <textarea 
-          id="jsonInput" 
-          class="json-textarea" 
-          placeholder="在此输入或粘贴原始 JSON 字符串...&#10;支持快捷键 Ctrl + Enter 快速执行格式化"
-          spellcheck="false"
-          oninput="handleInputChange()"
-          onkeydown="handleInputKeyDown(event)"></textarea>
+        <div class="editor-container">
+          <div id="lineNumbers" onclick="handleLineNumberClick(event)" title="点击行号可快速跳转光标"></div>
+          <textarea 
+            id="jsonInput" 
+            class="json-textarea" 
+            placeholder="在此输入或粘贴原始 JSON 字符串...&#10;支持快捷键 Ctrl + Enter 快速执行格式化"
+            spellcheck="false"
+            oninput="handleInputChange()"
+            onscroll="syncScroll()"
+            onkeydown="handleInputKeyDown(event)"></textarea>
+        </div>
       </div>
       <div id="errorArea" class="error-banner"></div>
     </section>
@@ -718,6 +777,7 @@
 
   <script>
     const input = document.getElementById('jsonInput');
+    const lineNumbers = document.getElementById('lineNumbers');
     const treeContainer = document.getElementById('jsonTreeRender');
     const rawContainer = document.getElementById('outputRaw');
     const rawWrapper = document.getElementById('outputRawWrapper');
@@ -731,6 +791,7 @@
     let parsedJsonData = null;
     let isCompressed = false;
     let globalLineNumber = 1;
+    let currentLeftLineCount = 0;
 
     // 三角指示器 SVG 图标
     const TRIANGLE_ICON = `<span class="json-toggle" title="展开/折叠"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></span>`;
@@ -748,6 +809,7 @@
       const savedLayout = localStorage.getItem('json_tool_layout') || 'horizontal';
       setLayout(savedLayout, false);
       handleInputChange();
+      updateLineNumbers();
     })();
 
     function setLayout(mode, save = true) {
@@ -772,11 +834,47 @@
       }
     }
 
+    function syncScroll() {
+      if (lineNumbers) {
+        lineNumbers.scrollTop = input.scrollTop;
+      }
+    }
+
+    function updateLineNumbers() {
+      if (!lineNumbers) return;
+      const val = input.value;
+      const lines = val ? val.split('\n').length : 1;
+      if (lines === currentLeftLineCount) return;
+      currentLeftLineCount = lines;
+
+      let html = '';
+      for (let i = 1; i <= lines; i++) {
+        html += `<div id="ln-${i}">${i}</div>`;
+      }
+      lineNumbers.innerHTML = html;
+      syncScroll();
+    }
+
+    function handleLineNumberClick(e) {
+      const target = e.target.closest('#lineNumbers div');
+      if (!target) return;
+      const lineNum = parseInt(target.textContent);
+      if (!lineNum) return;
+      const lines = input.value.split('\n');
+      let pos = 0;
+      for (let i = 0; i < lineNum - 1 && i < lines.length; i++) {
+        pos += lines[i].length + 1;
+      }
+      input.focus();
+      input.setSelectionRange(pos, pos + (lines[lineNum - 1] ? lines[lineNum - 1].length : 0));
+    }
+
     function handleInputChange() {
       const val = input.value;
       const lines = val ? val.split('\n').length : 0;
       const chars = val.length;
       jsonStats.innerText = `${lines} 行 / ${chars} 字符`;
+      updateLineNumbers();
       hideError();
     }
 
@@ -822,6 +920,8 @@
 
     function clearAll() {
       input.value = '';
+      currentLeftLineCount = 0;
+      updateLineNumbers();
       handleInputChange();
       parsedJsonData = null;
       treeContainer.innerHTML = '';
@@ -1140,6 +1240,17 @@
       errorArea.innerHTML = fullMsg;
       errorArea.style.display = 'flex';
 
+      if (lineNumbers) {
+        document.querySelectorAll('#lineNumbers div.error-line').forEach(el => el.classList.remove('error-line'));
+        if (errorLine > 0) {
+          const errorEl = document.getElementById(`ln-${errorLine}`);
+          if (errorEl) {
+            errorEl.classList.add('error-line');
+            errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }
+
       if (pos >= 0) {
         input.focus();
         input.setSelectionRange(pos, pos + 1);
@@ -1148,6 +1259,9 @@
 
     function hideError() {
       errorArea.style.display = 'none';
+      if (lineNumbers) {
+        document.querySelectorAll('#lineNumbers div.error-line').forEach(el => el.classList.remove('error-line'));
+      }
     }
   </script>
 </body>
