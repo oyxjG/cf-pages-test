@@ -133,13 +133,14 @@
       gap: 8px;
     }
 
-    /* 主工作区双栏 */
+    /* 主工作区双栏 (全屏铺满无空洞) */
     .workbench-main {
       flex: 1;
       height: calc(100vh - 56px - 32px);
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1.12fr 0.88fr;
       overflow: hidden;
+      background: var(--bg);
     }
 
     /* 左栏：内容模板与样式定制 */
@@ -150,8 +151,9 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       background: var(--bg);
+      box-sizing: border-box;
     }
 
     .panel-card {
@@ -163,6 +165,38 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      box-sizing: border-box;
+    }
+
+    /* 左栏自适应铺满：卡片1(内容录入)随屏伸展，卡片2(视觉定制)紧凑贴底 */
+    .card-content-template {
+      flex: 1;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-content-template .template-form.active {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-content-template #form-text .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-content-template #form-text .form-textarea {
+      flex: 1;
+      min-height: 110px;
+      height: 100%;
+      resize: vertical;
+    }
+
+    .card-style-config {
+      flex-shrink: 0;
     }
 
     .panel-header {
@@ -350,29 +384,52 @@
       object-fit: contain;
     }
 
-    /* 右栏：实时大盘与解码 */
+    /* 右栏：实时大盘与解码 (垂直全铺满) */
     .col-preview {
       height: 100%;
       overflow-y: auto;
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       background: var(--bg);
+      box-sizing: border-box;
     }
 
-    /* 二维码展示大卡片 */
+    /* 二维码展示大卡片 (铺满上半区，舞台垂直居中) */
     .qr-showcase-card {
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow);
-      padding: 20px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 16px;
       position: relative;
+      flex: 1.15;
+      min-height: 330px;
+      box-sizing: border-box;
+    }
+
+    /* 解码靶场卡片 (铺满下半区) */
+    .card-decoder {
+      flex: 0.85;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .card-decoder .decoder-drop-zone {
+      flex: 1;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .canvas-stage {
@@ -690,6 +747,15 @@
         border-bottom: 1px solid var(--line);
         height: auto;
       }
+      .col-preview {
+        height: auto;
+      }
+      .card-content-template,
+      .qr-showcase-card,
+      .card-decoder {
+        flex: none;
+        min-height: auto;
+      }
     }
   </style>
 </head>
@@ -756,7 +822,7 @@
     <div class="col-config">
 
       <!-- 卡片 1: 场景化内容模板 -->
-      <section class="panel-card">
+      <section class="panel-card card-content-template">
         <div class="panel-header">
           <span class="panel-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -881,7 +947,7 @@
       </section>
 
       <!-- 卡片 2: 视觉外观与 Logo 定制 -->
-      <section class="panel-card">
+      <section class="panel-card card-style-config">
         <div class="panel-header">
           <span class="panel-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
@@ -990,7 +1056,7 @@
       </section>
 
       <!-- 模块 2: 多源解码靶场 (QR Decoder) -->
-      <section class="panel-card">
+      <section class="panel-card card-decoder">
         <div class="panel-header">
           <span class="panel-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
