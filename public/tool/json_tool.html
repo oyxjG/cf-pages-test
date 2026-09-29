@@ -179,12 +179,10 @@
       transition: all 0.2s ease;
     }
 
-    /* 左右布局（默认） */
     .workspace.layout-horizontal {
       flex-direction: row;
     }
 
-    /* 上下布局 */
     .workspace.layout-vertical {
       flex-direction: column;
     }
@@ -280,62 +278,20 @@
       background: var(--input-bg);
     }
 
-    /* 左侧编辑框（带行号） */
-    .editor-container {
-      display: flex;
-      flex: 1;
-      min-height: 0;
+    /* 左侧纯净输入框（极致流畅，无多余 DOM 负担） */
+    .json-textarea {
+      width: 100%;
+      height: 100%;
+      padding: 16px 20px;
+      border: none;
+      background: transparent;
       font-family: "Fira Code", "Consolas", monospace;
       font-size: 13.5px;
       line-height: 1.65;
-      overflow: hidden;
-    }
-
-    #lineNumbers {
-      width: 44px;
-      background: rgba(84, 66, 49, 0.03);
-      border-right: 1px solid var(--line);
-      padding: 16px 0;
-      text-align: right;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.65;
-      user-select: none;
-      overflow: hidden;
-    }
-
-    #lineNumbers div {
-      padding: 0 8px;
-      height: 1.65em;
-    }
-
-    #lineNumbers div.error-line {
-      background: rgba(220, 38, 38, 0.15);
-      color: #dc2626;
-      font-weight: bold;
-      position: relative;
-    }
-
-    #lineNumbers div.error-line::before {
-      content: "▶";
-      position: absolute;
-      left: 4px;
-      font-size: 9px;
-      top: 2px;
-    }
-
-    .json-textarea {
-      flex: 1;
-      padding: 16px;
-      border: none;
-      background: transparent;
-      font-family: inherit;
-      font-size: inherit;
-      line-height: inherit;
       color: var(--text);
       resize: none;
       outline: none;
-      overflow-y: auto;
+      overflow: auto;
       white-space: pre;
       tab-size: 2;
     }
@@ -349,13 +305,17 @@
     .result-container {
       width: 100%;
       height: 100%;
-      padding: 16px 20px;
+      padding: 12px 0;
       overflow: auto;
       outline: none;
       font-family: "Fira Code", "Consolas", monospace;
       font-size: 13.5px;
       line-height: 1.65;
       color: var(--text);
+    }
+
+    .result-raw-wrapper {
+      padding: 0 16px;
     }
 
     .result-raw {
@@ -365,58 +325,23 @@
       font-family: inherit;
     }
 
-    /* JSON 树形渲染与缩进虚线体系 */
+    /* JSON 树形渲染体系 */
     .json-tree {
       display: block;
       font-family: "Fira Code", "Consolas", monospace;
       user-select: text;
+      min-width: max-content;
     }
 
-    /* 节点对象/数组块级高亮（悬浮在起始行或结束行时整体高亮） */
-    .json-node {
-      position: relative;
-      border-radius: 6px;
-      transition: background 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .json-node:has(> .json-node-header:hover),
-    .json-node:has(> .json-node-footer:hover) {
-      background: rgba(45, 120, 108, 0.07);
-      box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.08);
-    }
-
-    [data-theme="dark"] .json-node:has(> .json-node-header:hover),
-    [data-theme="dark"] .json-node:has(> .json-node-footer:hover) {
-      background: rgba(129, 178, 154, 0.12);
-      box-shadow: 0 0 0 3px rgba(129, 178, 154, 0.15);
-    }
-
-    .json-node:has(> .json-node-header:hover) > .json-fold-content,
-    .json-node:has(> .json-node-footer:hover) > .json-fold-content {
-      border-left-color: rgba(45, 120, 108, 0.4);
-    }
-
-    [data-theme="dark"] .json-node:has(> .json-node-header:hover) > .json-fold-content,
-    [data-theme="dark"] .json-node:has(> .json-node-footer:hover) > .json-fold-content {
-      border-left-color: rgba(129, 178, 154, 0.5);
-    }
-
-    /* 行容器与整行悬浮高亮 */
+    /* 每一行结构：行号 + 内容 */
     .json-row {
-      display: block;
-      padding: 2px 6px;
-      margin: 0 -6px;
-      border-radius: 4px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      word-break: normal;
-      line-height: 1.65;
-      transition: background 0.12s ease;
-    }
-
-    .json-row.json-node-header {
       display: flex;
       align-items: baseline;
+      padding: 1px 12px 1px 0;
+      min-height: 24px;
+      line-height: 1.65;
+      white-space: pre;
+      transition: background 0.1s ease;
     }
 
     .json-row:hover {
@@ -427,70 +352,87 @@
       background: rgba(255, 255, 255, 0.04);
     }
 
-    /* 键名前缀原子包裹（禁止切断 key 单词） */
-    .json-key-prefix {
-      white-space: nowrap;
-      word-break: keep-all;
-      display: inline;
+    /* 右侧专业行号样式 */
+    .json-ln {
+      display: inline-block;
+      min-width: 52px;
+      padding-right: 14px;
+      margin-right: 10px;
+      text-align: right;
+      color: var(--muted);
+      opacity: 0.45;
+      font-size: 12px;
+      user-select: none;
+      flex-shrink: 0;
+      border-right: 1px solid var(--line);
+      font-family: inherit;
+      line-height: inherit;
     }
 
+    .json-row:hover .json-ln {
+      opacity: 0.85;
+      color: var(--accent);
+    }
+
+    .json-content {
+      display: inline-flex;
+      align-items: baseline;
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* 键名样式 */
     .json-key {
       color: var(--berry);
       font-weight: 600;
       white-space: nowrap;
-      word-break: keep-all;
     }
 
-    .json-string {
+    /* 标点符号与基础值着色 */
+    .json-punct { color: var(--muted); opacity: 0.85; }
+    .json-string { color: var(--teal); }
+    .json-string-link {
       color: var(--teal);
-      overflow-wrap: anywhere;
-      word-break: normal;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      cursor: pointer;
     }
-
-    /* 缩进子层级容器与纵向对齐虚线 */
-    .json-fold-content {
-      display: block;
-      margin-left: 8px;
-      padding-left: 16px;
-      border-left: 1px dashed var(--line);
-      transition: border-color 0.2s ease;
+    .json-string-link:hover {
+      text-decoration-style: solid;
+      color: var(--accent);
     }
+    .json-number { color: var(--mustard); font-weight: 600; }
+    .json-boolean { color: var(--accent); font-weight: 700; }
+    .json-null { color: var(--muted); font-style: italic; opacity: 0.85; }
 
-    .json-fold-content:hover {
-      border-left-color: rgba(191, 91, 50, 0.35);
-    }
-
-    [data-theme="dark"] .json-fold-content:hover {
-      border-left-color: rgba(224, 122, 95, 0.45);
-    }
-
-    /* 三角折叠指示器（优化放大与热区） */
+    /* 三角折叠指示器 */
     .json-toggle {
       cursor: pointer;
       user-select: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       margin-right: 4px;
       color: var(--muted);
-      opacity: 0.85;
-      transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease;
+      opacity: 0.75;
       flex-shrink: 0;
       vertical-align: middle;
       border-radius: 3px;
+      transition: color 0.15s ease, background 0.15s ease;
     }
 
     .json-toggle:hover {
       opacity: 1;
       color: var(--accent);
-      background: rgba(191, 91, 50, 0.1);
+      background: rgba(191, 91, 50, 0.12);
     }
 
     .json-toggle svg {
-      width: 13.5px;
-      height: 13.5px;
+      width: 12px;
+      height: 12px;
       transition: transform 0.15s ease;
     }
 
@@ -507,20 +449,36 @@
       display: none;
     }
 
+    /* 缩进子层级容器与纵向对齐虚线 */
+    .json-fold-content {
+      display: block;
+      margin-left: 20px;
+      padding-left: 12px;
+      border-left: 1px dashed var(--line);
+    }
+
+    .json-fold-content:hover {
+      border-left-color: rgba(191, 91, 50, 0.4);
+    }
+
+    [data-theme="dark"] .json-fold-content:hover {
+      border-left-color: rgba(224, 122, 95, 0.5);
+    }
+
     /* 折叠占位提示胶囊 */
     .json-placeholder-badge {
       display: none;
       background: rgba(191, 91, 50, 0.1);
       color: var(--accent);
-      padding: 0 7px;
+      padding: 0 6px;
       border-radius: 4px;
-      font-size: 11.5px;
+      font-size: 11px;
       margin: 0 6px;
       cursor: pointer;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       vertical-align: middle;
       font-weight: 500;
-      border: 1px dashed rgba(191, 91, 50, 0.3);
+      border: 1px dashed rgba(191, 91, 50, 0.35);
       user-select: none;
     }
 
@@ -540,24 +498,6 @@
     .json-collapsible.collapsed > .json-node-header .json-closing-bracket-collapsed {
       display: inline;
     }
-
-    /* 语法高亮着色 */
-    .json-key { color: var(--berry); font-weight: 600; }
-    .json-string { color: var(--teal); }
-    .json-string-link {
-      color: var(--teal);
-      text-decoration: underline;
-      text-decoration-style: dotted;
-      cursor: pointer;
-    }
-    .json-string-link:hover {
-      text-decoration-style: solid;
-      color: var(--accent);
-    }
-    .json-number { color: var(--mustard); font-weight: 600; }
-    .json-boolean { color: var(--accent); font-weight: 700; }
-    .json-null { color: var(--muted); font-style: italic; opacity: 0.85; }
-    .json-punct { color: var(--muted); opacity: 0.9; }
 
     /* 空状态提示 */
     .empty-state {
@@ -619,7 +559,7 @@
       font-weight: bold;
     }
 
-    /* 复制轻提示 */
+    /* 复制轻提示 Toast */
     .toast-tip {
       position: fixed;
       bottom: 24px;
@@ -643,21 +583,11 @@
       transform: translateY(0);
     }
 
-    /* 响应式调整 */
     @media (max-width: 768px) {
-      .top-navbar {
-        padding: 0 12px;
-      }
-      .app-title h1 {
-        font-size: 16px;
-      }
-      .app-title .tag {
-        display: none;
-      }
-      .workspace {
-        flex-direction: column !important;
-        padding: 8px;
-      }
+      .top-navbar { padding: 0 12px; }
+      .app-title h1 { font-size: 16px; }
+      .app-title .tag { display: none; }
+      .workspace { flex-direction: column !important; padding: 8px; }
     }
   </style>
 </head>
@@ -672,7 +602,7 @@
       </a>
       <div class="app-title">
         <h1>JSON 格式化 & 校验工具</h1>
-        <span class="tag">实时语法校验 / 树形虚线折叠</span>
+        <span class="tag">实时语法校验 / 高性能行号视图</span>
       </div>
     </div>
 
@@ -725,27 +655,24 @@
         </div>
       </div>
       <div class="panel-body">
-        <div class="editor-container">
-          <div id="lineNumbers"></div>
-          <textarea 
-            id="jsonInput" 
-            class="json-textarea" 
-            placeholder="在此输入或粘贴 JSON 字符串...&#10;支持快捷键 Ctrl + Enter 快速格式化"
-            spellcheck="false"
-            oninput="handleInputChange()"
-            onscroll="syncScroll()"
-            onkeydown="handleInputKeyDown(event)"></textarea>
-        </div>
+        <textarea 
+          id="jsonInput" 
+          class="json-textarea" 
+          placeholder="在此输入或粘贴原始 JSON 字符串...&#10;支持快捷键 Ctrl + Enter 快速执行格式化"
+          spellcheck="false"
+          oninput="handleInputChange()"
+          onkeydown="handleInputKeyDown(event)"></textarea>
       </div>
       <div id="errorArea" class="error-banner"></div>
     </section>
 
-    <!-- 右侧面板：解析结果与交互树 -->
+    <!-- 右侧面板：格式化结果与带行号树形交互视图 -->
     <section class="panel">
       <div class="panel-header">
         <div class="panel-title">
-          <span>解析结果 (Tree View)</span>
+          <span>格式化结果 (TREE VIEW)</span>
           <span id="resultTypeBadge" class="badge" style="display: none;">已解析</span>
+          <span id="perfBadge" class="badge" style="display: none; background: rgba(45, 120, 108, 0.12); color: var(--teal);"></span>
         </div>
         <div class="panel-actions">
           <div id="jsonActions" style="display: none; align-items: center; gap: 4px;">
@@ -764,7 +691,7 @@
             <div class="action-divider"></div>
           </div>
           
-          <button class="action-link" onclick="copyPlainResult()" title="复制标准 JSON 内容">
+          <button class="action-link" onclick="copyPlainResult()" title="复制标准格式化 JSON">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             复制
           </button>
@@ -778,7 +705,9 @@
         
         <div id="outputContainer" class="result-container" tabindex="0" onkeydown="handleResultKeyDown(event)" onclick="handleRenderClick(event)">
           <div id="jsonTreeRender" class="json-tree"></div>
-          <pre id="outputRaw" class="result-raw" style="display: none;"></pre>
+          <div id="outputRawWrapper" class="result-raw-wrapper" style="display: none;">
+            <pre id="outputRaw" class="result-raw"></pre>
+          </div>
         </div>
       </div>
     </section>
@@ -789,36 +718,36 @@
 
   <script>
     const input = document.getElementById('jsonInput');
-    const lineNumbers = document.getElementById('lineNumbers');
     const treeContainer = document.getElementById('jsonTreeRender');
     const rawContainer = document.getElementById('outputRaw');
+    const rawWrapper = document.getElementById('outputRawWrapper');
     const errorArea = document.getElementById('errorArea');
     const emptyState = document.getElementById('emptyState');
     const jsonStats = document.getElementById('jsonStats');
     const jsonActions = document.getElementById('jsonActions');
     const resultTypeBadge = document.getElementById('resultTypeBadge');
+    const perfBadge = document.getElementById('perfBadge');
 
     let parsedJsonData = null;
     let isCompressed = false;
+    let globalLineNumber = 1;
 
     // 三角指示器 SVG 图标
-    const TRIANGLE_ICON = `<span class="json-toggle" title="展开/收起"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></span>`;
+    const TRIANGLE_ICON = `<span class="json-toggle" title="展开/折叠"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></span>`;
 
     // 平台快捷键自动检测 (Mac 显示 ⌘, Win/Linux 显示 Ctrl)
     const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
     const modKey = isMac ? '⌘' : 'Ctrl';
 
-    // 初始化布局记忆
     (function initLayout() {
       const runBtn = document.getElementById('runBtn');
       if (runBtn) runBtn.title = `快捷键: ${modKey} + Enter`;
       if (input) {
-        input.placeholder = `在此输入或粘贴 JSON 字符串...\n支持快捷键 ${modKey} + Enter 快速格式化`;
+        input.placeholder = `在此输入或粘贴原始 JSON 字符串...\n支持快捷键 ${modKey} + Enter 快速执行格式化`;
       }
-
       const savedLayout = localStorage.getItem('json_tool_layout') || 'horizontal';
       setLayout(savedLayout, false);
-      updateLineNumbers();
+      handleInputChange();
     })();
 
     function setLayout(mode, save = true) {
@@ -843,26 +772,11 @@
       }
     }
 
-    function updateLineNumbers() {
-      const lines = input.value.split('\n').length;
-      let html = '';
-      for (let i = 1; i <= lines; i++) {
-        html += `<div id="ln-${i}">${i}</div>`;
-      }
-      lineNumbers.innerHTML = html;
-      syncScroll();
-    }
-
-    function syncScroll() {
-      lineNumbers.scrollTop = input.scrollTop;
-    }
-
     function handleInputChange() {
       const val = input.value;
-      const lines = val.split('\n').length;
+      const lines = val ? val.split('\n').length : 0;
       const chars = val.length;
       jsonStats.innerText = `${lines} 行 / ${chars} 字符`;
-      updateLineNumbers();
       hideError();
     }
 
@@ -883,7 +797,7 @@
     function handleResultKeyDown(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
-        const container = parsedJsonData ? treeContainer : rawContainer;
+        const container = parsedJsonData && !isCompressed ? treeContainer : rawContainer;
         const selection = window.getSelection();
         const range = document.createRange();
         range.selectNodeContents(container);
@@ -913,10 +827,11 @@
       treeContainer.innerHTML = '';
       rawContainer.textContent = '';
       treeContainer.style.display = 'none';
-      rawContainer.style.display = 'none';
+      rawWrapper.style.display = 'none';
       emptyState.style.display = 'flex';
       jsonActions.style.display = 'none';
       resultTypeBadge.style.display = 'none';
+      perfBadge.style.display = 'none';
       hideError();
       input.focus();
     }
@@ -988,7 +903,7 @@
       
       try {
         await navigator.clipboard.writeText(text);
-        showToast('已复制纯净 JSON 到剪贴板');
+        showToast('已复制格式化 JSON 到剪贴板');
       } catch (err) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -996,11 +911,11 @@
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        showToast('已复制纯净 JSON 到剪贴板');
+        showToast('已复制格式化 JSON 到剪贴板');
       }
     }
 
-    // --- JSON 树形渲染与多层折叠引擎 ---
+    // --- 高性能带行号 JSON 树形渲染引擎 ---
     function escapeHtml(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
@@ -1023,13 +938,23 @@
       return '';
     }
 
-    function renderJSONTree(val, key = null, isLast = true) {
+    /**
+     * 递归构建带行号的 JSON DOM
+     * @param {any} val 当前节点值
+     * @param {string|null} key 当前键名
+     * @param {boolean} isLast 是否是该层的最后一个元素
+     * @param {number} depth 嵌套深度
+     * @param {boolean} autoCollapseLarge 是否对超长子集合默认折叠
+     */
+    function renderJSONTreeWithLines(val, key = null, isLast = true, depth = 0, autoCollapseLarge = false) {
       const isComplex = val !== null && typeof val === 'object';
-      const keyPrefix = key !== null ? `<span class="json-key-prefix"><span class="json-key">"${escapeHtml(key)}"</span><span class="json-punct">: </span></span>` : '';
+      const keyPrefix = key !== null ? `<span class="json-key">"${escapeHtml(key)}"</span><span class="json-punct">: </span>` : '';
       const comma = isLast ? '' : '<span class="json-punct">,</span>';
 
+      // 简单基本类型值（非对象/数组）
       if (!isComplex) {
-        return `<div class="json-row">${keyPrefix}${formatValue(val)}${comma}</div>`;
+        const curLine = globalLineNumber++;
+        return `<div class="json-row"><span class="json-ln">${curLine}</span><span class="json-content">${keyPrefix}${formatValue(val)}${comma}</span></div>`;
       }
 
       const isArray = Array.isArray(val);
@@ -1038,46 +963,62 @@
       const keys = isArray ? val : Object.keys(val);
       const count = isArray ? val.length : keys.length;
 
+      // 空对象或空数组
       if (count === 0) {
-        return `<div class="json-row">${keyPrefix}<span class="json-punct">${openBrace}${closeBrace}</span>${comma}</div>`;
+        const curLine = globalLineNumber++;
+        return `<div class="json-row"><span class="json-ln">${curLine}</span><span class="json-content">${keyPrefix}<span class="json-punct">${openBrace}${closeBrace}</span>${comma}</span></div>`;
       }
 
       const placeholder = isArray ? `Array(${count})` : `Object{${count}}`;
-
-      let html = `<div class="json-node json-collapsible" data-placeholder="${placeholder}">`;
       
-      // Header 行
+      // 性能保护：对于大型数组/集合（如顶层包含超多对象时），第1层及更深层且项数较多的子项默认折叠
+      let shouldCollapse = false;
+      if (autoCollapseLarge) {
+        if (depth >= 1 && (count > 5 || typeof keys[0] === 'object')) {
+          shouldCollapse = true;
+        }
+      }
+
+      const startLine = globalLineNumber++;
+
+      let html = `<div class="json-node json-collapsible${shouldCollapse ? ' collapsed' : ''}">`;
+      
+      // Header 行（带起始行号）
       html += `<div class="json-row json-node-header">`;
+      html += `<span class="json-ln">${startLine}</span>`;
+      html += `<span class="json-content">`;
       html += `${TRIANGLE_ICON}`;
       html += `${keyPrefix}<span class="json-punct">${openBrace}</span>`;
       html += `<span class="json-placeholder-badge">${placeholder}</span>`;
       html += `<span class="json-closing-bracket-collapsed json-punct">${closeBrace}${comma}</span>`;
-      html += `</div>`;
+      html += `</span></div>`;
 
-      // 展开的子内容（左侧带有虚线）
+      // 展开的子内容（左侧虚线对齐）
       html += `<div class="json-fold-content">`;
       if (isArray) {
         val.forEach((item, idx) => {
-          html += renderJSONTree(item, null, idx === val.length - 1);
+          html += renderJSONTreeWithLines(item, null, idx === val.length - 1, depth + 1, autoCollapseLarge);
         });
       } else {
         const objKeys = Object.keys(val);
         objKeys.forEach((k, idx) => {
-          html += renderJSONTree(val[k], k, idx === objKeys.length - 1);
+          html += renderJSONTreeWithLines(val[k], k, idx === objKeys.length - 1, depth + 1, autoCollapseLarge);
         });
       }
       html += `</div>`;
 
-      // Footer 闭合行
+      // Footer 闭合行（带闭合行号）
+      const endLine = globalLineNumber++;
       html += `<div class="json-row json-node-footer">`;
-      html += `<span class="json-punct">${closeBrace}</span>${comma}`;
+      html += `<span class="json-ln">${endLine}</span>`;
+      html += `<span class="json-content"><span class="json-punct">${closeBrace}</span>${comma}</span>`;
       html += `</div>`;
 
       html += `</div>`;
       return html;
     }
 
-    // 折叠与展开点击事件捕获
+    // 折叠与展开点击捕获
     function handleRenderClick(e) {
       const toggle = e.target.closest('.json-toggle');
       const badge = e.target.closest('.json-placeholder-badge');
@@ -1100,37 +1041,39 @@
     function collapseAll() {
       const collapsibles = document.querySelectorAll('#jsonTreeRender .json-collapsible');
       collapsibles.forEach((el, index) => {
-        if (index > 0) { // 保留最外层，折叠所有子节点
+        if (index > 0) {
           el.classList.add('collapsed');
         }
       });
       showToast('已折叠所有子节点');
     }
 
-    // 切换压缩单行
+    // 切换单行压缩视图
     function toggleCompress() {
       if (!parsedJsonData) return;
       isCompressed = !isCompressed;
 
       if (isCompressed) {
         treeContainer.style.display = 'none';
-        rawContainer.style.display = 'block';
+        rawWrapper.style.display = 'block';
         rawContainer.textContent = JSON.stringify(parsedJsonData);
         showToast('已压缩为单行');
       } else {
-        rawContainer.style.display = 'none';
+        rawWrapper.style.display = 'none';
         treeContainer.style.display = 'block';
-        treeContainer.innerHTML = renderJSONTree(parsedJsonData);
-        showToast('已还原展开视图');
+        showToast('已还原格式化视图');
       }
     }
 
+    // 格式化执行入口
     function formatJSON() {
       const val = input.value.trim();
       if (!val) {
         showToast('请先输入 JSON 文本');
         return;
       }
+
+      const t0 = performance.now();
 
       try {
         const obj = JSON.parse(val);
@@ -1139,15 +1082,24 @@
 
         hideError();
         emptyState.style.display = 'none';
-        treeContainer.innerHTML = renderJSONTree(obj);
+
+        // 判断是否为大型集合，启用智能折叠保护
+        const isBigData = (Array.isArray(obj) && obj.length > 10) || (typeof obj === 'object' && Object.keys(obj).length > 20);
+
+        globalLineNumber = 1;
+        treeContainer.innerHTML = renderJSONTreeWithLines(obj, null, true, 0, isBigData);
         treeContainer.style.display = 'block';
-        rawContainer.style.display = 'none';
+        rawWrapper.style.display = 'none';
 
         jsonActions.style.display = 'inline-flex';
         resultTypeBadge.style.display = 'inline-block';
         resultTypeBadge.innerText = Array.isArray(obj) ? `Array(${obj.length})` : `Object{${Object.keys(obj).length}}`;
 
-        // 同步美化 textarea 内容
+        const t1 = performance.now();
+        const duration = Math.round(t1 - t0);
+        perfBadge.style.display = 'inline-block';
+        perfBadge.innerText = `耗时: ${duration}ms (${globalLineNumber - 1}行)`;
+
         input.value = JSON.stringify(obj, null, 2);
         handleInputChange();
       } catch (err) {
@@ -1188,15 +1140,6 @@
       errorArea.innerHTML = fullMsg;
       errorArea.style.display = 'flex';
 
-      document.querySelectorAll('#lineNumbers div').forEach(el => el.classList.remove('error-line'));
-      if (errorLine > 0) {
-        const errorEl = document.getElementById(`ln-${errorLine}`);
-        if (errorEl) {
-          errorEl.classList.add('error-line');
-          errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-
       if (pos >= 0) {
         input.focus();
         input.setSelectionRange(pos, pos + 1);
@@ -1205,7 +1148,6 @@
 
     function hideError() {
       errorArea.style.display = 'none';
-      document.querySelectorAll('#lineNumbers div').forEach(el => el.classList.remove('error-line'));
     }
   </script>
 </body>
