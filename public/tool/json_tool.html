@@ -280,27 +280,29 @@
 
     /* 左侧编辑框容器（带行号） */
     .editor-container {
+      --editor-line-height: 24px;
+      --editor-font-size: 13.5px;
       display: flex;
       flex: 1;
       min-height: 0;
       font-family: "Fira Code", "Consolas", monospace;
-      font-size: 13.5px;
-      line-height: 1.65;
+      font-size: var(--editor-font-size);
+      line-height: var(--editor-line-height);
       overflow: hidden;
       position: relative;
     }
 
     #lineNumbers {
-      width: 48px;
-      min-width: 48px;
+      width: 50px;
+      min-width: 50px;
       background: rgba(84, 66, 49, 0.03);
       border-right: 1px solid var(--line);
       padding: 16px 0;
       text-align: right;
       color: var(--muted);
       opacity: 0.65;
-      font-size: 12px;
-      line-height: 1.65;
+      font-size: var(--editor-font-size);
+      line-height: var(--editor-line-height);
       user-select: none;
       overflow: hidden;
       flex-shrink: 0;
@@ -308,7 +310,8 @@
 
     #lineNumbers div {
       padding: 0 10px;
-      height: 1.65em;
+      height: var(--editor-line-height);
+      line-height: var(--editor-line-height);
       box-sizing: border-box;
       cursor: pointer;
       transition: background 0.1s ease, color 0.1s ease;
@@ -341,8 +344,8 @@
       border: none;
       background: transparent;
       font-family: inherit;
-      font-size: inherit;
-      line-height: inherit;
+      font-size: var(--editor-font-size);
+      line-height: var(--editor-line-height);
       color: var(--text);
       resize: none;
       outline: none;
@@ -1212,6 +1215,8 @@
       let errorLine = -1;
       let pos = -1;
       let snippet = '';
+      let smartTip = '';
+      let targetHighlightLines = [];
 
       const posMatch = msg.match(/at position (\d+)/);
       if (posMatch) {
@@ -1224,16 +1229,30 @@
         const suffix = text.substring(pos + 1, end);
         const escapeChar = str => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
         snippet = `${escapeChar(prefix)}<span class="highlight">${escapeChar(char)}</span>${escapeChar(suffix)}`;
+
+        // 智能分析：当缺少逗号时，JSON 解析器跳过换行与空白，在下一行遇到新属性时才报错
+        if (msg.includes("Expected ','") || msg.includes('after property value')) {
+          const beforeStr = text.substring(0, pos).trimEnd();
+          const prevLine = beforeStr.split('\n').length;
+          if (prevLine < errorLine) {
+            smartTip = `💡 <strong>定位提示</strong>：当前在第 ${errorLine} 行发现语法冲突，通常是因为<strong>上一行（第 ${prevLine} 行）末尾遗漏了逗号 (',')</strong>，请检查第 ${prevLine} 行末尾。`;
+            targetHighlightLines = [prevLine, errorLine];
+          }
+        }
       }
 
-      const lineMatch = msg.match(/at line (\d+)/);
-      if (lineMatch) errorLine = parseInt(lineMatch[1]);
+      if (targetHighlightLines.length === 0 && errorLine > 0) {
+        targetHighlightLines = [errorLine];
+      }
 
-      showError(msg, errorLine, pos, snippet);
+      showError(msg, targetHighlightLines, pos, snippet, smartTip);
     }
 
-    function showError(msg, errorLine, pos, snippet) {
+    function showError(msg, targetHighlightLines, pos, snippet, smartTip) {
       let fullMsg = `<div>❌ <strong>语法错误</strong>: ${escapeHtml(msg)}</div>`;
+      if (smartTip) {
+        fullMsg += `<div style="margin-top: 4px; color: var(--accent); font-size: 12.5px;">${smartTip}</div>`;
+      }
       if (snippet) {
         fullMsg += `<div class="error-excerpt">${snippet}</div>`;
       }
@@ -1242,11 +1261,16 @@
 
       if (lineNumbers) {
         document.querySelectorAll('#lineNumbers div.error-line').forEach(el => el.classList.remove('error-line'));
-        if (errorLine > 0) {
-          const errorEl = document.getElementById(`ln-${errorLine}`);
+        targetHighlightLines.forEach(ln => {
+          const errorEl = document.getElementById(`ln-${ln}`);
           if (errorEl) {
             errorEl.classList.add('error-line');
-            errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+        if (targetHighlightLines.length > 0) {
+          const firstEl = document.getElementById(`ln-${targetHighlightLines[0]}`);
+          if (firstEl) {
+            firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         }
       }
