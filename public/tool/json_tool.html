@@ -653,6 +653,43 @@
       font-weight: bold;
     }
 
+    /* 一键修复按钮 */
+    .error-fix-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      color: #dc2626;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: fit-content;
+      user-select: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .error-fix-btn:hover {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
+      box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25);
+    }
+
+    [data-theme="dark"] .error-fix-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(248, 113, 113, 0.5);
+      color: #f87171;
+    }
+
+    [data-theme="dark"] .error-fix-btn:hover {
+      background: #dc2626;
+      color: #fff;
+    }
+
     /* 复制轻提示 Toast */
     .toast-tip {
       position: fixed;
@@ -1287,13 +1324,247 @@
       }
     }
 
+    // --- 常见 JSON 语法错误全方位智能诊断引擎 ---
+    function analyzeJsonError(msg, text, pos, errorLine) {
+      let smartTip = '';
+      let targetHighlightLines = errorLine > 0 ? [errorLine] : [];
+      let fixType = null;
+      let fixBtnText = null;
+
+      const lines = text.split('\n');
+      const curLineStr = (errorLine > 0 && errorLine <= lines.length) ? lines[errorLine - 1] : '';
+      const charAtPos = (pos >= 0 && pos < text.length) ? text[pos] : '';
+      const surrounding = text.substring(Math.max(0, pos - 2), Math.min(text.length, pos + 3));
+
+      // 1. 中文全角标点符号误用检测（高频：， ： ； “” ‘’ 【】 ｛｝）
+      const chinesePunctList = [
+        { char: '，', name: '中文全角逗号（，）', correct: '英文半角逗号 (,)', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '：', name: '中文全角冒号（：）', correct: '英文半角冒号 (:)', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '；', name: '中文全角分号（；）', correct: '英文半角逗号 (,)', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '“', name: '中文全角双引号（“）', correct: '英文标准双引号 (")', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '”', name: '中文全角双引号（”）', correct: '英文标准双引号 (")', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '‘', name: '中文全角单引号（‘）', correct: '英文标准双引号 (")', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '’', name: '中文全角单引号（’）', correct: '英文标准双引号 (")', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '【', name: '中文全角方括号（【）', correct: '英文半角方括号 ([)', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '】', name: '中文全角方括号（】）', correct: '英文半角方括号 (])', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '｛', name: '中文全角花括号（｛）', correct: '英文半角花括号 ({)', fix: 'chinesePunct', btnText: '一键替换中文标点' },
+        { char: '｝', name: '中文全角花括号（｝）', correct: '英文半角花括号 (})', fix: 'chinesePunct', btnText: '一键替换中文标点' }
+      ];
+
+      let foundPunct = null;
+      for (const item of chinesePunctList) {
+        if (charAtPos === item.char || surrounding.includes(item.char)) {
+          foundPunct = item;
+          break;
+        }
+      }
+      if (!foundPunct && curLineStr) {
+        for (const item of chinesePunctList) {
+          if (curLineStr.includes(item.char)) {
+            foundPunct = item;
+            break;
+          }
+        }
+      }
+
+      if (foundPunct) {
+        smartTip = `💡 <strong>标点符号错误</strong>：第 ${errorLine} 行使用了<strong>${foundPunct.name}</strong>。JSON 规范仅支持英文半角标点，请替换为 <strong>${foundPunct.correct}</strong>。`;
+        return { smartTip, targetHighlightLines, fixType: foundPunct.fix, fixBtnText: foundPunct.btnText };
+      }
+
+      // 2. 单引号误用（Single quotes instead of double quotes）
+      if (charAtPos === "'" || surrounding.includes("'") || (curLineStr && curLineStr.includes("'"))) {
+        smartTip = `💡 <strong>引号格式错误</strong>：第 ${errorLine} 行检测到单引号（'）。JSON 规范严格要求属性键名与字符串<strong>必须使用英文双引号 (\")</strong>。`;
+        return { smartTip, targetHighlightLines, fixType: 'singleQuote', fixBtnText: '一键将单引号转为双引号' };
+      }
+
+      // 3. 注释语法检测（Comments not allowed）
+      if (text.substring(pos, pos + 2) === '//' || text.substring(pos, pos + 2) === '/*' || surrounding.includes('//') || surrounding.includes('/*') || msg.includes("Unexpected token '/'")) {
+        smartTip = `💡 <strong>不支持代码注释</strong>：第 ${errorLine} 行检测到注释符（// 或 /* */）。标准 JSON 语法<strong>严禁包含任何注释</strong>，请移除注释内容。`;
+        return { smartTip, targetHighlightLines, fixType: 'removeComments', fixBtnText: '一键清理所有注释' };
+      }
+
+      // 4. Python/特殊关键字误用（None, True, False, undefined, NaN, Infinity）
+      const wordNearby = text.substring(Math.max(0, pos - 6), Math.min(text.length, pos + 12));
+      const pyMatch = wordNearby.match(/\b(None|True|False|undefined|NaN|Infinity)\b/);
+      if (pyMatch) {
+        const kw = pyMatch[1];
+        let tip = '';
+        if (kw === 'None') tip = "在 JSON 中对应为 <code>null</code>";
+        else if (kw === 'True') tip = "JSON 布尔值必须为全小写 <code>true</code>";
+        else if (kw === 'False') tip = "JSON 布尔值必须为全小写 <code>false</code>";
+        else if (kw === 'undefined') tip = "JSON 规范不支持 <code>undefined</code>，可设为 <code>null</code> 或省略该属性";
+        else if (kw === 'NaN' || kw === 'Infinity') tip = "JSON 不支持 <code>NaN</code> / <code>Infinity</code>，请替换为有效数值或 <code>null</code>";
+        smartTip = `💡 <strong>非法字面量</strong>：第 ${errorLine} 行包含非标准关键字 <strong>'${kw}'</strong>，${tip}。`;
+        return { smartTip, targetHighlightLines, fixType: 'fixKeywords', fixBtnText: '一键修正为标准 JSON 关键字' };
+      }
+
+      // 5. 末尾多余逗号（Trailing comma）
+      const beforePos = text.substring(0, pos).trimEnd();
+      if (beforePos.endsWith(',')) {
+        const commaLine = beforePos.split('\n').length;
+        smartTip = `💡 <strong>末尾多余逗号</strong>：JSON 规范不允许在对象或数组最后一项后面多留逗号（Trailing comma），请删除<strong>第 ${commaLine} 行末尾多余的英文逗号 (',')</strong>。`;
+        return { smartTip, targetHighlightLines: [commaLine], fixType: 'trailingComma', fixBtnText: '一键清理末尾多余逗号' };
+      }
+
+      // 6. 键名未加英文双引号（Unquoted property name）
+      if (msg.includes('Expected property name') || msg.includes('Expected double-quoted property name')) {
+        smartTip = `💡 <strong>键名未加引号</strong>：第 ${errorLine} 行的对象属性键名缺少英文双引号，JSON 规范要求所有键名必须使用英文双引号包裹（例如 <code>\"key\": value</code>）。`;
+        return { smartTip, targetHighlightLines };
+      }
+
+      // 7. 缺少逗号（Missing comma）
+      if (msg.includes("Expected ','") || msg.includes('after property value') || msg.includes('after array element')) {
+        const beforeStr = text.substring(0, pos).trimEnd();
+        const prevLine = beforeStr.split('\n').length;
+        if (prevLine < errorLine) {
+          smartTip = `💡 <strong>缺少逗号</strong>：当前在第 ${errorLine} 行发现语法冲突，通常是因为<strong>上一行（第 ${prevLine} 行）末尾遗漏了英文逗号 (',')</strong>，请检查第 ${prevLine} 行末尾。`;
+          return { smartTip, targetHighlightLines: [prevLine, errorLine] };
+        } else {
+          smartTip = `💡 <strong>缺少逗号分隔符</strong>：第 ${errorLine} 行的属性值后面缺少英文逗号 (',') 或闭合符号。`;
+          return { smartTip, targetHighlightLines };
+        }
+      }
+
+      // 8. 缺少冒号（Missing colon）
+      if (msg.includes("Expected ':'")) {
+        smartTip = `💡 <strong>缺少冒号</strong>：第 ${errorLine} 行属性名与值之间缺少英文冒号 (':')，请在键名后面添加 ':'。`;
+        return { smartTip, targetHighlightLines };
+      }
+
+      // 9. 括号不匹配 / 孤立闭合括号
+      if (msg.includes("Unexpected token '}'") || msg.includes("Unexpected token ']'")) {
+        smartTip = `💡 <strong>括号不匹配</strong>：第 ${errorLine} 行出现多余或未配对的闭合括号。`;
+        return { smartTip, targetHighlightLines };
+      }
+
+      // 10. 文本意外截断 / 未闭合（Unexpected end of JSON input）
+      if (msg.includes('Unexpected end of JSON input') || msg.includes('end of data') || pos >= text.length - 1) {
+        if (!text.trim()) {
+          return { smartTip: '💡 <strong>内容为空</strong>：请输入有效的 JSON 字符串。', targetHighlightLines: [1] };
+        }
+        let openBraces = 0, openBrackets = 0, inStr = false, escape = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (escape) { escape = false; continue; }
+          if (c === '\\') { escape = true; continue; }
+          if (c === '"') { inStr = !inStr; continue; }
+          if (!inStr) {
+            if (c === '{') openBraces++;
+            else if (c === '}') openBraces = Math.max(0, openBraces - 1);
+            else if (c === '[') openBrackets++;
+            else if (c === ']') openBrackets = Math.max(0, openBrackets - 1);
+          }
+        }
+        if (inStr) {
+          smartTip = `💡 <strong>双引号未闭合</strong>：检测到文本末尾有尚未闭合的英文双引号 (\")，请补全末尾引号。`;
+          return { smartTip, targetHighlightLines: [lines.length] };
+        } else if (openBraces > 0 || openBrackets > 0) {
+          let missing = [];
+          if (openBraces > 0) missing.push(`${openBraces} 个花括号 '}'`);
+          if (openBrackets > 0) missing.push(`${openBrackets} 个方括号 ']'`);
+          smartTip = `💡 <strong>括号未闭合</strong>：JSON 文本意外截断，检测到缺少 <strong>${missing.join(' 与 ')}</strong>，请在文本末尾补全闭合符号。`;
+          return { smartTip, targetHighlightLines: [lines.length], fixType: 'autoClose', fixBtnText: '一键自动在末尾补全闭合括号' };
+        } else {
+          smartTip = `💡 <strong>结构不完整</strong>：JSON 文本未正常结束，请检查文本末尾结构是否完整。`;
+          return { smartTip, targetHighlightLines: [lines.length] };
+        }
+      }
+
+      // 11. 控制字符未转义（Bad control character）
+      if (msg.includes('Bad control character') || msg.includes('control character')) {
+        smartTip = `💡 <strong>未转义控制字符</strong>：第 ${errorLine} 行的字符串中包含未转义的控制字符（如直接回车换行），请使用 <code>\\n</code> 进行转义。`;
+        return { smartTip, targetHighlightLines };
+      }
+
+      // 12. 主体后有多余内容（Unexpected non-whitespace character after JSON）
+      if (msg.includes('Unexpected non-whitespace character after JSON') || msg.includes('after JSON')) {
+        smartTip = `💡 <strong>主体后有多余内容</strong>：第 ${errorLine} 行检测到顶层 JSON 已经闭合，但后面还存在多余的文本内容，请清除多余字符。`;
+        return { smartTip, targetHighlightLines };
+      }
+
+      // 通用兜底提示
+      if (errorLine > 0) {
+        smartTip = `💡 <strong>语法提示</strong>：请检查第 ${errorLine} 行附近的语法格式（标点是否为英文半角、引号与逗号是否配对完备）。`;
+      }
+      return { smartTip, targetHighlightLines };
+    }
+
+    // --- 一键快速修复执行器 ---
+    function applyQuickFix(fixType) {
+      let val = input.value;
+      if (!val) return;
+
+      if (fixType === 'chinesePunct') {
+        val = val.replace(/，/g, ',')
+                 .replace(/：/g, ':')
+                 .replace(/；/g, ',')
+                 .replace(/[“”]/g, '"')
+                 .replace(/[‘’]/g, "'")
+                 .replace(/【/g, '[')
+                 .replace(/】/g, ']')
+                 .replace(/｛/g, '{')
+                 .replace(/｝/g, '}');
+        input.value = val;
+        handleInputChange();
+        showToast('已自动将中文标点替换为半角英文字符');
+        formatJSON();
+      } else if (fixType === 'singleQuote') {
+        val = val.replace(/'/g, '"');
+        input.value = val;
+        handleInputChange();
+        showToast('已将单引号替换为双引号');
+        formatJSON();
+      } else if (fixType === 'trailingComma') {
+        val = val.replace(/,\s*([}\]])/g, '$1');
+        input.value = val;
+        handleInputChange();
+        showToast('已自动清理末尾多余逗号');
+        formatJSON();
+      } else if (fixType === 'removeComments') {
+        val = val.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+        input.value = val;
+        handleInputChange();
+        showToast('已移除所有注释内容');
+        formatJSON();
+      } else if (fixType === 'fixKeywords') {
+        val = val.replace(/\bNone\b/g, 'null')
+                 .replace(/\bTrue\b/g, 'true')
+                 .replace(/\bFalse\b/g, 'false');
+        input.value = val;
+        handleInputChange();
+        showToast('已修正 Python/非法关键字');
+        formatJSON();
+      } else if (fixType === 'autoClose') {
+        let openBraces = 0, openBrackets = 0, inStr = false, escape = false;
+        for (let i = 0; i < val.length; i++) {
+          const c = val[i];
+          if (escape) { escape = false; continue; }
+          if (c === '\\') { escape = true; continue; }
+          if (c === '"') { inStr = !inStr; continue; }
+          if (!inStr) {
+            if (c === '{') openBraces++;
+            else if (c === '}') openBraces = Math.max(0, openBraces - 1);
+            else if (c === '[') openBrackets++;
+            else if (c === ']') openBrackets = Math.max(0, openBrackets - 1);
+          }
+        }
+        let appendStr = '';
+        if (openBrackets > 0) appendStr += '\n' + ']'.repeat(openBrackets);
+        if (openBraces > 0) appendStr += '\n' + '}'.repeat(openBraces);
+        val += appendStr;
+        input.value = val;
+        handleInputChange();
+        showToast('已在末尾自动补全闭合括号');
+        formatJSON();
+      }
+    }
+
     function handleParseError(e, text) {
       const msg = e.message;
       let errorLine = -1;
       let pos = -1;
       let snippet = '';
-      let smartTip = '';
-      let targetHighlightLines = [];
 
       const posMatch = msg.match(/at position (\d+)/);
       if (posMatch) {
@@ -1306,29 +1577,31 @@
         const suffix = text.substring(pos + 1, end);
         const escapeChar = str => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
         snippet = `${escapeChar(prefix)}<span class="highlight">${escapeChar(char)}</span>${escapeChar(suffix)}`;
-
-        // 智能分析：当缺少逗号时，JSON 解析器跳过换行与空白，在下一行遇到新属性时才报错
-        if (msg.includes("Expected ','") || msg.includes('after property value')) {
-          const beforeStr = text.substring(0, pos).trimEnd();
-          const prevLine = beforeStr.split('\n').length;
-          if (prevLine < errorLine) {
-            smartTip = `💡 <strong>定位提示</strong>：当前在第 ${errorLine} 行发现语法冲突，通常是因为<strong>上一行（第 ${prevLine} 行）末尾遗漏了逗号 (',')</strong>，请检查第 ${prevLine} 行末尾。`;
-            targetHighlightLines = [prevLine, errorLine];
-          }
+      } else {
+        const lineMatch = msg.match(/line (\d+)/);
+        if (lineMatch) {
+          errorLine = parseInt(lineMatch[1]);
         }
       }
 
-      if (targetHighlightLines.length === 0 && errorLine > 0) {
-        targetHighlightLines = [errorLine];
-      }
-
-      showError(msg, targetHighlightLines, pos, snippet, smartTip);
+      const analysis = analyzeJsonError(msg, text, pos, errorLine);
+      showError(msg, analysis.targetHighlightLines, pos, snippet, analysis.smartTip, analysis.fixType, analysis.fixBtnText);
     }
 
-    function showError(msg, targetHighlightLines, pos, snippet, smartTip) {
+    function showError(msg, targetHighlightLines, pos, snippet, smartTip, fixType, fixBtnText) {
       let fullMsg = `<div>❌ <strong>语法错误</strong>: ${escapeHtml(msg)}</div>`;
       if (smartTip) {
-        fullMsg += `<div style="margin-top: 4px; color: var(--accent); font-size: 12.5px;">${smartTip}</div>`;
+        fullMsg += `<div style="margin-top: 4px; color: var(--accent); font-size: 12.5px; line-height: 1.5;">${smartTip}</div>`;
+      }
+      if (fixType && fixBtnText) {
+        fullMsg += `
+          <div>
+            <button class="error-fix-btn" onclick="applyQuickFix('${fixType}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              <span>${escapeHtml(fixBtnText)}</span>
+            </button>
+          </div>
+        `;
       }
       if (snippet) {
         fullMsg += `<div class="error-excerpt">${snippet}</div>`;
