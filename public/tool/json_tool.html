@@ -879,6 +879,28 @@
       }
     }
 
+    function scrollToLine(lineNum, smooth = true) {
+      if (!lineNum || lineNum < 1) return;
+      const lineHeight = 24;
+      const paddingTop = 16;
+      const targetTop = Math.max(0, paddingTop + (lineNum - 1) * lineHeight + (lineHeight / 2) - (input.clientHeight / 2));
+      
+      if (smooth && typeof input.scrollTo === 'function') {
+        input.scrollTo({ top: targetTop, behavior: 'smooth' });
+      } else {
+        input.scrollTop = targetTop;
+        syncScroll();
+      }
+    }
+
+    if (lineNumbers) {
+      lineNumbers.addEventListener('wheel', (e) => {
+        input.scrollTop += e.deltaY;
+        syncScroll();
+        e.preventDefault();
+      }, { passive: false });
+    }
+
     function updateLineNumbers() {
       if (!lineNumbers) return;
       const val = input.value;
@@ -1322,17 +1344,17 @@
             errorEl.classList.add('error-line');
           }
         });
-        if (targetHighlightLines.length > 0) {
-          const firstEl = document.getElementById(`ln-${targetHighlightLines[0]}`);
-          if (firstEl) {
-            firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }
       }
 
       if (pos >= 0) {
         input.focus();
         input.setSelectionRange(pos, pos + 1);
+      }
+
+      if (targetHighlightLines && targetHighlightLines.length > 0) {
+        requestAnimationFrame(() => {
+          scrollToLine(targetHighlightLines[0], true);
+        });
       }
     }
 
