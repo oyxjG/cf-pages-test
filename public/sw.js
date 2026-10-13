@@ -4,7 +4,7 @@
  * 适配 Cloudflare Pages 干净 URL (Clean URLs) 与双轨自适应路由
  */
 
-const CACHE_VERSION = 'digital-garden-v1.0.5';
+const CACHE_VERSION = 'digital-garden-v1.0.6';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
