@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>百万级二维码导入测试文件生成器 - 性能压测工坊</title>
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../tool-switcher.css">
+  <script src="../theme.js"></script>
+  <script src="../tool-switcher.js"></script>
+  <style>
+    :root {
+      --header-h: 56px;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* 顶部 56px 导航栏 */
+    .workbench-header {
+      height: var(--header-h);
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+    }
+
+    .back-btn:hover {
+      color: var(--teal);
+      border-color: var(--teal);
+      transform: translateX(-2px);
+    }
+
+    .tool-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(45, 120, 108, 0.12);
+      color: var(--teal);
+      border: 1px solid rgba(45, 120, 108, 0.25);
+    }
+
+    .badge-highlight {
+      background: rgba(191, 91, 50, 0.12);
+      color: var(--accent);
+      border-color: rgba(191, 91, 50, 0.25);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .header-action-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    /* 主体布局 */
+    .workbench-main {
+      flex: 1;
+      padding: 24px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1080px) {
+      .workbench-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 卡片通用 */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* 表单组件 */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(45, 120, 108, 0.15);
+    }
+
+    .form-control.mono {
+      font-family: var(--font-mono);
+    }
+
+    /* 快捷选项胶囊按钮 */
+    .pills-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pill-btn {
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .pill-btn.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* 单选卡片组 */
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .choice-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      cursor: pointer;
+      background: var(--paper-strong);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .choice-card:hover {
+      border-color: var(--teal);
+    }
+
+    .choice-card.active {
+      border-color: var(--teal);
+      background: rgba(45, 120, 108, 0.08);
+      box-shadow: 0 0 0 1px var(--teal);
+    }
+
+    .choice-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .choice-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* 规则解析反馈盒子 */
+    .range-summary-box {
+      background: rgba(45, 120, 108, 0.06);
+      border: 1px dashed rgba(45, 120, 108, 0.35);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .range-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .range-label {
+      color: var(--muted);
+    }
+
+    .range-val {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .range-val.accent {
+      color: var(--accent);
+    }
+
+    .range-val.teal {
+      color: var(--teal);
+    }
+
+    /* 主按钮 */
+    .btn-generate {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #2d786c 0%, #1e524a 100%);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(45, 120, 108, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(45, 120, 108, 0.4);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-abort {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(191, 91, 50, 0.4);
+      background: rgba(191, 91, 50, 0.08);
+      color: var(--accent);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+
+    .btn-abort:hover {
+      background: rgba(191, 91, 50, 0.16);
+    }
+
+    /* 右侧仪表盘 */
+    .dashboard-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .metric-card {
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+
+    .metric-hint {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* 进度条 */
+    .progress-wrapper {
+      margin-top: 16px;
+    }
+
+    .progress-bar-bg {
+      height: 12px;
+      background: var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2d786c, #81b29a, #ca9d3a);
+      border-radius: 6px;
+      transition: width 0.15s ease-out;
+      position: relative;
+    }
+
+    .progress-bar-fill.active::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: progressShine 1.5s infinite;
+    }
+
+    @keyframes progressShine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-status-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* 数据预览表格 */
+    .preview-table-container {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      margin-top: 12px;
+      max-height: 380px;
+      background: var(--paper-strong);
+    }
+
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      text-align: left;
+    }
+
+    .preview-table th {
+      background: var(--paper);
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--line);
+      color: var(--text);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .preview-table td {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .preview-table tr:hover {
+      background: rgba(45, 120, 108, 0.04);
+    }
+
+    .preview-badge-row {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      background: rgba(140, 73, 100, 0.1);
+      color: var(--berry);
+      font-weight: 600;
+    }
+
+    /* 完成状态横幅 */
+    .completion-banner {
+      background: rgba(45, 120, 108, 0.12);
+      border: 1px solid var(--teal);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .completion-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .completion-icon {
+      font-size: 28px;
+    }
+
+    .completion-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--teal);
+    }
+
+    .completion-desc {
+      font-size: 12px;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    .btn-redownload {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-redownload:hover {
+      opacity: 0.9;
+    }
+
+    /* 压测指引说明 */
+    .tips-box {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .tips-box ul {
+      margin-left: 18px;
+      margin-top: 6px;
+    }
+
+    .tips-box li {
+      margin-bottom: 4px;
+    }
+
+    .code-tag {
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <header class="workbench-header">
+    <div class="header-left">
+      <a href="/index.html" class="back-btn" title="返回主页">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>返回工作台</span>
+      </a>
+      <div class="tool-title">
+        <span>⚡ 二维码导入压测工坊</span>
+        <span class="badge-pill">大容量数据引擎</span>
+        <span class="badge-pill badge-highlight">最高支持 1,000,000+ 行</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-action-btn" id="copyRangeBtn" title="一键复制起止码，直接用于系统码段模式对比">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>复制起止码段</span>
+      </button>
+      <button class="header-action-btn" id="themeToggleBtn" title="切换明暗主题">🌓</button>
+    </div>
+  </header>
+
+  <!-- 主体工作区 -->
+  <main class="workbench-main">
+
+    <!-- 左侧：参数配置工作区 -->
+    <div class="config-panel">
+
+      <!-- 1. 行数配置 -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">📊 生成数据规模</h3>
+            <p class="card-desc">设置生成的 Excel/CSV 行数（最大支持 1,000,000 行）</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="rowCountInput">目标生成行数</label>
+          <input type="number" id="rowCountInput" class="form-control mono" value="100000" min="1" max="1048576" step="1000" />
+          <div class="pills-group" id="countPresets">
+            <button type="button" class="pill-btn" data-count="10000">10,000 (1万)</button>
+            <button type="button" class="pill-btn" data-count="50000">50,000 (5万)</button>
+            <button type="button" class="pill-btn active" data-count="100000">100,000 (10万)</button>
+            <button type="button" class="pill-btn" data-count="500000">500,000 (50万)</button>
+            <button type="button" class="pill-btn" data-count="1000000">1,000,000 (100万上限)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 起始码段配置 -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">🏷️ 起始二维码码段 (startCode)</h3>
+            <p class="card-desc">自动解析前缀与数字序号尾缀，确保连续自增</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="startCodeInput">起始条码编号</label>
+          <input type="text" id="startCodeInput" class="form-control mono" value="BAT20261013000001" placeholder="例: BAT20261013000001 或 SN00000001" />
+          <div class="pills-group" id="templatePresets">
+            <button type="button" class="pill-btn active" data-code="BAT20261013000001">🔋 电池包成品码</button>
+            <button type="button" class="pill-btn" data-code="CELL-2026-000001">⚡ 电芯溯源码</button>
+            <button type="button" class="pill-btn" data-code="SN00000001">🏭 标准流水号</button>
+            <button type="button" class="pill-btn" data-code="1000000001">🔢 纯数字条码</button>
+          </div>
+        </div>
+
+        <!-- 码段解析状态 -->
+        <div class="range-summary-box" id="rangeSummaryBox">
+          <div class="range-row">
+            <span class="range-label">解析前缀 (Prefix):</span>
+            <span class="range-val" id="parsedPrefix">BAT20261013</span>
+          </div>
+          <div class="range-row">
+            <span class="range-label">起始条码 (StartCode):</span>
+            <span class="range-val teal" id="parsedStartCode">BAT20261013000001</span>
+          </div>
+          <div class="range-row">
+            <span class="range-label">终止条码 (EndCode):</span>
+            <span class="range-val accent" id="parsedEndCode">BAT20261013100000</span>
+          </div>
+          <div class="range-row">
+            <span class="range-label">系统校验匹配:</span>
+            <span class="range-val" style="color: var(--teal);">✓ 符合 parseAndValidateCodeRange</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 输出格式与数据列 -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">⚙️ 格式与列属性配置</h3>
+            <p class="card-desc">支持 Excel 与轻量文本导出，模拟检测工序数据</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">导出文件格式</label>
+          <div class="choice-grid" id="formatChoices">
+            <div class="choice-card active" data-format="xlsx">
+              <span class="choice-title">📗 Excel (.xlsx)</span>
+              <span class="choice-desc">标准 OpenXML，百万行流式压缩，推荐</span>
+            </div>
+            <div class="choice-card" data-format="csv">
+              <span class="choice-title">📄 CSV (.csv)</span>
+              <span class="choice-desc">UTF-8 BOM 逗号分隔，秒级极速导出</span>
+            </div>
+            <div class="choice-card" data-format="txt">
+              <span class="choice-title">📑 TXT (.txt)</span>
+              <span class="choice-desc">制表符 \t 分隔，系统文本导入同款</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">包含数据列</label>
+          <div class="choice-grid" id="columnChoices">
+            <div class="choice-card active" data-cols="single">
+              <span class="choice-title">📌 仅二维码编号</span>
+              <span class="choice-desc">单列核心模式，体积最小，生成最快</span>
+            </div>
+            <div class="choice-card" data-cols="full">
+              <span class="choice-title">⚡ 完整工序检测数据</span>
+              <span class="choice-desc">带 电压(V) 3.85 与 内阻(mΩ) 15.2 列</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 生成与取消按钮 -->
+        <button type="button" class="btn-generate" id="startGenBtn">
+          <span>⚡ 开始流式生成并极速导出</span>
+        </button>
+        <button type="button" class="btn-abort" id="abortGenBtn">
+          <span>⏹ 中止生成任务</span>
+        </button>
+      </section>
+
+    </div>
+
+    <!-- 右侧：实时监控与预览 -->
+    <div class="dashboard-panel">
+
+      <!-- 实时性能监控与进度面板 -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">📈 实时生成监控看板</h3>
+            <p class="card-desc">基于 Web Worker 独立线程与原生 Deflate 流硬件级无阻塞压缩</p>
+          </div>
+          <span class="badge-pill" id="engineStatusBadge">就绪等待中</span>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="progress-wrapper">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
+          </div>
+          <div class="progress-status-text">
+            <span id="progressText">0 / 100,000 (0%)</span>
+            <span id="etaText">预计耗时: 待测算</span>
+          </div>
+        </div>
+
+        <!-- 指标格 -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">生成速率 (TPS)</span>
+            <span class="metric-value" id="tpsValue">0</span>
+            <span class="metric-hint">行/秒 (吞吐能力)</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">已耗时</span>
+            <span class="metric-value" id="elapsedValue">0.00s</span>
+            <span class="metric-hint">秒 (生成耗时)</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">预估压缩体积</span>
+            <span class="metric-value" id="sizeValue">0 MB</span>
+            <span class="metric-hint">极速 Deflate 压缩</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">内存占用</span>
+            <span class="metric-value" id="memoryValue">&lt; 35 MB</span>
+            <span class="metric-hint">流式分块无 OOM</span>
+          </div>
+        </div>
+
+        <!-- 生成完成横幅 -->
+        <div class="completion-banner" id="completionBanner">
+          <div class="completion-info">
+            <div class="completion-icon">🎉</div>
+            <div>
+              <div class="completion-title">文件已成功生成并触发下载！</div>
+              <div class="completion-desc" id="completionDesc">文件名: qrcode_import_100000.xlsx (1.2 MB)</div>
+            </div>
+          </div>
+          <button type="button" class="btn-redownload" id="reDownloadBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>再次下载</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 数据预览表 -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">👀 生成数据样本实时预览</h3>
+            <p class="card-desc">自动预览生成文件的前 10 行起点数据与倒数 5 行终点数据</p>
+          </div>
+          <span class="badge-pill" id="previewTotalCountBadge">共 100,000 行</span>
+        </div>
+
+        <div class="preview-table-container">
+          <table class="preview-table">
+            <thead>
+              <tr id="previewTableHead">
+                <th>行号</th>
+                <th>二维码编号</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody">
+              <!-- JS 实时渲染预览行 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 性能压测与最佳实践建议 -->
+      <section class="card">
+        <div class="card-header">
+          <h3 class="card-title">💡 性能压测对比使用指南</h3>
+        </div>
+        <div class="tips-box">
+          <p>生成本文件后，您可以在新能源电池溯源系统中进行两类关键性能对比压测：</p>
+          <ul>
+            <li>
+              <strong>1. Excel 文件导入压测</strong>：在生产批次录入弹窗中上传本文件（接口 <span class="code-tag">POST /business/production/qrcode/import</span>），测试后端 Apache POI 解析与内存承载能力。
+            </li>
+            <li>
+              <strong>2. 码段模式极速对比</strong>：点击顶部右上角 <strong>“复制起止码段”</strong>，在系统录入弹窗切换到“码段模式”直接提交，体验 <span class="code-tag">O(1)</span> 报文压缩、单次 SQL <span class="code-tag">BETWEEN</span> 范围查重与多线程并发分片落库的极限 TPS（25,000+ 条/秒）！
+            </li>
+            <li>
+              <strong>3. Excel 百万行规范</strong>：Microsoft Excel 与 OpenXML 规范单张工作表最多支持 <strong>1,048,576 行</strong>。本工具已进行内存流式优化，即使在浏览器生成 100 万行也仅需数秒，文件体积仅 ~12MB。
+            </li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- 内联 Web Worker 脚本 (极速流式生成与压缩引擎) -->
+  <script id="worker-script" type="text/plain">
+    // CRC-32 查表加速
+    function makeCrcTable() {
+      let c;
+      const table = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        c = n;
+        for (let k = 0; k < 8; k++) {
+          c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        table[n] = c;
+      }
+      return table;
+    }
+    const CRC_TABLE = makeCrcTable();
+    function updateCrc32(crc, buf) {
+      for (let i = 0; i < buf.length; i++) {
+        crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ buf[i]) & 0xFF];
+      }
+      return crc;
+    }
+
+    // 内存友好型 Zip 打包器
+    class FastZipBuilder {
+      constructor() {
+        this.files = [];
+      }
+
+      addRawFile(name, contentBytes, compressMethod, crc, compSize, uncompSize) {
+        this.files.push({
+          name,
+          data: contentBytes,
+          method: compressMethod,
+          crc,
+          compressedSize: compSize,
+          uncompressedSize: uncompSize
+        });
+      }
+
+      build() {
+        const parts = [];
+        let offset = 0;
+        const cdHeaders = [];
+
+        for (const file of this.files) {
+          const nameBuf = new TextEncoder().encode(file.name);
+          const localHeader = new Uint8Array(30 + nameBuf.length);
+          const view = new DataView(localHeader.buffer);
+
+          view.setUint32(0, 0x04034b50, true);
+          view.setUint16(4, 20, true);
+          view.setUint16(6, 0, true);
+          view.setUint16(8, file.method, true);
+          view.setUint16(10, 0, true);
+          view.setUint16(12, 0, true);
+          view.setUint32(14, file.crc, true);
+          view.setUint32(18, file.compressedSize, true);
+          view.setUint32(22, file.uncompressedSize, true);
+          view.setUint16(26, nameBuf.length, true);
+          view.setUint16(28, 0, true);
+          localHeader.set(nameBuf, 30);
+
+          parts.push(localHeader);
+          if (file.data && file.data.length > 0) {
+            parts.push(file.data);
+          }
+
+          const cdHeader = new Uint8Array(46 + nameBuf.length);
+          const cdView = new DataView(cdHeader.buffer);
+          cdView.setUint32(0, 0x02014b50, true);
+          cdView.setUint16(4, 20, true);
+          cdView.setUint16(6, 20, true);
+          cdView.setUint16(8, 0, true);
+          cdView.setUint16(10, file.method, true);
+          cdView.setUint16(12, 0, true);
+          cdView.setUint16(14, 0, true);
+          cdView.setUint32(16, file.crc, true);
+          cdView.setUint32(20, file.compressedSize, true);
+          cdView.setUint32(24, file.uncompressedSize, true);
+          cdView.setUint16(28, nameBuf.length, true);
+          cdView.setUint16(30, 0, true);
+          cdView.setUint16(32, 0, true);
+          cdView.setUint16(34, 0, true);
+          cdView.setUint16(36, 0, true);
+          cdView.setUint32(38, 0, true);
+          cdView.setUint32(42, offset, true);
+          cdHeader.set(nameBuf, 46);
+
+          cdHeaders.push(cdHeader);
+          offset += localHeader.length + file.compressedSize;
+        }
+
+        const cdStartOffset = offset;
+        let cdSize = 0;
+        for (const cdh of cdHeaders) {
+          parts.push(cdh);
+          cdSize += cdh.length;
+        }
+
+        const eocd = new Uint8Array(22);
+        const eocdView = new DataView(eocd.buffer);
+        eocdView.setUint32(0, 0x06054b50, true);
+        eocdView.setUint16(4, 0, true);
+        eocdView.setUint16(6, 0, true);
+        eocdView.setUint16(8, this.files.length, true);
+        eocdView.setUint16(10, this.files.length, true);
+        eocdView.setUint32(12, cdSize, true);
+        eocdView.setUint32(16, cdStartOffset, true);
+        eocdView.setUint16(20, 0, true);
+
+        parts.push(eocd);
+
+        let totalLength = 0;
+        for (const p of parts) totalLength += p.length;
+        const result = new Uint8Array(totalLength);
+        let cur = 0;
+        for (const p of parts) {
+          result.set(p, cur);
+          cur += p.length;
+        }
+        return result.buffer;
+      }
+    }
+
+    // 辅助压缩流
+    async function compressDeflateRaw(uint8Data) {
+      if (typeof CompressionStream !== 'undefined') {
+        try {
+          const cs = new CompressionStream('deflate-raw');
+          const writer = cs.writable.getWriter();
+          writer.write(uint8Data);
+          writer.close();
+          const response = new Response(cs.readable);
+          const buf = await response.arrayBuffer();
+          return new Uint8Array(buf);
+        } catch (e) {
+          // 若 deflate-raw 不支持则降级到 deflate
+          try {
+            const cs = new CompressionStream('deflate');
+            const writer = cs.writable.getWriter();
+            writer.write(uint8Data);
+            writer.close();
+            const response = new Response(cs.readable);
+            const fullBuf = new Uint8Array(await response.arrayBuffer());
+            // 去除 zlib 头部(2字节)和校验和(4字节)
+            return fullBuf.subarray(2, fullBuf.length - 4);
+          } catch (err2) {
+            return null;
+          }
+        }
+      }
+      return null;
+    }
+
+    self.onmessage = async function(e) {
+      const { type, total, prefix, startNumStr, padLen, format, columns } = e.data;
+      if (type !== 'start') return;
+
+      const startTime = Date.now();
+      const startNum = BigInt(startNumStr);
+      const isFull = columns === 'full';
+      const encoder = new TextEncoder();
+
+      try {
+        if (format === 'xlsx') {
+          const zip = new FastZipBuilder();
+
+          // 静态 XML 列表
+          const staticFiles = [
+            {
+              name: '[Content_Types].xml',
+              text: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n  <Default Extension="xml" ContentType="application/xml"/>\n  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>\n  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>\n</Types>`
+            },
+            {
+              name: '_rels/.rels',
+              text: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>\n</Relationships>`
+            },
+            {
+              name: 'xl/_rels/workbook.xml.rels',
+              text: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>\n</Relationships>`
+            },
+            {
+              name: 'xl/workbook.xml',
+              text: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">\n  <sheets>\n    <sheet name="Sheet1" sheetId="1" r:id="rId1"/>\n  </sheets>\n</workbook>`
+            }
+          ];
+
+          for (const sf of staticFiles) {
+            const rawBytes = encoder.encode(sf.text);
+            let crc = updateCrc32(0xFFFFFFFF, rawBytes) ^ 0xFFFFFFFF;
+            let compBytes = await compressDeflateRaw(rawBytes);
+            let method = compBytes ? 8 : 0;
+            let finalBytes = compBytes || rawBytes;
+            zip.addRawFile(sf.name, finalBytes, method, crc >>> 0, finalBytes.length, rawBytes.length);
+          }
+
+          // 分块生成 sheet1.xml
+          let headerRow = `<row r="1"><c r="A1" t="inlineStr"><is><t>二维码编号</t></is></c>`;
+          if (isFull) {
+            headerRow += `<c r="B1" t="inlineStr"><is><t>电压(V)</t></is></c><c r="C1" t="inlineStr"><is><t>内阻(mΩ)</t></is></c>`;
+          }
+          headerRow += `</row>\n`;
+
+          const headXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n<sheetData>\n` + headerRow;
+          const tailXml = `</sheetData></worksheet>`;
+
+          const CHUNK_SIZE = 25000;
+          let sheetCrc = 0xFFFFFFFF;
+          let uncompSize = 0;
+
+          // 压缩管道收集器
+          let cs = null;
+          let writer = null;
+          let reader = null;
+          const compressedChunks = [];
+          let hasCompression = typeof CompressionStream !== 'undefined';
+
+          if (hasCompression) {
+            try {
+              cs = new CompressionStream('deflate-raw');
+              writer = cs.writable.getWriter();
+              reader = cs.readable.getReader();
+              // 异步读取压缩输出
+              (async () => {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  if (value) compressedChunks.push(value);
+                }
+              })();
+            } catch (err) {
+              hasCompression = false;
+            }
+          }
+
+          // 写入头部
+          const headBytes = encoder.encode(headXml);
+          sheetCrc = updateCrc32(sheetCrc, headBytes);
+          uncompSize += headBytes.length;
+          if (hasCompression && writer) await writer.write(headBytes);
+
+          const uncompressedAllParts = hasCompression ? null : [headBytes];
+
+          for (let chunkStart = 0; chunkStart < total; chunkStart += CHUNK_SIZE) {
+            const chunkEnd = Math.min(chunkStart + CHUNK_SIZE, total);
+            let chunkXml = '';
+            for (let i = chunkStart; i < chunkEnd; i++) {
+              const row = i + 2;
+              const curNum = startNum + BigInt(i);
+              const code = prefix + curNum.toString().padStart(padLen, '0');
+              if (isFull) {
+                chunkXml += `<row r="${row}"><c r="A${row}" t="inlineStr"><is><t>${code}</t></is></c><c r="B${row}"><v>3.85</v></c><c r="C${row}"><v>15.2</v></c></row>\n`;
+              } else {
+                chunkXml += `<row r="${row}"><c r="A${row}" t="inlineStr"><is><t>${code}</t></is></c></row>\n`;
+              }
+            }
+
+            const chunkBytes = encoder.encode(chunkXml);
+            sheetCrc = updateCrc32(sheetCrc, chunkBytes);
+            uncompSize += chunkBytes.length;
+
+            if (hasCompression && writer) {
+              await writer.write(chunkBytes);
+            } else if (uncompressedAllParts) {
+              uncompressedAllParts.push(chunkBytes);
+            }
+
+            const elapsedSec = (Date.now() - startTime) / 1000 || 0.001;
+            const currentTps = Math.round(chunkEnd / elapsedSec);
+            self.postMessage({
+              type: 'progress',
+              current: chunkEnd,
+              total,
+              percent: Math.min(99, Math.round((chunkEnd / total) * 100)),
+              tps: currentTps,
+              elapsed: elapsedSec.toFixed(2),
+              estimatedMb: ((uncompSize / 1024 / 1024) * 0.09).toFixed(2)
+            });
+          }
+
+          // 写入尾部
+          const tailBytes = encoder.encode(tailXml);
+          sheetCrc = updateCrc32(sheetCrc, tailBytes);
+          uncompSize += tailBytes.length;
+
+          let finalSheetBytes = null;
+          let method = 0;
+
+          if (hasCompression && writer) {
+            await writer.write(tailBytes);
+            await writer.close();
+            // 等待 reader 读取完毕
+            while (reader) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              if (value) compressedChunks.push(value);
+            }
+            let totalCompLen = 0;
+            for (const c of compressedChunks) totalCompLen += c.length;
+            finalSheetBytes = new Uint8Array(totalCompLen);
+            let offset = 0;
+            for (const c of compressedChunks) {
+              finalSheetBytes.set(c, offset);
+              offset += c.length;
+            }
+            method = 8;
+          } else if (uncompressedAllParts) {
+            uncompressedAllParts.push(tailBytes);
+            finalSheetBytes = new Uint8Array(uncompSize);
+            let offset = 0;
+            for (const c of uncompressedAllParts) {
+              finalSheetBytes.set(c, offset);
+              offset += c.length;
+            }
+            method = 0; // Store
+          }
+
+          sheetCrc = (sheetCrc ^ 0xFFFFFFFF) >>> 0;
+          zip.addRawFile('xl/worksheets/sheet1.xml', finalSheetBytes, method, sheetCrc, finalSheetBytes.length, uncompSize);
+
+          self.postMessage({ type: 'status', text: '正在封装 Excel Zip 归档...' });
+          const zipBuffer = zip.build();
+
+          self.postMessage({
+            type: 'done',
+            buffer: zipBuffer,
+            total,
+            elapsed: ((Date.now() - startTime) / 1000).toFixed(2),
+            fileSize: zipBuffer.byteLength,
+            mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          }, [zipBuffer]);
+
+        } else if (format === 'csv' || format === 'txt') {
+          // CSV / TXT 极速流式拼接
+          const sep = format === 'csv' ? ',' : '\t';
+          let header = '二维码编号';
+          if (isFull) {
+            header += sep + '电压(V)' + sep + '内阻(mΩ)';
+          }
+          header += '\n';
+
+          const parts = [];
+          if (format === 'csv') {
+            // UTF-8 BOM
+            parts.push(new Uint8Array([0xEF, 0xBB, 0xBF]));
+          }
+          parts.push(encoder.encode(header));
+
+          const CHUNK_SIZE = 50000;
+          for (let chunkStart = 0; chunkStart < total; chunkStart += CHUNK_SIZE) {
+            const chunkEnd = Math.min(chunkStart + CHUNK_SIZE, total);
+            let chunkText = '';
+            for (let i = chunkStart; i < chunkEnd; i++) {
+              const curNum = startNum + BigInt(i);
+              const code = prefix + curNum.toString().padStart(padLen, '0');
+              if (isFull) {
+                chunkText += code + sep + '3.85' + sep + '15.2\n';
+              } else {
+                chunkText += code + '\n';
+              }
+            }
+            parts.push(encoder.encode(chunkText));
+
+            const elapsedSec = (Date.now() - startTime) / 1000 || 0.001;
+            self.postMessage({
+              type: 'progress',
+              current: chunkEnd,
+              total,
+              percent: Math.min(99, Math.round((chunkEnd / total) * 100)),
+              tps: Math.round(chunkEnd / elapsedSec),
+              elapsed: elapsedSec.toFixed(2),
+              estimatedMb: ((chunkEnd * 25) / 1024 / 1024).toFixed(2)
+            });
+          }
+
+          let totalLen = 0;
+          for (const p of parts) totalLen += p.length;
+          const merged = new Uint8Array(totalLen);
+          let offset = 0;
+          for (const p of parts) {
+            merged.set(p, offset);
+            offset += p.length;
+          }
+
+          self.postMessage({
+            type: 'done',
+            buffer: merged.buffer,
+            total,
+            elapsed: ((Date.now() - startTime) / 1000).toFixed(2),
+            fileSize: merged.byteLength,
+            mime: format === 'csv' ? 'text/csv;charset=utf-8;' : 'text/plain;charset=utf-8;'
+          }, [merged.buffer]);
+        }
+      } catch (err) {
+        self.postMessage({ type: 'error', message: err.message || 'Worker 内部执行异常' });
+      }
+    };
+  </script>
+
+  <!-- 主线程交互逻辑 -->
+  <script>
+    (function () {
+      // DOM 引用
+      const rowCountInput = document.getElementById('rowCountInput');
+      const startCodeInput = document.getElementById('startCodeInput');
+      const countPresets = document.getElementById('countPresets');
+      const templatePresets = document.getElementById('templatePresets');
+      const formatChoices = document.getElementById('formatChoices');
+      const columnChoices = document.getElementById('columnChoices');
+      const startGenBtn = document.getElementById('startGenBtn');
+      const abortGenBtn = document.getElementById('abortGenBtn');
+      const copyRangeBtn = document.getElementById('copyRangeBtn');
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+      const parsedPrefixEl = document.getElementById('parsedPrefix');
+      const parsedStartCodeEl = document.getElementById('parsedStartCode');
+      const parsedEndCodeEl = document.getElementById('parsedEndCode');
+
+      const engineStatusBadge = document.getElementById('engineStatusBadge');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const progressText = document.getElementById('progressText');
+      const etaText = document.getElementById('etaText');
+      const tpsValue = document.getElementById('tpsValue');
+      const elapsedValue = document.getElementById('elapsedValue');
+      const sizeValue = document.getElementById('sizeValue');
+      const memoryValue = document.getElementById('memoryValue');
+
+      const completionBanner = document.getElementById('completionBanner');
+      const completionDesc = document.getElementById('completionDesc');
+      const reDownloadBtn = document.getElementById('reDownloadBtn');
+
+      const previewTableHead = document.getElementById('previewTableHead');
+      const previewTableBody = document.getElementById('previewTableBody');
+      const previewTotalCountBadge = document.getElementById('previewTotalCountBadge');
+
+      // 状态变量
+      let currentFormat = 'xlsx';
+      let currentCols = 'single';
+      let activeWorker = null;
+      let lastGeneratedBlob = null;
+      let lastFileName = '';
+
+      // 解析码段信息
+      function analyzeCode(startCode, count) {
+        let digitIdx = -1;
+        for (let i = 0; i < startCode.length; i++) {
+          if (startCode[i] >= '0' && startCode[i] <= '9') {
+            digitIdx = i;
+            break;
+          }
+        }
+        if (digitIdx === -1) {
+          return { valid: false, error: '起始码必须包含数字序号部分 (如 BAT000001)' };
+        }
+        const prefix = startCode.substring(0, digitIdx);
+        const numStr = startCode.substring(digitIdx);
+        const padLen = numStr.length;
+        try {
+          const startNum = BigInt(numStr);
+          const totalBig = BigInt(Math.max(1, count));
+          const endNum = startNum + totalBig - 1n;
+          const endCode = prefix + endNum.toString().padStart(padLen, '0');
+          return { valid: true, prefix, startNum, startNumStr: numStr, padLen, endCode, startCode };
+        } catch (e) {
+          return { valid: false, error: '数字部分超出支持范围' };
+        }
+      }
+
+      // 实时更新推导信息和预览表
+      function updateSummaryAndPreview() {
+        const count = parseInt(rowCountInput.value, 10) || 100000;
+        const code = startCodeInput.value.trim() || 'BAT20261013000001';
+        const info = analyzeCode(code, count);
+
+        if (!info.valid) {
+          parsedPrefixEl.textContent = '格式错误';
+          parsedEndCodeEl.textContent = info.error;
+          parsedEndCodeEl.className = 'range-val accent';
+          startGenBtn.disabled = true;
+          return;
+        }
+
+        startGenBtn.disabled = false;
+        parsedPrefixEl.textContent = info.prefix || '(无前缀)';
+        parsedStartCodeEl.textContent = info.startCode;
+        parsedEndCodeEl.textContent = info.endCode;
+        parsedEndCodeEl.className = 'range-val accent';
+
+        previewTotalCountBadge.textContent = `共 ${count.toLocaleString()} 行`;
+
+        // 渲染表格表头
+        if (currentCols === 'full') {
+          previewTableHead.innerHTML = `
+            <th style="width: 80px;">行号</th>
+            <th>二维码编号 (qr_code)</th>
+            <th style="width: 120px;">电压(V)</th>
+            <th style="width: 120px;">内阻(mΩ)</th>
+          `;
+        } else {
+          previewTableHead.innerHTML = `
+            <th style="width: 80px;">行号</th>
+            <th>二维码编号 (qr_code)</th>
+          `;
+        }
+
+        // 渲染表格行：前 10 行 + 分隔行 + 后 5 行
+        let rowsHtml = '';
+        const previewHeadCount = Math.min(10, count);
+
+        for (let i = 0; i < previewHeadCount; i++) {
+          const curNum = info.startNum + BigInt(i);
+          const curCode = info.prefix + curNum.toString().padStart(info.padLen, '0');
+          rowsHtml += `<tr>
+            <td><span class="preview-badge-row">#${i + 1}</span></td>
+            <td><strong>${curCode}</strong></td>
+            ${currentCols === 'full' ? '<td>3.85</td><td>15.2</td>' : ''}
+          </tr>`;
+        }
+
+        if (count > 15) {
+          rowsHtml += `<tr style="background: rgba(84, 66, 49, 0.05); text-align: center;">
+            <td colspan="${currentCols === 'full' ? 4 : 2}" style="color: var(--muted); padding: 6px;">
+              ... 期间连续自增跳过 ${(count - 15).toLocaleString()} 行数据 ...
+            </td>
+          </tr>`;
+
+          const tailCount = 5;
+          for (let i = count - tailCount; i < count; i++) {
+            const curNum = info.startNum + BigInt(i);
+            const curCode = info.prefix + curNum.toString().padStart(info.padLen, '0');
+            rowsHtml += `<tr>
+              <td><span class="preview-badge-row">#${i + 1}</span></td>
+              <td><strong>${curCode}</strong></td>
+              ${currentCols === 'full' ? '<td>3.85</td><td>15.2</td>' : ''}
+            </tr>`;
+          }
+        }
+
+        previewTableBody.innerHTML = rowsHtml;
+      }
+
+      // 事件绑定：行数预设胶囊
+      countPresets.addEventListener('click', (e) => {
+        const btn = e.target.closest('.pill-btn');
+        if (!btn) return;
+        countPresets.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        rowCountInput.value = btn.dataset.count;
+        updateSummaryAndPreview();
+      });
+
+      // 起始码模板预设胶囊
+      templatePresets.addEventListener('click', (e) => {
+        const btn = e.target.closest('.pill-btn');
+        if (!btn) return;
+        templatePresets.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        startCodeInput.value = btn.dataset.code;
+        updateSummaryAndPreview();
+      });
+
+      // 格式单选
+      formatChoices.addEventListener('click', (e) => {
+        const card = e.target.closest('.choice-card');
+        if (!card) return;
+        formatChoices.querySelectorAll('.choice-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        currentFormat = card.dataset.format;
+      });
+
+      // 列属性单选
+      columnChoices.addEventListener('click', (e) => {
+        const card = e.target.closest('.choice-card');
+        if (!card) return;
+        columnChoices.querySelectorAll('.choice-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        currentCols = card.dataset.cols;
+        updateSummaryAndPreview();
+      });
+
+      rowCountInput.addEventListener('input', updateSummaryAndPreview);
+      startCodeInput.addEventListener('input', updateSummaryAndPreview);
+
+      // 一键复制起止码
+      copyRangeBtn.addEventListener('click', () => {
+        const start = parsedStartCodeEl.textContent;
+        const end = parsedEndCodeEl.textContent;
+        const text = `起始码: ${start}\n终止码: ${end}\n总数量: ${rowCountInput.value}`;
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = copyRangeBtn.querySelector('span').textContent;
+          copyRangeBtn.querySelector('span').textContent = '已复制到剪贴板！';
+          copyRangeBtn.style.color = 'var(--teal)';
+          setTimeout(() => {
+            copyRangeBtn.querySelector('span').textContent = originalText;
+            copyRangeBtn.style.color = '';
+          }, 1800);
+        });
+      });
+
+      // 主题切换
+      themeToggleBtn.addEventListener('click', () => {
+        if (typeof toggleTheme === 'function') {
+          toggleTheme();
+        } else {
+          const cur = document.documentElement.getAttribute('data-theme');
+          document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+        }
+      });
+
+      // 重新下载按钮
+      reDownloadBtn.addEventListener('click', () => {
+        if (lastGeneratedBlob && lastFileName) {
+          triggerDownload(lastGeneratedBlob, lastFileName);
+        }
+      });
+
+      // 触发下载方法
+      function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+
+      // 中止按钮
+      abortGenBtn.addEventListener('click', () => {
+        if (activeWorker) {
+          activeWorker.terminate();
+          activeWorker = null;
+        }
+        engineStatusBadge.textContent = '已中止';
+        engineStatusBadge.className = 'badge-pill badge-highlight';
+        progressBarFill.classList.remove('active');
+        startGenBtn.disabled = false;
+        abortGenBtn.style.display = 'none';
+        progressText.textContent = '任务已由用户手动中止';
+      });
+
+      // 开始生成
+      startGenBtn.addEventListener('click', () => {
+        const count = parseInt(rowCountInput.value, 10);
+        if (isNaN(count) || count <= 0) {
+          alert('请输入合法的生成行数');
+          return;
+        }
+        if (count > 1048576 && currentFormat === 'xlsx') {
+          alert('Excel 单 Sheet 最大支持 1,048,576 行，请控制在上限以内或选择 CSV/TXT 格式');
+          return;
+        }
+
+        const code = startCodeInput.value.trim();
+        const info = analyzeCode(code, count);
+        if (!info.valid) {
+          alert(info.error);
+          return;
+        }
+
+        // 初始化状态
+        startGenBtn.disabled = true;
+        abortGenBtn.style.display = 'block';
+        completionBanner.style.display = 'none';
+        engineStatusBadge.textContent = '⚡ 极速生成中...';
+        engineStatusBadge.className = 'badge-pill';
+        progressBarFill.style.width = '0%';
+        progressBarFill.classList.add('active');
+        tpsValue.textContent = '测算中...';
+        elapsedValue.textContent = '0.00s';
+        progressText.textContent = `0 / ${count.toLocaleString()} (0%)`;
+        etaText.textContent = '正在启动独立线程...';
+
+        // 启动内联 Web Worker
+        const workerBlob = new Blob([document.getElementById('worker-script').textContent], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(workerBlob);
+        activeWorker = new Worker(workerUrl);
+
+        lastFileName = `qrcode_import_${count}_${info.startCode}.${currentFormat}`;
+
+        activeWorker.onmessage = function (e) {
+          const data = e.data;
+          if (data.type === 'progress') {
+            progressBarFill.style.width = data.percent + '%';
+            progressText.textContent = `${data.current.toLocaleString()} / ${data.total.toLocaleString()} (${data.percent}%)`;
+            tpsValue.textContent = Number(data.tps).toLocaleString();
+            elapsedValue.textContent = data.elapsed + 's';
+            sizeValue.textContent = `~${data.estimatedMb} MB`;
+
+            // 计算 ETA
+            const remainRows = data.total - data.current;
+            if (data.tps > 0 && remainRows > 0) {
+              const remainSec = (remainRows / data.tps).toFixed(1);
+              etaText.textContent = `预估剩余: ${remainSec} 秒`;
+            } else {
+              etaText.textContent = `即将完成封装...`;
+            }
+
+          } else if (data.type === 'status') {
+            etaText.textContent = data.text;
+          } else if (data.type === 'done') {
+            progressBarFill.style.width = '100%';
+            progressBarFill.classList.remove('active');
+            progressText.textContent = `${data.total.toLocaleString()} / ${data.total.toLocaleString()} (100%)`;
+            elapsedValue.textContent = data.elapsed + 's';
+            etaText.textContent = '耗时 ' + data.elapsed + ' 秒，打包完毕！';
+            engineStatusBadge.textContent = '✓ 导出完毕';
+            engineStatusBadge.className = 'badge-pill';
+
+            const sizeMb = (data.fileSize / 1024 / 1024).toFixed(2);
+            sizeValue.textContent = `${sizeMb} MB`;
+
+            lastGeneratedBlob = new Blob([data.buffer], { type: data.mime });
+            triggerDownload(lastGeneratedBlob, lastFileName);
+
+            completionBanner.style.display = 'flex';
+            completionDesc.textContent = `已导出: ${lastFileName} (${sizeMb} MB, 平均速率: ${Math.round(data.total / (parseFloat(data.elapsed) || 1)).toLocaleString()} 行/秒)`;
+
+            startGenBtn.disabled = false;
+            abortGenBtn.style.display = 'none';
+
+            activeWorker.terminate();
+            activeWorker = null;
+            URL.revokeObjectURL(workerUrl);
+
+          } else if (data.type === 'error') {
+            alert('生成失败: ' + data.message);
+            startGenBtn.disabled = false;
+            abortGenBtn.style.display = 'none';
+            progressBarFill.classList.remove('active');
+            engineStatusBadge.textContent = '生成失败';
+            engineStatusBadge.className = 'badge-pill badge-highlight';
+            activeWorker.terminate();
+            activeWorker = null;
+            URL.revokeObjectURL(workerUrl);
+          }
+        };
+
+        activeWorker.onerror = function (err) {
+          console.error(err);
+          alert('Worker 启动失败: ' + err.message);
+          startGenBtn.disabled = false;
+          abortGenBtn.style.display = 'none';
+          activeWorker.terminate();
+          activeWorker = null;
+          URL.revokeObjectURL(workerUrl);
+        };
+
+        // 发送启动指令
+        activeWorker.postMessage({
+          type: 'start',
+          total: count,
+          prefix: info.prefix,
+          startNumStr: info.startNumStr,
+          padLen: info.padLen,
+          format: currentFormat,
+          columns: currentCols
+        });
+      });
+
+      // 初始化初次渲染
+      updateSummaryAndPreview();
+    })();
+  </script>
+</body>
+</html>

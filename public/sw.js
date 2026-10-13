@@ -33,6 +33,7 @@ const PRECACHE_ASSETS = [
   '/tool/timestamp_tool.html',
   '/tool/password_generator.html',
   '/tool/qrcode_tool.html',
+  '/tool/qrcode_batch_tool.html',
   '/tool/base64_tool.html',
   '/tool/json_tool.html',
   '/tool/diff_tool.html',
